@@ -1,0 +1,959 @@
+// =============================================================================
+// VRINDAVAN BHANDARA — PRISMA SCHEMA
+// Database: PostgreSQL (Neon)
+// ORM: Prisma v6
+// Schema covers: ALL 4 roadmap phases
+// Phase 1: Core booking, payments, admin, auth
+// Phase 2: Certificates, proof uploads, notifications, WhatsApp
+// Phase 3: Coupons, referrals, subscriptions, blog CMS, gallery
+// Phase 4: Mobile, multi-language, donations
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// =============================================================================
+// ENUMS
+// =============================================================================
+
+enum UserRole {
+  CUSTOMER
+  ADMIN
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  OPERATIONS_ADMIN
+  CONTENT_ADMIN
+  SUPPORT_ADMIN
+}
+
+enum ServiceType {
+  BHANDARA
+  BRAHMIN_BHOJ
+  GAU_SEVA
+  SADHU_BHOJAN
+  FESTIVAL_SEVA
+  ANNADAN_SEVA
+}
+
+enum BookingStatus {
+  PENDING      // Created, not yet paid
+  CONFIRMED    // Payment confirmed
+  IN_PROGRESS  // Seva is being performed
+  COMPLETED    // Seva completed, proof delivered
+  CANCELLED    // Cancelled by user or admin
+  REFUNDED     // Payment refunded
+}
+
+enum PaymentStatus {
+  PENDING
+  CAPTURED
+  FAILED
+  REFUNDED
+  DISPUTED
+}
+
+enum PaymentGateway {
+  RAZORPAY
+}
+
+enum MediaType {
+  PHOTO
+  VIDEO
+  DOCUMENT
+}
+
+enum NotificationType {
+  BOOKING_CONFIRMED
+  BOOKING_IN_PROGRESS
+  BOOKING_COMPLETED
+  PAYMENT_RECEIVED
+  PAYMENT_FAILED
+  CERTIFICATE_READY
+  PROOF_UPLOADED
+  GENERAL
+  FESTIVAL_CAMPAIGN
+}
+
+enum NotificationChannel {
+  EMAIL
+  WHATSAPP
+  IN_APP
+  SMS
+}
+
+enum ProofTimelineEventType {
+  BOOKING_RECEIVED
+  PAYMENT_CONFIRMED
+  PREPARATION_STARTED
+  SEVA_IN_PROGRESS
+  PHOTOS_UPLOADED
+  VIDEOS_UPLOADED
+  SEVA_COMPLETED
+  CERTIFICATE_GENERATED
+  PROOF_DELIVERED
+}
+
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FLAT
+}
+
+enum ReferralStatus {
+  PENDING
+  CONVERTED
+  REWARDED
+  EXPIRED
+}
+
+enum SubscriptionInterval {
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAUSED
+  CANCELLED
+  EXPIRED
+}
+
+enum GalleryCategory {
+  BHANDARA
+  BRAHMIN_BHOJ
+  GAU_SEVA
+  SADHU_BHOJAN
+  FESTIVAL
+  TEMPLE
+  GENERAL
+}
+
+enum BlogStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum AuditAction {
+  CREATE
+  READ
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  PAYMENT
+  UPLOAD
+  EXPORT
+}
+
+enum LocationRegion {
+  VRINDAVAN
+  MATHURA
+  BOTH
+}
+
+// =============================================================================
+// USERS & AUTHENTICATION
+// =============================================================================
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  emailVerified DateTime?
+  phone         String?   @unique
+  phoneVerified Boolean   @default(false)
+  image         String?
+  passwordHash  String?
+  role          UserRole  @default(CUSTOMER)
+
+  // Address
+  city        String?
+  state       String?
+  country     String    @default("India")
+  pincode     String?
+
+  // Preferences
+  language    String    @default("en")
+  timezone    String    @default("Asia/Kolkata")
+  whatsappOptIn Boolean @default(false)
+  emailOptIn    Boolean @default(true)
+
+  // Meta
+  isActive    Boolean   @default(true)
+  lastLoginAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  admin             Admin?
+  accounts          Account[]
+  sessions          Session[]
+  bookings          Booking[]
+  testimonials      Testimonial[]
+  notifications     Notification[]
+  auditLogs         AuditLog[]
+  referralsMade     Referral[]     @relation("ReferrerRelation")
+  referralsReceived Referral[]     @relation("RefereeRelation")
+  couponsUsed       CouponUsage[]
+  subscriptions     Subscription[]
+  donationsMade     Donation[]
+
+  @@index([email])
+  @@index([phone])
+  @@index([role])
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model Admin {
+  id        String    @id @default(cuid())
+  userId    String    @unique
+  role      AdminRole @default(OPERATIONS_ADMIN)
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("admins")
+}
+
+// =============================================================================
+// SERVICES & PACKAGES
+// =============================================================================
+
+model ServiceCategory {
+  id          String      @id @default(cuid())
+  type        ServiceType @unique
+  name        String
+  slug        String      @unique
+  description String      @db.Text
+  shortDesc   String
+  icon        String?     // Icon name or URL
+  image       String?     // Hero image URL
+  isActive    Boolean     @default(true)
+  sortOrder   Int         @default(0)
+  metaTitle   String?
+  metaDesc    String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  packages Package[]
+
+  @@map("service_categories")
+}
+
+model Package {
+  id              String      @id @default(cuid())
+  serviceCategoryId String
+  name            String
+  slug            String      @unique
+  description     String      @db.Text
+  shortDesc       String
+  price           Decimal     @db.Decimal(10, 2)
+  originalPrice   Decimal?    @db.Decimal(10, 2)  // For showing discount
+  currency        String      @default("INR")
+  maxGuests       Int?
+  duration        String?     // e.g. "1 Day", "Half Day"
+  isCustom        Boolean     @default(false)
+  isActive        Boolean     @default(true)
+  isFeatured      Boolean     @default(false)
+  sortOrder       Int         @default(0)
+  badge           String?     // e.g. "Most Popular", "Best Value"
+
+  // SEO
+  metaTitle       String?
+  metaDesc        String?
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  serviceCategory ServiceCategory @relation(fields: [serviceCategoryId], references: [id])
+  items           PackageItem[]
+  bookings        Booking[]
+
+  @@index([serviceCategoryId])
+  @@index([isActive])
+  @@map("packages")
+}
+
+model PackageItem {
+  id          String  @id @default(cuid())
+  packageId   String
+  description String
+  quantity    Int     @default(1)
+  unit        String? // e.g. "persons", "kg", "liters"
+  sortOrder   Int     @default(0)
+
+  package Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+
+  @@index([packageId])
+  @@map("package_items")
+}
+
+// =============================================================================
+// BOOKINGS
+// =============================================================================
+
+model Booking {
+  id                  String        @id @default(cuid())
+  bookingNumber       String        @unique // Human-readable: VB-2024-001234
+  userId              String
+  packageId           String
+  status              BookingStatus @default(PENDING)
+
+  // Seva Details
+  sevaDate            DateTime
+  sevaLocation        String        @default("Vrindavan")
+  specialInstructions String?       @db.Text
+  dedicatedTo         String?       // Name of person seva is dedicated to
+  gotra               String?
+  occasion            String?       // e.g. "Birthday", "Death Anniversary"
+
+  // Guest/Participant count
+  guestCount          Int           @default(1)
+
+  // Pricing
+  baseAmount          Decimal       @db.Decimal(10, 2)
+  discountAmount      Decimal       @db.Decimal(10, 2) @default(0)
+  taxAmount           Decimal       @db.Decimal(10, 2) @default(0)
+  totalAmount         Decimal       @db.Decimal(10, 2)
+  currency            String        @default("INR")
+
+  // Coupon
+  couponId            String?
+
+  // Festival campaign link
+  festivalCampaignId  String?
+
+  // Admin notes
+  adminNotes          String?       @db.Text
+
+  // Completion
+  completedAt         DateTime?
+  completionNotes     String?       @db.Text
+
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  user               User                 @relation(fields: [userId], references: [id])
+  package            Package              @relation(fields: [packageId], references: [id])
+  coupon             Coupon?              @relation(fields: [couponId], references: [id])
+  festivalCampaign   FestivalCampaign?    @relation(fields: [festivalCampaignId], references: [id])
+  payment            Payment?
+  certificate        Certificate?
+  mediaProofs        MediaProof[]
+  proofTimeline      ProofTimelineEvent[]
+  testimonial        Testimonial?
+  notifications      Notification[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([sevaDate])
+  @@index([bookingNumber])
+  @@map("bookings")
+}
+
+// =============================================================================
+// PAYMENTS
+// =============================================================================
+
+model Payment {
+  id                  String         @id @default(cuid())
+  bookingId           String         @unique
+  gateway             PaymentGateway @default(RAZORPAY)
+  status              PaymentStatus  @default(PENDING)
+
+  // Razorpay fields
+  razorpayOrderId     String?        @unique
+  razorpayPaymentId   String?        @unique
+  razorpaySignature   String?
+
+  // Amounts
+  amount              Decimal        @db.Decimal(10, 2)
+  currency            String         @default("INR")
+  refundAmount        Decimal?       @db.Decimal(10, 2)
+  refundId            String?
+
+  // Webhook
+  webhookVerified     Boolean        @default(false)
+  webhookReceivedAt   DateTime?
+  webhookPayload      Json?
+
+  // Metadata
+  gatewayResponse     Json?
+  failureReason       String?
+  notes               String?        @db.Text
+
+  capturedAt          DateTime?
+  refundedAt          DateTime?
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+
+  booking Booking @relation(fields: [bookingId], references: [id])
+
+  @@index([razorpayOrderId])
+  @@index([razorpayPaymentId])
+  @@index([status])
+  @@map("payments")
+}
+
+// =============================================================================
+// CERTIFICATES
+// =============================================================================
+
+model Certificate {
+  id            String   @id @default(cuid())
+  bookingId     String   @unique
+  url           String   // R2 URL to PDF
+  verifyCode    String   @unique // Short code for public verification
+  generatedAt   DateTime @default(now())
+  downloadCount Int      @default(0)
+
+  booking Booking @relation(fields: [bookingId], references: [id])
+
+  @@map("certificates")
+}
+
+// =============================================================================
+// MEDIA PROOFS & PROOF TIMELINE
+// =============================================================================
+
+model MediaProof {
+  id          String     @id @default(cuid())
+  bookingId   String
+  type        MediaType
+  url         String     // R2 URL
+  thumbnail   String?    // R2 thumbnail URL (for videos)
+  caption     String?
+  size        Int?       // bytes
+  mimeType    String?
+  width       Int?
+  height      Int?
+  duration    Int?       // seconds (for video)
+  uploadedBy  String     // Admin userId
+  isPublic    Boolean    @default(false) // Can be shown in gallery?
+  createdAt   DateTime   @default(now())
+
+  booking Booking @relation(fields: [bookingId], references: [id])
+
+  @@index([bookingId])
+  @@map("media_proofs")
+}
+
+model ProofTimelineEvent {
+  id          String                 @id @default(cuid())
+  bookingId   String
+  eventType   ProofTimelineEventType
+  title       String
+  description String?
+  mediaUrl    String?
+  occurredAt  DateTime               @default(now())
+  createdBy   String                 // Admin userId
+  isVisible   Boolean                @default(true)
+
+  booking Booking @relation(fields: [bookingId], references: [id])
+
+  @@index([bookingId])
+  @@map("proof_timeline_events")
+}
+
+// =============================================================================
+// GALLERY
+// =============================================================================
+
+model GalleryImage {
+  id          String          @id @default(cuid())
+  title       String?
+  description String?
+  url         String
+  thumbnail   String?
+  category    GalleryCategory
+  tags        String[]
+  location    String?         // "Vrindavan" | "Mathura"
+  width       Int?
+  height      Int?
+  isActive    Boolean         @default(true)
+  isFeatured  Boolean         @default(false)
+  sortOrder   Int             @default(0)
+  uploadedBy  String          // Admin userId
+  bookingId   String?         // Optional: linked to a booking
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([category])
+  @@index([isActive])
+  @@map("gallery_images")
+}
+
+// =============================================================================
+// FESTIVAL CAMPAIGNS
+// =============================================================================
+
+model FestivalCampaign {
+  id          String         @id @default(cuid())
+  name        String
+  slug        String         @unique
+  description String         @db.Text
+  shortDesc   String
+  image       String?
+  bannerImage String?
+  startDate   DateTime
+  endDate     DateTime
+  status      CampaignStatus @default(DRAFT)
+  targetAmount Decimal?      @db.Decimal(12, 2)
+  raisedAmount Decimal       @db.Decimal(12, 2) @default(0)
+  donorCount  Int            @default(0)
+
+  // SEO
+  metaTitle   String?
+  metaDesc    String?
+
+  // Location
+  location    LocationRegion @default(VRINDAVAN)
+
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  bookings Booking[]
+
+  @@index([status])
+  @@map("festival_campaigns")
+}
+
+// =============================================================================
+// BLOGS
+// =============================================================================
+
+model Blog {
+  id           String     @id @default(cuid())
+  title        String
+  slug         String     @unique
+  excerpt      String     @db.Text
+  content      String     @db.Text
+  coverImage   String?
+  status       BlogStatus @default(DRAFT)
+  authorId     String     // Admin userId
+  authorName   String
+  authorImage  String?
+  tags         String[]
+  category     String?
+  readTimeMin  Int        @default(5)
+
+  // Location linkage
+  location     LocationRegion?
+
+  // SEO
+  metaTitle    String?
+  metaDesc     String?
+  ogImage      String?
+  canonicalUrl String?
+
+  publishedAt  DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([slug])
+  @@index([status])
+  @@index([publishedAt])
+  @@map("blogs")
+}
+
+// =============================================================================
+// TESTIMONIALS
+// =============================================================================
+
+model Testimonial {
+  id          String   @id @default(cuid())
+  userId      String?  // Optional: anonymous testimonials
+  bookingId   String?  @unique
+  name        String
+  email       String?
+  city        String?
+  country     String?
+  rating      Int      // 1-5
+  comment     String   @db.Text
+  image       String?  // User avatar
+  serviceType ServiceType?
+  isApproved  Boolean  @default(false)
+  isFeatured  Boolean  @default(false)
+  isAnonymous Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user    User?    @relation(fields: [userId], references: [id])
+  booking Booking? @relation(fields: [bookingId], references: [id])
+
+  @@index([isApproved])
+  @@index([isFeatured])
+  @@map("testimonials")
+}
+
+// =============================================================================
+// FAQs
+// =============================================================================
+
+model FAQ {
+  id        String  @id @default(cuid())
+  question  String
+  answer    String  @db.Text
+  category  String  @default("General")
+  sortOrder Int     @default(0)
+  isActive  Boolean @default(true)
+  location  LocationRegion?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+  @@index([isActive])
+  @@map("faqs")
+}
+
+// =============================================================================
+// NOTIFICATIONS
+// =============================================================================
+
+model Notification {
+  id        String              @id @default(cuid())
+  userId    String
+  bookingId String?
+  type      NotificationType
+  channel   NotificationChannel @default(IN_APP)
+  title     String
+  message   String              @db.Text
+  data      Json?
+  isRead    Boolean             @default(false)
+  readAt    DateTime?
+  sentAt    DateTime?
+  createdAt DateTime            @default(now())
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  booking Booking? @relation(fields: [bookingId], references: [id])
+
+  @@index([userId])
+  @@index([isRead])
+  @@map("notifications")
+}
+
+model WhatsAppLog {
+  id              String   @id @default(cuid())
+  toPhone         String
+  templateName    String
+  templateParams  Json?
+  status          String   // sent | failed | delivered | read
+  waMessageId     String?  // WhatsApp message ID
+  error           String?
+  bookingId       String?
+  userId          String?
+  sentAt          DateTime @default(now())
+
+  @@index([toPhone])
+  @@index([bookingId])
+  @@map("whatsapp_logs")
+}
+
+// =============================================================================
+// AUDIT LOGS
+// =============================================================================
+
+model AuditLog {
+  id         String      @id @default(cuid())
+  userId     String?
+  action     AuditAction
+  entity     String      // Table/model name
+  entityId   String?
+  oldData    Json?
+  newData    Json?
+  metadata   Json?
+  ip         String?
+  userAgent  String?     @db.Text
+  createdAt  DateTime    @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([entity, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// =============================================================================
+// COUPONS (Phase 3)
+// =============================================================================
+
+model Coupon {
+  id            String       @id @default(cuid())
+  code          String       @unique
+  description   String?
+  discountType  DiscountType
+  discountValue Decimal      @db.Decimal(10, 2)
+  minOrderValue Decimal?     @db.Decimal(10, 2)
+  maxDiscount   Decimal?     @db.Decimal(10, 2)
+  maxUses       Int?
+  usedCount     Int          @default(0)
+  isActive      Boolean      @default(true)
+  expiresAt     DateTime?
+
+  // Restrictions
+  applicableServices ServiceType[]
+  applicablePackages String[]      // Package IDs
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  usages   CouponUsage[]
+  bookings Booking[]
+
+  @@index([code])
+  @@index([isActive])
+  @@map("coupons")
+}
+
+model CouponUsage {
+  id        String   @id @default(cuid())
+  couponId  String
+  userId    String
+  bookingId String?
+  usedAt    DateTime @default(now())
+
+  coupon Coupon @relation(fields: [couponId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@map("coupon_usages")
+}
+
+// =============================================================================
+// REFERRALS (Phase 3)
+// =============================================================================
+
+model Referral {
+  id           String         @id @default(cuid())
+  referrerId   String
+  refereeId    String
+  status       ReferralStatus @default(PENDING)
+  rewardAmount Decimal?       @db.Decimal(10, 2)
+  rewardPaidAt DateTime?
+  convertedAt  DateTime?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  referrer User @relation("ReferrerRelation", fields: [referrerId], references: [id])
+  referee  User @relation("RefereeRelation", fields: [refereeId], references: [id])
+
+  @@index([referrerId])
+  @@index([refereeId])
+  @@map("referrals")
+}
+
+// =============================================================================
+// SUBSCRIPTIONS (Phase 3)
+// =============================================================================
+
+model Subscription {
+  id              String               @id @default(cuid())
+  userId          String
+  packageId       String
+  status          SubscriptionStatus   @default(ACTIVE)
+  interval        SubscriptionInterval
+  nextSevaDate    DateTime
+  totalCycles     Int?
+  completedCycles Int                  @default(0)
+  amount          Decimal              @db.Decimal(10, 2)
+  currency        String               @default("INR")
+
+  razorpaySubId   String?              @unique
+  startDate       DateTime
+  endDate         DateTime?
+  cancelledAt     DateTime?
+
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([status])
+  @@map("subscriptions")
+}
+
+// =============================================================================
+// DONATIONS (Phase 4)
+// =============================================================================
+
+model Donation {
+  id                String   @id @default(cuid())
+  userId            String?
+  name              String
+  email             String
+  phone             String?
+  amount            Decimal  @db.Decimal(10, 2)
+  currency          String   @default("INR")
+  purpose           String?
+  message           String?  @db.Text
+  isAnonymous       Boolean  @default(false)
+  razorpayOrderId   String?
+  razorpayPaymentId String?
+  status            PaymentStatus @default(PENDING)
+  receiptUrl        String?
+  createdAt         DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([email])
+  @@index([status])
+  @@map("donations")
+}
+
+// =============================================================================
+// SEVA STATISTICS (Dynamic — updated by admin/cron)
+// =============================================================================
+
+model SevaStatistic {
+  id          String   @id @default(cuid())
+  key         String   @unique // "meals_served", "bhandaras_completed", etc.
+  label       String
+  value       BigInt
+  unit        String?  // "Meals", "Families", etc.
+  icon        String?
+  isVisible   Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  updatedAt   DateTime @updatedAt
+  updatedBy   String?  // Admin userId
+
+  @@map("seva_statistics")
+}
+
+// =============================================================================
+// LOCATION PAGES (SEO — Vrindavan, Mathura)
+// =============================================================================
+
+model LocationPage {
+  id          String         @id @default(cuid())
+  region      LocationRegion @unique
+  name        String
+  slug        String         @unique
+  heroTitle   String
+  heroSubtitle String?
+  description String         @db.Text
+  content     String         @db.Text
+  image       String?
+  bannerImage String?
+
+  // Temple / location highlights
+  highlights  Json?          // Array of {title, description, icon}
+
+  // SEO
+  metaTitle   String?
+  metaDesc    String?
+  ogImage     String?
+  keywords    String[]
+
+  // Schema.org Local Business
+  address     String?
+  phone       String?
+  latitude    Decimal?       @db.Decimal(10, 7)
+  longitude   Decimal?       @db.Decimal(10, 7)
+
+  isActive    Boolean        @default(true)
+  updatedAt   DateTime       @updatedAt
+  createdAt   DateTime       @default(now())
+
+  @@map("location_pages")
+}
+
+// =============================================================================
+// SITE CONFIGURATION (Key-value store for admin-editable settings)
+// =============================================================================
+
+model SiteConfig {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String   @db.Text
+  type      String   @default("string") // string | number | boolean | json
+  group     String   @default("general")
+  label     String?
+  updatedAt DateTime @updatedAt
+  updatedBy String?
+
+  @@map("site_configs")
+}
+
+// =============================================================================
+// CONTACT MESSAGES (from /contact form)
+// =============================================================================
+
+model ContactMessage {
+  id         String   @id @default(cuid())
+  name       String
+  email      String
+  phone      String?
+  subject    String
+  message    String   @db.Text
+  isRead     Boolean  @default(false)
+  isReplied  Boolean  @default(false)
+  adminNotes String?  @db.Text
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([isRead])
+  @@index([isReplied])
+  @@index([createdAt])
+  @@map("contact_messages")
+}
