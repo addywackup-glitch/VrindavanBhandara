@@ -75,7 +75,7 @@ async function getAnalyticsData() {
   ]);
 
   const bookingMap = Object.fromEntries(bookingCounts.map((b: any) => [b.status, b._count.id]));
-  const totalBookings = bookingCounts.reduce((sum, b: any) => sum + b._count.id, 0);
+  const totalBookings = bookingCounts.reduce((sum: number, b: any) => sum + b._count.id, 0);
   const completedCount = bookingMap["COMPLETED"] ?? 0;
   const conversionRate = totalBookings > 0 ? ((completedCount / totalBookings) * 100).toFixed(1) : "0";
 
