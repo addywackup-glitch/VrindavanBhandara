@@ -8,11 +8,18 @@ import Razorpay from "razorpay";
 import crypto from "crypto";
 import type { RazorpayOrder, RazorpayWebhookPayload } from "@/types";
 
-// Singleton Razorpay instance
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID ?? "",
-  key_secret: process.env.RAZORPAY_KEY_SECRET ?? "",
-});
+// Lazy singleton — initialized on first use at runtime, not at build time
+let _razorpay: Razorpay | null = null;
+
+function getRazorpay(): Razorpay {
+  if (!_razorpay) {
+    _razorpay = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID ?? "",
+      key_secret: process.env.RAZORPAY_KEY_SECRET ?? "",
+    });
+  }
+  return _razorpay;
+}
 
 // =============================================================================
 // Create Razorpay Order
@@ -28,7 +35,7 @@ export type CreateOrderParams = {
 export async function createRazorpayOrder(
   params: CreateOrderParams
 ): Promise<RazorpayOrder> {
-  const order = await razorpay.orders.create({
+  const order = await getRazorpay().orders.create({
     amount: Math.round(params.amount * 100), // Convert INR to paise
     currency: params.currency ?? "INR",
     receipt: params.receipt,
@@ -101,7 +108,7 @@ export function parseWebhookPayload(rawBody: string): RazorpayWebhookPayload {
 // =============================================================================
 
 export async function fetchRazorpayPayment(paymentId: string) {
-  const payment = await razorpay.payments.fetch(paymentId);
+  const payment = await getRazorpay().payments.fetch(paymentId);
   return payment;
 }
 
@@ -114,11 +121,11 @@ export async function initiateRefund(params: {
   amount?: number; // partial refund in paise — omit for full refund
   notes?: Record<string, string>;
 }) {
-  const refund = await razorpay.payments.refund(params.paymentId, {
+  const refund = await getRazorpay().payments.refund(params.paymentId, {
     amount: params.amount,
     notes: params.notes,
   });
   return refund;
 }
 
-export default razorpay;
+export default getRazorpay;
