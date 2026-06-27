@@ -7,8 +7,14 @@ import { Resend } from "resend";
 import type { BookingWithDetails } from "@/types";
 import { formatDate, formatCurrency } from "@/lib/utils";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM = `${process.env.RESEND_FROM_NAME ?? "Vrindavan Bhandara"} <${process.env.RESEND_FROM_EMAIL ?? "seva@vrindavanbhandara.com"}>`;
+// Lazy singleton — initialized on first use at runtime, not at build time
+let _resend: Resend | null = null;
+function getResend(): Resend {
+  if (!_resend) _resend = new Resend(process.env.RESEND_API_KEY);
+  return _resend;
+}
+const FROM = () =>
+  `${process.env.RESEND_FROM_NAME ?? "Vrindavan Bhandara"} <${process.env.RESEND_FROM_EMAIL ?? "seva@vrindavanbhandara.com"}>`;
 
 // =============================================================================
 // Email: Booking Confirmation
@@ -19,8 +25,8 @@ export async function sendBookingConfirmationEmail(
 ): Promise<void> {
   const { user, package: pkg, bookingNumber, sevaDate, totalAmount } = booking;
 
-  await resend.emails.send({
-    from: FROM,
+  await getResend().emails.send({
+    from: FROM(),
     to: user.email,
     subject: `🙏 Booking Confirmed — ${pkg.serviceCategory.name} | ${bookingNumber}`,
     html: buildBookingConfirmationHtml({
@@ -44,8 +50,8 @@ export async function sendPaymentReceivedEmail(
 ): Promise<void> {
   const { user, bookingNumber, totalAmount } = booking;
 
-  await resend.emails.send({
-    from: FROM,
+  await getResend().emails.send({
+    from: FROM(),
     to: user.email,
     subject: `✅ Payment Received — ₹${formatCurrency(totalAmount)} | ${bookingNumber}`,
     html: buildPaymentReceivedHtml({
@@ -66,8 +72,8 @@ export async function sendSevaCompletedEmail(
 ): Promise<void> {
   const { user, bookingNumber, package: pkg } = booking;
 
-  await resend.emails.send({
-    from: FROM,
+  await getResend().emails.send({
+    from: FROM(),
     to: user.email,
     subject: `🌸 Seva Completed — ${pkg.serviceCategory.name} | ${bookingNumber}`,
     html: buildSevaCompletedHtml({
@@ -90,8 +96,8 @@ export async function sendCertificateReadyEmail(params: {
   certificateUrl: string;
   bookingId: string;
 }): Promise<void> {
-  await resend.emails.send({
-    from: FROM,
+  await getResend().emails.send({
+    from: FROM(),
     to: params.email,
     subject: `📜 Your Seva Certificate is Ready — ${params.bookingNumber}`,
     html: buildCertificateReadyHtml({
@@ -236,8 +242,8 @@ export async function sendRefundConfirmationEmail(params: {
   timeline?: string;
 }): Promise<void> {
   const timeline = params.timeline ?? "5-7 business days";
-  await resend.emails.send({
-    from: FROM,
+  await getResend().emails.send({
+    from: FROM(),
     to: params.email,
     subject: `💰 Refund Processed — ${params.bookingNumber}`,
     html: emailWrapper(`
