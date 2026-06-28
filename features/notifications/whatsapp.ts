@@ -13,7 +13,7 @@
 //   WHATSAPP_BUSINESS_ID   - Business Account ID (for reference)
 // =============================================================================
 
-const WHATSAPP_API_URL = "https://graph.facebook.com/v19.0";
+const WHATSAPP_API_URL = `https://graph.facebook.com/${process.env.WHATSAPP_API_VERSION ?? "v19.0"}`;
 
 type WhatsAppTextParam = { type: "text"; text: string };
 type WhatsAppComponent = {
@@ -38,12 +38,10 @@ async function sendWhatsAppTemplate(options: SendTemplateOptions): Promise<void>
   const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID;
 
   if (!token || !phoneId) {
-    // Dev mode — log the notification that would have been sent
-    console.log("[WhatsApp DEV MODE] Would send template:", {
-      to: options.to,
-      template: options.templateName,
-      components: options.components,
-    });
+    // No credentials configured (dev/test) — skip sending without failing.
+    console.warn(
+      `[WhatsApp] Skipped "${options.templateName}" to ${options.to} (credentials not configured)`
+    );
     return;
   }
 

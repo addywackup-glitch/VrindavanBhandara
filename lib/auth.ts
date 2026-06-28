@@ -8,8 +8,7 @@ import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
-import { LoginSchema } from "@/lib/validations";
-import bcrypt from "bcryptjs";
+import { authenticateCredentials } from "@/lib/services/auth.service";
 import type { SessionUser } from "@/types";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -32,36 +31,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        const parsed = LoginSchema.safeParse(credentials);
-        if (!parsed.success) return null;
-
-        const { email, password } = parsed.data;
-
-        const user = await prisma.user.findUnique({
-          where: { email },
-          include: { admin: true },
-        });
-
-        if (!user || !user.passwordHash) return null;
-        if (!user.isActive) return null;
-
-        const isValid = await bcrypt.compare(password, user.passwordHash);
-        if (!isValid) return null;
-
-        // Update last login
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { lastLoginAt: new Date() },
-        });
-
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          image: user.image,
-          role: user.role,
-          adminRole: user.admin?.role ?? undefined,
-        };
+        // All credential validation + password verification is centralized in
+        // the auth service so it is shared, testable, and consistent.
+        return authenticateCredentials(credentials);
       },
     }),
   ],

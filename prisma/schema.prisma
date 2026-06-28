@@ -14,7 +14,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
 // =============================================================================
@@ -43,12 +45,12 @@ enum ServiceType {
 }
 
 enum BookingStatus {
-  PENDING      // Created, not yet paid
-  CONFIRMED    // Payment confirmed
-  IN_PROGRESS  // Seva is being performed
-  COMPLETED    // Seva completed, proof delivered
-  CANCELLED    // Cancelled by user or admin
-  REFUNDED     // Payment refunded
+  PENDING // Created, not yet paid
+  CONFIRMED // Payment confirmed
+  IN_PROGRESS // Seva is being performed
+  COMPLETED // Seva completed, proof delivered
+  CANCELLED // Cancelled by user or admin
+  REFUNDED // Payment refunded
 }
 
 enum PaymentStatus {
@@ -98,6 +100,8 @@ enum ProofTimelineEventType {
   SEVA_COMPLETED
   CERTIFICATE_GENERATED
   PROOF_DELIVERED
+  BOOKING_CANCELLED
+  REFUND_PROCESSED
 }
 
 enum CampaignStatus {
@@ -183,14 +187,14 @@ model User {
   role          UserRole  @default(CUSTOMER)
 
   // Address
-  city        String?
-  state       String?
-  country     String    @default("India")
-  pincode     String?
+  city    String?
+  state   String?
+  country String  @default("India")
+  pincode String?
 
   // Preferences
-  language    String    @default("en")
-  timezone    String    @default("Asia/Kolkata")
+  language      String  @default("en")
+  timezone      String  @default("Asia/Kolkata")
   whatsappOptIn Boolean @default(false)
   emailOptIn    Boolean @default(true)
 
@@ -237,6 +241,7 @@ model Account {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@index([userId])
   @@map("accounts")
 }
 
@@ -248,6 +253,7 @@ model Session {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
   @@map("sessions")
 }
 
@@ -284,8 +290,8 @@ model ServiceCategory {
   slug        String      @unique
   description String      @db.Text
   shortDesc   String
-  icon        String?     // Icon name or URL
-  image       String?     // Hero image URL
+  icon        String? // Icon name or URL
+  image       String? // Hero image URL
   isActive    Boolean     @default(true)
   sortOrder   Int         @default(0)
   metaTitle   String?
@@ -299,29 +305,29 @@ model ServiceCategory {
 }
 
 model Package {
-  id              String      @id @default(cuid())
+  id                String   @id @default(cuid())
   serviceCategoryId String
-  name            String
-  slug            String      @unique
-  description     String      @db.Text
-  shortDesc       String
-  price           Decimal     @db.Decimal(10, 2)
-  originalPrice   Decimal?    @db.Decimal(10, 2)  // For showing discount
-  currency        String      @default("INR")
-  maxGuests       Int?
-  duration        String?     // e.g. "1 Day", "Half Day"
-  isCustom        Boolean     @default(false)
-  isActive        Boolean     @default(true)
-  isFeatured      Boolean     @default(false)
-  sortOrder       Int         @default(0)
-  badge           String?     // e.g. "Most Popular", "Best Value"
+  name              String
+  slug              String   @unique
+  description       String   @db.Text
+  shortDesc         String
+  price             Decimal  @db.Decimal(10, 2)
+  originalPrice     Decimal? @db.Decimal(10, 2) // For showing discount
+  currency          String   @default("INR")
+  maxGuests         Int?
+  duration          String? // e.g. "1 Day", "Half Day"
+  isCustom          Boolean  @default(false)
+  isActive          Boolean  @default(true)
+  isFeatured        Boolean  @default(false)
+  sortOrder         Int      @default(0)
+  badge             String? // e.g. "Most Popular", "Best Value"
 
   // SEO
-  metaTitle       String?
-  metaDesc        String?
+  metaTitle String?
+  metaDesc  String?
 
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   serviceCategory ServiceCategory @relation(fields: [serviceCategoryId], references: [id])
   items           PackageItem[]
@@ -351,61 +357,65 @@ model PackageItem {
 // =============================================================================
 
 model Booking {
-  id                  String        @id @default(cuid())
-  bookingNumber       String        @unique // Human-readable: VB-2024-001234
-  userId              String
-  packageId           String
-  status              BookingStatus @default(PENDING)
+  id            String        @id @default(cuid())
+  bookingNumber String        @unique // Human-readable: VB-2024-001234
+  userId        String
+  packageId     String
+  status        BookingStatus @default(PENDING)
 
   // Seva Details
   sevaDate            DateTime
-  sevaLocation        String        @default("Vrindavan")
-  specialInstructions String?       @db.Text
-  dedicatedTo         String?       // Name of person seva is dedicated to
+  sevaLocation        String   @default("Vrindavan")
+  specialInstructions String?  @db.Text
+  dedicatedTo         String? // Name of person seva is dedicated to
   gotra               String?
-  occasion            String?       // e.g. "Birthday", "Death Anniversary"
+  occasion            String? // e.g. "Birthday", "Death Anniversary"
 
   // Guest/Participant count
-  guestCount          Int           @default(1)
+  guestCount Int @default(1)
 
   // Pricing
-  baseAmount          Decimal       @db.Decimal(10, 2)
-  discountAmount      Decimal       @db.Decimal(10, 2) @default(0)
-  taxAmount           Decimal       @db.Decimal(10, 2) @default(0)
-  totalAmount         Decimal       @db.Decimal(10, 2)
-  currency            String        @default("INR")
+  baseAmount     Decimal @db.Decimal(10, 2)
+  discountAmount Decimal @default(0) @db.Decimal(10, 2)
+  taxAmount      Decimal @default(0) @db.Decimal(10, 2)
+  totalAmount    Decimal @db.Decimal(10, 2)
+  currency       String  @default("INR")
 
   // Coupon
-  couponId            String?
+  couponId String?
 
   // Festival campaign link
-  festivalCampaignId  String?
+  festivalCampaignId String?
 
   // Admin notes
-  adminNotes          String?       @db.Text
+  adminNotes String? @db.Text
 
   // Completion
-  completedAt         DateTime?
-  completionNotes     String?       @db.Text
+  completedAt     DateTime?
+  completionNotes String?   @db.Text
 
-  createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  user               User                 @relation(fields: [userId], references: [id])
-  package            Package              @relation(fields: [packageId], references: [id])
-  coupon             Coupon?              @relation(fields: [couponId], references: [id])
-  festivalCampaign   FestivalCampaign?    @relation(fields: [festivalCampaignId], references: [id])
-  payment            Payment?
-  certificate        Certificate?
-  mediaProofs        MediaProof[]
-  proofTimeline      ProofTimelineEvent[]
-  testimonial        Testimonial?
-  notifications      Notification[]
+  user             User                 @relation(fields: [userId], references: [id])
+  package          Package              @relation(fields: [packageId], references: [id])
+  coupon           Coupon?              @relation(fields: [couponId], references: [id])
+  festivalCampaign FestivalCampaign?    @relation(fields: [festivalCampaignId], references: [id])
+  payment          Payment?
+  certificate      Certificate?
+  mediaProofs      MediaProof[]
+  proofTimeline    ProofTimelineEvent[]
+  testimonial      Testimonial?
+  notifications    Notification[]
 
   @@index([userId])
+  @@index([packageId])
+  @@index([couponId])
+  @@index([festivalCampaignId])
   @@index([status])
   @@index([sevaDate])
   @@index([bookingNumber])
+  @@index([status, sevaDate])
   @@map("bookings")
 }
 
@@ -414,36 +424,36 @@ model Booking {
 // =============================================================================
 
 model Payment {
-  id                  String         @id @default(cuid())
-  bookingId           String         @unique
-  gateway             PaymentGateway @default(RAZORPAY)
-  status              PaymentStatus  @default(PENDING)
+  id        String         @id @default(cuid())
+  bookingId String         @unique
+  gateway   PaymentGateway @default(RAZORPAY)
+  status    PaymentStatus  @default(PENDING)
 
   // Razorpay fields
-  razorpayOrderId     String?        @unique
-  razorpayPaymentId   String?        @unique
-  razorpaySignature   String?
+  razorpayOrderId   String? @unique
+  razorpayPaymentId String? @unique
+  razorpaySignature String?
 
   // Amounts
-  amount              Decimal        @db.Decimal(10, 2)
-  currency            String         @default("INR")
-  refundAmount        Decimal?       @db.Decimal(10, 2)
-  refundId            String?
+  amount       Decimal  @db.Decimal(10, 2)
+  currency     String   @default("INR")
+  refundAmount Decimal? @db.Decimal(10, 2)
+  refundId     String?
 
   // Webhook
-  webhookVerified     Boolean        @default(false)
-  webhookReceivedAt   DateTime?
-  webhookPayload      Json?
+  webhookVerified   Boolean   @default(false)
+  webhookReceivedAt DateTime?
+  webhookPayload    Json?
 
   // Metadata
-  gatewayResponse     Json?
-  failureReason       String?
-  notes               String?        @db.Text
+  gatewayResponse Json?
+  failureReason   String?
+  notes           String? @db.Text
 
-  capturedAt          DateTime?
-  refundedAt          DateTime?
-  createdAt           DateTime       @default(now())
-  updatedAt           DateTime       @updatedAt
+  capturedAt DateTime?
+  refundedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
   booking Booking @relation(fields: [bookingId], references: [id])
 
@@ -460,7 +470,7 @@ model Payment {
 model Certificate {
   id            String   @id @default(cuid())
   bookingId     String   @unique
-  url           String   // R2 URL to PDF
+  url           String // R2 URL to PDF
   verifyCode    String   @unique // Short code for public verification
   generatedAt   DateTime @default(now())
   downloadCount Int      @default(0)
@@ -475,20 +485,20 @@ model Certificate {
 // =============================================================================
 
 model MediaProof {
-  id          String     @id @default(cuid())
-  bookingId   String
-  type        MediaType
-  url         String     // R2 URL
-  thumbnail   String?    // R2 thumbnail URL (for videos)
-  caption     String?
-  size        Int?       // bytes
-  mimeType    String?
-  width       Int?
-  height      Int?
-  duration    Int?       // seconds (for video)
-  uploadedBy  String     // Admin userId
-  isPublic    Boolean    @default(false) // Can be shown in gallery?
-  createdAt   DateTime   @default(now())
+  id         String    @id @default(cuid())
+  bookingId  String
+  type       MediaType
+  url        String // R2 URL
+  thumbnail  String? // R2 thumbnail URL (for videos)
+  caption    String?
+  size       Int? // bytes
+  mimeType   String?
+  width      Int?
+  height     Int?
+  duration   Int? // seconds (for video)
+  uploadedBy String // Admin userId
+  isPublic   Boolean   @default(false) // Can be shown in gallery?
+  createdAt  DateTime  @default(now())
 
   booking Booking @relation(fields: [bookingId], references: [id])
 
@@ -504,7 +514,7 @@ model ProofTimelineEvent {
   description String?
   mediaUrl    String?
   occurredAt  DateTime               @default(now())
-  createdBy   String                 // Admin userId
+  createdBy   String // Admin userId
   isVisible   Boolean                @default(true)
 
   booking Booking @relation(fields: [bookingId], references: [id])
@@ -525,14 +535,14 @@ model GalleryImage {
   thumbnail   String?
   category    GalleryCategory
   tags        String[]
-  location    String?         // "Vrindavan" | "Mathura"
+  location    String? // "Vrindavan" | "Mathura"
   width       Int?
   height      Int?
   isActive    Boolean         @default(true)
   isFeatured  Boolean         @default(false)
   sortOrder   Int             @default(0)
-  uploadedBy  String          // Admin userId
-  bookingId   String?         // Optional: linked to a booking
+  uploadedBy  String // Admin userId
+  bookingId   String? // Optional: linked to a booking
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 
@@ -546,29 +556,29 @@ model GalleryImage {
 // =============================================================================
 
 model FestivalCampaign {
-  id          String         @id @default(cuid())
-  name        String
-  slug        String         @unique
-  description String         @db.Text
-  shortDesc   String
-  image       String?
-  bannerImage String?
-  startDate   DateTime
-  endDate     DateTime
-  status      CampaignStatus @default(DRAFT)
-  targetAmount Decimal?      @db.Decimal(12, 2)
-  raisedAmount Decimal       @db.Decimal(12, 2) @default(0)
-  donorCount  Int            @default(0)
+  id           String         @id @default(cuid())
+  name         String
+  slug         String         @unique
+  description  String         @db.Text
+  shortDesc    String
+  image        String?
+  bannerImage  String?
+  startDate    DateTime
+  endDate      DateTime
+  status       CampaignStatus @default(DRAFT)
+  targetAmount Decimal?       @db.Decimal(12, 2)
+  raisedAmount Decimal        @default(0) @db.Decimal(12, 2)
+  donorCount   Int            @default(0)
 
   // SEO
-  metaTitle   String?
-  metaDesc    String?
+  metaTitle String?
+  metaDesc  String?
 
   // Location
-  location    LocationRegion @default(VRINDAVAN)
+  location LocationRegion @default(VRINDAVAN)
 
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   bookings Booking[]
 
@@ -581,22 +591,22 @@ model FestivalCampaign {
 // =============================================================================
 
 model Blog {
-  id           String     @id @default(cuid())
-  title        String
-  slug         String     @unique
-  excerpt      String     @db.Text
-  content      String     @db.Text
-  coverImage   String?
-  status       BlogStatus @default(DRAFT)
-  authorId     String     // Admin userId
-  authorName   String
-  authorImage  String?
-  tags         String[]
-  category     String?
-  readTimeMin  Int        @default(5)
+  id          String     @id @default(cuid())
+  title       String
+  slug        String     @unique
+  excerpt     String     @db.Text
+  content     String     @db.Text
+  coverImage  String?
+  status      BlogStatus @default(DRAFT)
+  authorId    String // Admin userId
+  authorName  String
+  authorImage String?
+  tags        String[]
+  category    String?
+  readTimeMin Int        @default(5)
 
   // Location linkage
-  location     LocationRegion?
+  location LocationRegion?
 
   // SEO
   metaTitle    String?
@@ -604,9 +614,9 @@ model Blog {
   ogImage      String?
   canonicalUrl String?
 
-  publishedAt  DateTime?
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@index([slug])
   @@index([status])
@@ -619,26 +629,27 @@ model Blog {
 // =============================================================================
 
 model Testimonial {
-  id          String   @id @default(cuid())
-  userId      String?  // Optional: anonymous testimonials
-  bookingId   String?  @unique
+  id          String       @id @default(cuid())
+  userId      String? // Optional: anonymous testimonials
+  bookingId   String?      @unique
   name        String
   email       String?
   city        String?
   country     String?
-  rating      Int      // 1-5
-  comment     String   @db.Text
-  image       String?  // User avatar
+  rating      Int // 1-5
+  comment     String       @db.Text
+  image       String? // User avatar
   serviceType ServiceType?
-  isApproved  Boolean  @default(false)
-  isFeatured  Boolean  @default(false)
-  isAnonymous Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  isApproved  Boolean      @default(false)
+  isFeatured  Boolean      @default(false)
+  isAnonymous Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 
   user    User?    @relation(fields: [userId], references: [id])
   booking Booking? @relation(fields: [bookingId], references: [id])
 
+  @@index([userId])
   @@index([isApproved])
   @@index([isFeatured])
   @@map("testimonials")
@@ -649,15 +660,15 @@ model Testimonial {
 // =============================================================================
 
 model FAQ {
-  id        String  @id @default(cuid())
+  id        String          @id @default(cuid())
   question  String
-  answer    String  @db.Text
-  category  String  @default("General")
-  sortOrder Int     @default(0)
-  isActive  Boolean @default(true)
+  answer    String          @db.Text
+  category  String          @default("General")
+  sortOrder Int             @default(0)
+  isActive  Boolean         @default(true)
   location  LocationRegion?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
 
   @@index([category])
   @@index([isActive])
@@ -686,21 +697,22 @@ model Notification {
   booking Booking? @relation(fields: [bookingId], references: [id])
 
   @@index([userId])
+  @@index([bookingId])
   @@index([isRead])
   @@map("notifications")
 }
 
 model WhatsAppLog {
-  id              String   @id @default(cuid())
-  toPhone         String
-  templateName    String
-  templateParams  Json?
-  status          String   // sent | failed | delivered | read
-  waMessageId     String?  // WhatsApp message ID
-  error           String?
-  bookingId       String?
-  userId          String?
-  sentAt          DateTime @default(now())
+  id             String   @id @default(cuid())
+  toPhone        String
+  templateName   String
+  templateParams Json?
+  status         String // sent | failed | delivered | read
+  waMessageId    String? // WhatsApp message ID
+  error          String?
+  bookingId      String?
+  userId         String?
+  sentAt         DateTime @default(now())
 
   @@index([toPhone])
   @@index([bookingId])
@@ -712,17 +724,17 @@ model WhatsAppLog {
 // =============================================================================
 
 model AuditLog {
-  id         String      @id @default(cuid())
-  userId     String?
-  action     AuditAction
-  entity     String      // Table/model name
-  entityId   String?
-  oldData    Json?
-  newData    Json?
-  metadata   Json?
-  ip         String?
-  userAgent  String?     @db.Text
-  createdAt  DateTime    @default(now())
+  id        String      @id @default(cuid())
+  userId    String?
+  action    AuditAction
+  entity    String // Table/model name
+  entityId  String?
+  oldData   Json?
+  newData   Json?
+  metadata  Json?
+  ip        String?
+  userAgent String?     @db.Text
+  createdAt DateTime    @default(now())
 
   user User? @relation(fields: [userId], references: [id])
 
@@ -751,10 +763,10 @@ model Coupon {
 
   // Restrictions
   applicableServices ServiceType[]
-  applicablePackages String[]      // Package IDs
+  applicablePackages String[] // Package IDs
 
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   usages   CouponUsage[]
   bookings Booking[]
@@ -774,6 +786,9 @@ model CouponUsage {
   coupon Coupon @relation(fields: [couponId], references: [id])
   user   User   @relation(fields: [userId], references: [id])
 
+  @@index([couponId])
+  @@index([userId])
+  @@index([bookingId])
   @@map("coupon_usages")
 }
 
@@ -816,17 +831,18 @@ model Subscription {
   amount          Decimal              @db.Decimal(10, 2)
   currency        String               @default("INR")
 
-  razorpaySubId   String?              @unique
-  startDate       DateTime
-  endDate         DateTime?
-  cancelledAt     DateTime?
+  razorpaySubId String?   @unique
+  startDate     DateTime
+  endDate       DateTime?
+  cancelledAt   DateTime?
 
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id])
 
   @@index([userId])
+  @@index([packageId])
   @@index([status])
   @@map("subscriptions")
 }
@@ -836,24 +852,25 @@ model Subscription {
 // =============================================================================
 
 model Donation {
-  id                String   @id @default(cuid())
+  id                String        @id @default(cuid())
   userId            String?
   name              String
   email             String
   phone             String?
-  amount            Decimal  @db.Decimal(10, 2)
-  currency          String   @default("INR")
+  amount            Decimal       @db.Decimal(10, 2)
+  currency          String        @default("INR")
   purpose           String?
-  message           String?  @db.Text
-  isAnonymous       Boolean  @default(false)
+  message           String?       @db.Text
+  isAnonymous       Boolean       @default(false)
   razorpayOrderId   String?
   razorpayPaymentId String?
   status            PaymentStatus @default(PENDING)
   receiptUrl        String?
-  createdAt         DateTime @default(now())
+  createdAt         DateTime      @default(now())
 
   user User? @relation(fields: [userId], references: [id])
 
+  @@index([userId])
   @@index([email])
   @@index([status])
   @@map("donations")
@@ -864,16 +881,16 @@ model Donation {
 // =============================================================================
 
 model SevaStatistic {
-  id          String   @id @default(cuid())
-  key         String   @unique // "meals_served", "bhandaras_completed", etc.
-  label       String
-  value       BigInt
-  unit        String?  // "Meals", "Families", etc.
-  icon        String?
-  isVisible   Boolean  @default(true)
-  sortOrder   Int      @default(0)
-  updatedAt   DateTime @updatedAt
-  updatedBy   String?  // Admin userId
+  id        String   @id @default(cuid())
+  key       String   @unique // "meals_served", "bhandaras_completed", etc.
+  label     String
+  value     BigInt
+  unit      String? // "Meals", "Families", etc.
+  icon      String?
+  isVisible Boolean  @default(true)
+  sortOrder Int      @default(0)
+  updatedAt DateTime @updatedAt
+  updatedBy String? // Admin userId
 
   @@map("seva_statistics")
 }
@@ -883,35 +900,35 @@ model SevaStatistic {
 // =============================================================================
 
 model LocationPage {
-  id          String         @id @default(cuid())
-  region      LocationRegion @unique
-  name        String
-  slug        String         @unique
-  heroTitle   String
+  id           String         @id @default(cuid())
+  region       LocationRegion @unique
+  name         String
+  slug         String         @unique
+  heroTitle    String
   heroSubtitle String?
-  description String         @db.Text
-  content     String         @db.Text
-  image       String?
-  bannerImage String?
+  description  String         @db.Text
+  content      String         @db.Text
+  image        String?
+  bannerImage  String?
 
   // Temple / location highlights
-  highlights  Json?          // Array of {title, description, icon}
+  highlights Json? // Array of {title, description, icon}
 
   // SEO
-  metaTitle   String?
-  metaDesc    String?
-  ogImage     String?
-  keywords    String[]
+  metaTitle String?
+  metaDesc  String?
+  ogImage   String?
+  keywords  String[]
 
   // Schema.org Local Business
-  address     String?
-  phone       String?
-  latitude    Decimal?       @db.Decimal(10, 7)
-  longitude   Decimal?       @db.Decimal(10, 7)
+  address   String?
+  phone     String?
+  latitude  Decimal? @db.Decimal(10, 7)
+  longitude Decimal? @db.Decimal(10, 7)
 
-  isActive    Boolean        @default(true)
-  updatedAt   DateTime       @updatedAt
-  createdAt   DateTime       @default(now())
+  isActive  Boolean  @default(true)
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
 
   @@map("location_pages")
 }

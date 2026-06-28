@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { authRateLimit, apiRateLimit } from "@/lib/rate-limit";
+import { authRateLimit } from "@/lib/rate-limit";
 
 // Routes that require authentication
 const PROTECTED_CUSTOMER_ROUTES = ["/dashboard", "/bookings", "/profile", "/certificates"];

@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { SettingsClient } from "@/components/admin/SettingsClient";
 
 export const metadata: Metadata = { title: "Settings" };

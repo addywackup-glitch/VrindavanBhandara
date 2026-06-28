@@ -1,43 +1,21 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+// =============================================================================
+// GET /api/packages — public list of active packages. Thin adapter.
+// =============================================================================
+
+import { type NextRequest } from "next/server";
+import { listPublicPackages } from "@/lib/services/content.service";
+import { getClientIp, handle } from "@/lib/api/http";
 import { apiRateLimit } from "@/lib/rate-limit";
+import { RateLimitError } from "@/lib/errors";
 
-// GET /api/packages — Public route to list active packages
 export async function GET(request: NextRequest) {
-  const ip = request.headers.get("x-forwarded-for") ?? "unknown";
-  const rl = await apiRateLimit(ip);
-  if (!rl.success) {
-    return NextResponse.json({ success: false, error: "Rate limit exceeded" }, { status: 429 });
-  }
-
-  const { searchParams } = new URL(request.url);
-  const serviceType = searchParams.get("serviceType");
-  const slug = searchParams.get("serviceSlug");
-
-  try {
-    const packages = await prisma.package.findMany({
-      where: {
-        isActive: true,
-        ...(serviceType || slug
-          ? {
-              serviceCategory: {
-                ...(serviceType ? { type: serviceType as never } : {}),
-                ...(slug ? { slug } : {}),
-              },
-            }
-          : {}),
-      },
-      include: {
-        serviceCategory: {
-          select: { id: true, name: true, slug: true, type: true },
-        },
-        items: { orderBy: { sortOrder: "asc" } },
-      },
-      orderBy: [{ sortOrder: "asc" }, { price: "asc" }],
+  return handle(async () => {
+    const rl = await apiRateLimit(getClientIp(request));
+    if (!rl.success) throw new RateLimitError();
+    const { searchParams } = new URL(request.url);
+    return listPublicPackages({
+      serviceType: searchParams.get("serviceType"),
+      serviceSlug: searchParams.get("serviceSlug"),
     });
-
-    return NextResponse.json({ success: true, data: packages });
-  } catch {
-    return NextResponse.json({ success: true, data: [] });
-  }
+  });
 }

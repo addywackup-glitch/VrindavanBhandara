@@ -26,7 +26,7 @@ function getRazorpay(): Razorpay {
 // =============================================================================
 
 export type CreateOrderParams = {
-  amount: number;     // In paise (INR * 100)
+  amount: number;     // In rupees (INR) — converted to paise internally
   currency?: string;
   receipt: string;    // Booking number
   notes?: Record<string, string>;
@@ -63,10 +63,24 @@ export function verifyRazorpaySignature(params: {
     .update(body)
     .digest("hex");
 
-  return crypto.timingSafeEqual(
-    Buffer.from(expectedSignature),
-    Buffer.from(params.signature)
-  );
+  return safeCompare(expectedSignature, params.signature);
+}
+
+// =============================================================================
+// Constant-time comparison guard
+// crypto.timingSafeEqual throws a RangeError when buffer lengths differ — a
+// malformed/forged signature must return `false`, never crash the request.
+// =============================================================================
+
+function safeCompare(expected: string, received: string): boolean {
+  const expectedBuf = Buffer.from(expected);
+  const receivedBuf = Buffer.from(received);
+  if (expectedBuf.length !== receivedBuf.length) return false;
+  try {
+    return crypto.timingSafeEqual(expectedBuf, receivedBuf);
+  } catch {
+    return false;
+  }
 }
 
 // =============================================================================
@@ -85,14 +99,7 @@ export function verifyRazorpayWebhook(
     .update(rawBody)
     .digest("hex");
 
-  try {
-    return crypto.timingSafeEqual(
-      Buffer.from(expectedSignature),
-      Buffer.from(signature)
-    );
-  } catch {
-    return false;
-  }
+  return safeCompare(expectedSignature, signature);
 }
 
 // =============================================================================

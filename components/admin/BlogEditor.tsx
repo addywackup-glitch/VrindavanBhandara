@@ -42,7 +42,7 @@ const TOOLBAR_ACTIONS = [
   { label: "Italic", icon: Italic, insert: (t: string) => `_${t || "italic text"}_` },
   { label: "Link", icon: Link2, insert: (t: string) => `[${t || "link text"}](url)` },
   { label: "List", icon: List, insert: (t: string) => `\n- ${t || "Item 1"}\n- Item 2\n- Item 3\n` },
-  { label: "Image", icon: Image, insert: (_: string) => `\n![Alt text](https://your-image-url.com)\n` },
+  { label: "Image", icon: Image, insert: () => `\n![Alt text](https://your-image-url.com)\n` },
   { label: "Code", icon: Code, insert: (t: string) => `\`${t || "code"}\`` },
 ];
 

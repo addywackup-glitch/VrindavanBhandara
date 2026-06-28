@@ -23,7 +23,6 @@ async function getAnalyticsData() {
     repeatCustomers,
     refundCount,
     revenueByMonth,
-    bookingsByService,
   ] = await Promise.all([
     // Total captured revenue
     prisma.payment.aggregate({
@@ -66,16 +65,10 @@ async function getAnalyticsData() {
       GROUP BY DATE_TRUNC('month', "capturedAt")
       ORDER BY DATE_TRUNC('month', "capturedAt") ASC
     `.catch(() => []),
-    // Bookings by service category
-    prisma.booking.groupBy({
-      by: ["packageId"],
-      _count: { id: true },
-      where: { status: { in: ["CONFIRMED", "IN_PROGRESS", "COMPLETED"] } },
-    }),
   ]);
 
-  const bookingMap = Object.fromEntries(bookingCounts.map((b: any) => [b.status, b._count.id]));
-  const totalBookings = bookingCounts.reduce((sum: number, b: any) => sum + b._count.id, 0);
+  const bookingMap = Object.fromEntries(bookingCounts.map((b) => [b.status, b._count.id]));
+  const totalBookings = bookingCounts.reduce((sum, b) => sum + b._count.id, 0);
   const completedCount = bookingMap["COMPLETED"] ?? 0;
   const conversionRate = totalBookings > 0 ? ((completedCount / totalBookings) * 100).toFixed(1) : "0";
 

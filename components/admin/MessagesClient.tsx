@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { Mail, MailOpen, Reply, Trash2 } from "lucide-react";
 
 type Message = {
@@ -25,7 +24,6 @@ export function MessagesClient({ messages, total, page, totalPages, filter }: Pr
   const [, startTransition] = useTransition();
   const [expanded, setExpanded] = useState<string | null>(null);
   const [loadingId, setLoadingId] = useState<string | null>(null);
-  const [replyText, setReplyText] = useState<Record<string, string>>({});
 
   async function markRead(id: string) {
     setLoadingId(id + "read");

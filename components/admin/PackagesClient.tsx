@@ -75,7 +75,6 @@ export function PackagesClient({ packages, categories, total, page, totalPages, 
     }
   }
 
-  const isLoading = (id: string, suffix: string) => loadingId?.startsWith(id + suffix) ?? false;
 
   return (
     <div>

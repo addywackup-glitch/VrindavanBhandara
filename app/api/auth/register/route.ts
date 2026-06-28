@@ -1,68 +1,30 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
-import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/prisma";
-import { authRateLimit } from "@/lib/rate-limit";
+// =============================================================================
+// POST /api/auth/register — thin adapter over AuthService.registerUser.
+// =============================================================================
 
-const RegisterSchema = z.object({
-  name: z.string().min(2).max(100),
-  email: z.string().email().max(255).toLowerCase(),
-  phone: z.string().optional(),
-  password: z.string().min(8).max(128),
-});
+import { type NextRequest } from "next/server";
+import { registerUser } from "@/lib/services/auth.service";
+import { authRateLimit } from "@/lib/rate-limit";
+import { getClientIp, handle, parseJsonBody } from "@/lib/api/http";
+import { RateLimitError } from "@/lib/errors";
 
 export async function POST(request: NextRequest) {
-  const ip = request.headers.get("x-forwarded-for") ?? "unknown";
-  const rl = await authRateLimit(ip);
-  if (!rl.success) {
-    return NextResponse.json(
-      { success: false, error: "Too many registration attempts. Please wait 15 minutes." },
-      { status: 429 }
-    );
-  }
-
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ success: false, error: "Invalid request body" }, { status: 400 });
-  }
-
-  const parsed = RegisterSchema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json(
-      { success: false, error: parsed.error.issues[0]?.message ?? "Validation failed" },
-      { status: 400 }
-    );
-  }
-
-  const { name, email, phone, password } = parsed.data;
-
-  // Check if user exists
-  const existing = await prisma.user.findUnique({ where: { email } });
-  if (existing) {
-    return NextResponse.json(
-      { success: false, error: "An account with this email already exists." },
-      { status: 409 }
-    );
-  }
-
-  const passwordHash = await bcrypt.hash(password, 12);
-
-  const user = await prisma.user.create({
-    data: {
-      name,
-      email,
-      phone: phone ?? null,
-      passwordHash,
-      role: "CUSTOMER",
-      isActive: true,
+  return handle(
+    async () => {
+      const ip = getClientIp(request);
+      const rl = await authRateLimit(ip);
+      if (!rl.success) {
+        throw new RateLimitError(
+          "Too many registration attempts. Please wait 15 minutes."
+        );
+      }
+      const body = await parseJsonBody(request);
+      if (!body.ok) return body;
+      return registerUser(body.data, {
+        ip,
+        userAgent: request.headers.get("user-agent") ?? undefined,
+      });
     },
-    select: { id: true, name: true, email: true },
-  });
-
-  return NextResponse.json(
-    { success: true, data: user, message: "Account created successfully" },
-    { status: 201 }
+    { successStatus: 201 }
   );
 }

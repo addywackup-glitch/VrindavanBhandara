@@ -130,6 +130,33 @@ export type RazorpayPaymentVerification = {
   razorpay_signature: string;
 };
 
+export type RazorpayPaymentEntity = {
+  id: string;
+  order_id: string;
+  amount: number;
+  currency: string;
+  status: string;
+  method: string;
+  captured: boolean;
+  description: string;
+  email: string;
+  contact: string;
+  notes: Record<string, string>;
+  error_code?: string | null;
+  error_description?: string | null;
+  created_at: number;
+};
+
+export type RazorpayRefundEntity = {
+  id: string;
+  payment_id: string;
+  amount: number;
+  currency: string;
+  status: string;
+  notes: Record<string, string>;
+  created_at: number;
+};
+
 export type RazorpayWebhookPayload = {
   entity: string;
   account_id: string;
@@ -137,20 +164,10 @@ export type RazorpayWebhookPayload = {
   contains: string[];
   payload: {
     payment?: {
-      entity: {
-        id: string;
-        order_id: string;
-        amount: number;
-        currency: string;
-        status: string;
-        method: string;
-        captured: boolean;
-        description: string;
-        email: string;
-        contact: string;
-        notes: Record<string, string>;
-        created_at: number;
-      };
+      entity: RazorpayPaymentEntity;
+    };
+    refund?: {
+      entity: RazorpayRefundEntity;
     };
     order?: {
       entity: RazorpayOrder;

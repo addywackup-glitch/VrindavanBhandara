@@ -1,32 +1,17 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+// =============================================================================
+// GET /api/services — public list of active service categories. Thin adapter.
+// =============================================================================
+
+import { type NextRequest } from "next/server";
+import { listServices } from "@/lib/services/content.service";
+import { getClientIp, handle } from "@/lib/api/http";
 import { apiRateLimit } from "@/lib/rate-limit";
+import { RateLimitError } from "@/lib/errors";
 
-// GET /api/services — Public route to list active service categories
 export async function GET(request: NextRequest) {
-  const ip = request.headers.get("x-forwarded-for") ?? "unknown";
-  const rl = await apiRateLimit(ip);
-  if (!rl.success) {
-    return NextResponse.json({ success: false, error: "Rate limit exceeded" }, { status: 429 });
-  }
-
-  try {
-    const services = await prisma.serviceCategory.findMany({
-      where: { isActive: true },
-      orderBy: { sortOrder: "asc" },
-      select: {
-        id: true,
-        type: true,
-        name: true,
-        slug: true,
-        shortDesc: true,
-        icon: true,
-        metaTitle: true,
-        metaDesc: true,
-      },
-    });
-    return NextResponse.json({ success: true, data: services });
-  } catch {
-    return NextResponse.json({ success: true, data: [] });
-  }
+  return handle(async () => {
+    const rl = await apiRateLimit(getClientIp(request));
+    if (!rl.success) throw new RateLimitError();
+    return listServices();
+  });
 }
