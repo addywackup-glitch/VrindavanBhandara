@@ -63,133 +63,107 @@ export default async function ProofsPage({
   ]);
 
   return (
-    <div className="max-w-7xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-800">Media Proofs</h1>
-        <p className="text-gray-500 text-sm mt-1">{total} proof files across all bookings.</p>
+    <>
+      <div className="adm-section-header">
+        <div>
+          <div className="adm-section-title">Proof Uploads</div>
+          <p style={{ fontSize: "0.875rem", color: "var(--muted)", marginTop: "0.25rem" }}>
+            {total} proof files across all bookings
+          </p>
+        </div>
       </div>
 
-      {/* Type stats */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="adm-stats-row" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
         {[
-          { label: "Photos", count: photoCount, emoji: "📷", type: "PHOTO" },
-          { label: "Videos", count: videoCount, emoji: "🎥", type: "VIDEO" },
-          { label: "Documents", count: docCount, emoji: "📄", type: "DOCUMENT" },
+          { label: "Photos", value: photoCount, type: "PHOTO" },
+          { label: "Videos", value: videoCount, type: "VIDEO" },
+          { label: "Documents", value: docCount, type: "DOCUMENT" },
         ].map((s) => (
-          <Link
-            key={s.type}
-            href={`?type=${s.type}`}
-            className="bg-white rounded-2xl border p-4 flex items-center gap-4 transition-shadow hover:shadow-md"
-            style={{ borderColor: filterType === s.type ? "rgba(139,30,30,0.4)" : "rgba(212,175,55,0.1)" }}
-          >
-            <span className="text-3xl">{s.emoji}</span>
-            <div>
-              <p className="text-xl font-bold text-gray-800">{s.count}</p>
-              <p className="text-xs text-gray-500">{s.label}</p>
-            </div>
+          <Link key={s.type} href={`?type=${s.type}`} className="adm-stat-card" style={{ textDecoration: "none" }}>
+            <div className="adm-stat-label">{s.label}</div>
+            <div className="adm-stat-value">{s.value}</div>
           </Link>
         ))}
       </div>
 
-      {/* Filter tabs */}
-      <div className="flex gap-3 mb-6">
+      <div className="adm-filter-row" style={{ marginBottom: "1.25rem" }}>
         {["ALL", "PHOTO", "VIDEO", "DOCUMENT"].map((t) => (
-          <Link
-            key={t}
-            href={`?type=${t}`}
-            className="px-4 py-1.5 rounded-full text-xs font-semibold transition-colors"
-            style={{
-              background: filterType === t ? "#8B1E1E" : "#F5EEDB",
-              color: filterType === t ? "white" : "#5A3E2B",
-            }}
-          >
+          <Link key={t} href={`?type=${t}`} className={`adm-filter-btn${filterType === t ? " active" : ""}`}>
             {t.charAt(0) + t.slice(1).toLowerCase()}
           </Link>
         ))}
       </div>
 
       {proofs.length === 0 ? (
-        <div className="bg-white rounded-2xl border p-16 text-center" style={{ borderColor: "rgba(212,175,55,0.1)" }}>
-          <div className="text-5xl mb-4">📁</div>
-          <h3 className="font-semibold text-gray-700 mb-2">No proofs found</h3>
-          <p className="text-gray-400 text-sm">Upload proof media from individual booking pages.</p>
+        <div className="adm-empty">
+          <div className="adm-empty-title">No proofs found</div>
+          <p className="adm-empty-desc">Upload proof media from individual booking pages.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: "0.75rem" }}>
           {proofs.map((proof) => (
             <div
               key={proof.id}
-              className="relative group rounded-xl overflow-hidden bg-gray-100 border"
-              style={{ aspectRatio: "1", borderColor: "rgba(212,175,55,0.1)" }}
+              style={{
+                position: "relative",
+                aspectRatio: "1",
+                borderRadius: "var(--radius-md)",
+                overflow: "hidden",
+                border: "1.5px solid var(--border)",
+                background: "var(--n-100)",
+              }}
+              className="group"
             >
               {proof.type === "PHOTO" ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={proof.url}
-                  alt={proof.caption ?? "Proof"}
-                  className="w-full h-full object-cover"
-                />
-              ) : proof.type === "VIDEO" ? (
-                <div className="w-full h-full flex items-center justify-center bg-gray-900">
-                  <span className="text-3xl">🎥</span>
-                </div>
+                <img src={proof.url} alt={proof.caption ?? "Proof"} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-blue-50">
-                  <span className="text-3xl">📄</span>
+                <div style={{ width: "100%", height: "100%", display: "grid", placeItems: "center", background: "var(--n-800)", color: "white", fontSize: "1.5rem" }}>
+                  {proof.type === "VIDEO" ? "▶" : "📄"}
                 </div>
               )}
-
-              {/* Hover overlay */}
-              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1 p-2">
-                <Link
-                  href={`/admin/bookings/${proof.bookingId}`}
-                  className="text-white text-[10px] font-bold text-center leading-tight hover:underline"
-                >
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  background: "rgba(0,0,0,0.65)",
+                  opacity: 0,
+                  transition: "opacity 150ms",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "0.25rem",
+                  padding: "0.5rem",
+                }}
+                className="group-hover:opacity-100"
+              >
+                <Link href={`/admin/bookings/${proof.bookingId}`} className="adm-link" style={{ color: "white", fontSize: "0.6875rem", fontWeight: 600 }}>
                   {proof.booking.bookingNumber}
                 </Link>
-                <p className="text-gray-300 text-[9px] truncate w-full text-center">{proof.booking.user.name}</p>
-                <a
-                  href={proof.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-1 text-[10px] bg-white/20 text-white px-2 py-0.5 rounded hover:bg-white/30"
-                >
+                <span style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.625rem" }}>{proof.booking.user.name}</span>
+                <a href={proof.url} target="_blank" rel="noopener noreferrer" className="adm-action-btn" style={{ marginTop: "0.25rem", fontSize: "0.6875rem" }}>
                   View
                 </a>
               </div>
-
-              {/* Caption badge */}
-              {proof.caption && (
-                <div className="absolute bottom-0 left-0 right-0 bg-black/50 px-1.5 py-0.5">
-                  <p className="text-[9px] text-white truncate">{proof.caption}</p>
-                </div>
-              )}
             </div>
           ))}
         </div>
       )}
 
-      {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex gap-2 justify-center mt-8">
-          {page > 1 && (
-            <Link href={`?type=${filterType}&page=${page - 1}`} className="px-4 py-2 text-xs rounded-lg bg-amber-50 text-amber-800 font-semibold">
-              ← Prev
-            </Link>
-          )}
-          <span className="px-4 py-2 text-xs text-gray-400">Page {page} of {totalPages}</span>
-          {page < totalPages && (
-            <Link href={`?type=${filterType}&page=${page + 1}`} className="px-4 py-2 text-xs rounded-lg bg-amber-50 text-amber-800 font-semibold">
-              Next →
-            </Link>
-          )}
+        <div className="adm-pagination" style={{ marginTop: "1.25rem", background: "var(--surface)", border: "1.5px solid var(--border)", borderRadius: "var(--radius-lg)" }}>
+          <p className="adm-pagination-info">Page {page} of {totalPages}</p>
+          <div className="adm-filter-row">
+            {page > 1 && <Link href={`?type=${filterType}&page=${page - 1}`} className="adm-filter-btn">Previous</Link>}
+            {page < totalPages && <Link href={`?type=${filterType}&page=${page + 1}`} className="adm-filter-btn active">Next</Link>}
+          </div>
         </div>
       )}
 
-      <div className="mt-6 bg-blue-50 border border-blue-100 rounded-xl p-4 text-xs text-blue-700">
-        <strong>Upload proofs:</strong> Go to a specific booking page to upload photos, videos, or documents.
-        Drag-and-drop multi-upload with Cloudflare R2 integration is planned for Phase 2.
+      <div className="adm-alert adm-alert-success" style={{ marginTop: "1.25rem" }}>
+        Upload proofs from a booking detail page. Use the booking actions panel to add photos and videos.
       </div>
-    </div>
+    </>
   );
 }

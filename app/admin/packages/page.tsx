@@ -62,31 +62,26 @@ export default async function PackagesPage({
   ]);
 
   return (
-    <div className="max-w-7xl mx-auto">
-      <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
+    <>
+      <div className="adm-section-header">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Packages</h1>
-          <p className="text-gray-500 text-sm mt-1">{total} packages across all service categories.</p>
+          <div className="adm-section-title">Packages</div>
+          <p style={{ fontSize: "0.875rem", color: "var(--muted)", marginTop: "0.25rem" }}>
+            {total} packages across all service categories
+          </p>
         </div>
-        <Link
-          href="/admin/packages/new"
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:scale-105"
-          style={{ background: "linear-gradient(135deg, #8B1E1E, #B89947)" }}
-        >
-          + New Package
-        </Link>
+        <Link href="/admin/packages/new" className="adm-topbar-btn">+ New Package</Link>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="adm-stats-row" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
         {[
-          { label: "Active", count: active, color: "#15803d" },
-          { label: "Inactive", count: inactive, color: "#6b7280" },
-          { label: "Featured", count: featured, color: "#B89947" },
+          { label: "Active", value: active },
+          { label: "Inactive", value: inactive },
+          { label: "Featured", value: featured },
         ].map((s) => (
-          <div key={s.label} className="bg-white rounded-2xl border p-4 text-center" style={{ borderColor: "rgba(212,175,55,0.1)" }}>
-            <p className="text-2xl font-bold" style={{ color: s.color }}>{s.count}</p>
-            <p className="text-xs text-gray-500 mt-0.5">{s.label}</p>
+          <div key={s.label} className="adm-stat-card">
+            <div className="adm-stat-label">{s.label}</div>
+            <div className="adm-stat-value">{s.value}</div>
           </div>
         ))}
       </div>
@@ -113,6 +108,6 @@ export default async function PackagesPage({
         totalPages={totalPages}
         filter={params.categoryId ?? "ALL"}
       />
-    </div>
+    </>
   );
 }

@@ -1,17 +1,107 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { ServiceListClient } from "@/components/services/ServiceListClient";
+import type { ServiceCard } from "@/components/services/ServiceListClient";
 
+// =============================================================================
+// Metadata
+// =============================================================================
 export const metadata: Metadata = {
   title: "All Seva Services — Vrindavan Bhandara",
-  description: "Browse all sacred seva services available in Vrindavan and Mathura — Bhandara, Brahmin Bhoj, Gau Seva, Sadhu Bhojan, Festival Seva, and Annadan.",
+  description:
+    "Browse all sacred seva services available in Vrindavan and Mathura — Bhandara, Brahmin Bhoj, Gau Seva, Sadhu Bhojan, Festival Seva, and Annadan.",
+  openGraph: {
+    title: "All Sacred Seva Services — Vrindavan Bhandara",
+    description:
+      "Bhandara, Brahmin Bhoj, Gau Seva, Sadhu Bhojan, and more — performed in Vrindavan and Mathura with full proof.",
+    url: "https://vrindavanbhandara.com/services",
+  },
   alternates: { canonical: "https://vrindavanbhandara.com/services" },
 };
 
-async function getServices() {
+// =============================================================================
+// Service type → UI category mapping
+// =============================================================================
+type ServiceCategory = "feast" | "care" | "donation" | "general";
+
+const TYPE_CATEGORY: Record<string, ServiceCategory> = {
+  BHANDARA:      "feast",
+  BRAHMIN_BHOJ:  "feast",
+  SADHU_BHOJAN:  "feast",
+  GAU_SEVA:      "care",
+  VIDHWA_SEVA:   "care",
+  ANNADAN_SEVA:  "donation",
+  FESTIVAL_SEVA: "general",
+};
+
+const TYPE_BADGE: Record<string, string | undefined> = {
+  BHANDARA:     "Most Booked",
+  BRAHMIN_BHOJ: "Family Favourite",
+  GAU_SEVA:     "Monthly Recurring",
+};
+
+const TYPE_TAGS: Record<string, string[]> = {
+  BHANDARA:      ["100–1,000+ People", "1–3 Day Booking", "Photo + Video Proof"],
+  BRAHMIN_BHOJ:  ["11 / 21 / 51 Brahmins", "Name Sankalp", "Same-Day Confirmation"],
+  GAU_SEVA:      ["Daily / Monthly", "Sacred Cows", "Photo Proof"],
+  SADHU_BHOJAN:  ["10 – 100 Sadhus", "Vrindavan", "Photo Proof"],
+  ANNADAN_SEVA:  ["Needy & Poor", "Holy Dham", "Photo + Video"],
+  VIDHWA_SEVA:   ["Vrindavan Widows", "Monthly Support", "Photo Proof"],
+  FESTIVAL_SEVA: ["Special Occasion", "Vrindavan", "Video Highlight"],
+};
+
+const FALLBACK_SERVICES: ServiceCard[] = [
+  {
+    slug: "bhandara", name: "Bhandara Seva", icon: "🍱",
+    shortDesc: "Large-scale community feast for 100–1,000+ devotees in Vrindavan or Mathura.",
+    minPrice: 5000, badge: "Most Booked",
+    tags: ["100–1,000+ People", "1–3 Day Booking", "Photo + Video Proof"],
+    category: "feast",
+  },
+  {
+    slug: "brahmin-bhoj", name: "Brahmin Bhoj Seva", icon: "🪔",
+    shortDesc: "Sacred feast for 11, 21, or 51 Brahmin pandits with full Vedic recitation.",
+    minPrice: 2100, badge: "Family Favourite",
+    tags: ["11 / 21 / 51 Brahmins", "Name Sankalp", "Same-Day Confirmation"],
+    category: "feast",
+  },
+  {
+    slug: "gau-seva", name: "Gau Seva", icon: "🐄",
+    shortDesc: "Daily, weekly or monthly care for Lord Krishna's sacred cows.",
+    minPrice: 501, badge: "Monthly Recurring",
+    tags: ["Daily / Monthly", "Sacred Cows", "Photo Proof"],
+    category: "care",
+  },
+  {
+    slug: "sadhu-bhojan", name: "Sadhu Bhojan", icon: "🌸",
+    shortDesc: "Provide meals to ascetic saints dedicated to devotion in Vrindavan.",
+    minPrice: 1100,
+    tags: ["10 – 100 Sadhus", "Vrindavan", "Photo Proof"],
+    category: "feast",
+  },
+  {
+    slug: "annadan", name: "Annadan Seva", icon: "🌾",
+    shortDesc: "The most meritorious act — donating food (anna) to the needy in holy dhams.",
+    minPrice: 2001,
+    tags: ["Needy & Poor", "Holy Dham", "Photo + Video"],
+    category: "donation",
+  },
+  {
+    slug: "vidhwa-seva", name: "Vidhwa Seva", icon: "🤲",
+    shortDesc: "Monthly support and food provision for the widows of Vrindavan.",
+    minPrice: 1001,
+    tags: ["Vrindavan Widows", "Monthly Support", "Photo Proof"],
+    category: "care",
+  },
+];
+
+// =============================================================================
+// Data fetching
+// =============================================================================
+async function getServices(): Promise<ServiceCard[]> {
   try {
-    return await prisma.serviceCategory.findMany({
+    const services = await prisma.serviceCategory.findMany({
       where: { isActive: true },
       orderBy: { sortOrder: "asc" },
       include: {
@@ -20,128 +110,158 @@ async function getServices() {
           orderBy: { price: "asc" },
           take: 1,
         },
-        _count: { select: { packages: true } },
       },
     });
+
+    return services.map((s) => ({
+      slug: s.slug,
+      name: s.name,
+      shortDesc: s.shortDesc,
+      icon: s.icon ?? "🙏",
+      minPrice: s.packages[0] ? Number(s.packages[0].price) : null,
+      badge: TYPE_BADGE[s.type] ?? null,
+      tags: TYPE_TAGS[s.type] ?? [],
+      category: TYPE_CATEGORY[s.type] ?? "general",
+    }));
   } catch {
     return [];
   }
 }
 
-const FALLBACK = [
-  { slug: "bhandara", name: "Bhandara Booking", icon: "🍱", shortDesc: "Large-scale community feast for hundreds of devotees in Vrindavan/Mathura.", minPrice: 5000 },
-  { slug: "brahmin-bhoj", name: "Brahmin Bhoj Seva", icon: "🪔", shortDesc: "Sacred feast for Brahmin priests with full traditional rituals.", minPrice: 2100 },
-  { slug: "gau-seva", name: "Gau Seva", icon: "🐄", shortDesc: "Daily, weekly or monthly care for Lord Krishna's sacred cows.", minPrice: 501 },
-  { slug: "sadhu-bhojan", name: "Sadhu Bhojan Seva", icon: "🌸", shortDesc: "Provide meals to ascetic saints dedicated to devotion.", minPrice: 1100 },
-  { slug: "festival-seva", name: "Festival Seva", icon: "🎊", shortDesc: "Sponsor grand celebrations — Janmashtami, Holi, Radhashtami.", minPrice: 1001 },
-  { slug: "annadan", name: "Annadan Seva", icon: "🌾", shortDesc: "Food donation for the needy in the holy dhams.", minPrice: 2001 },
-];
+// =============================================================================
+// Breadcrumb chevron
+// =============================================================================
+function Chevron() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+      <path d="M9 18l6-6-6-6" />
+    </svg>
+  );
+}
 
+// =============================================================================
+// Page
+// =============================================================================
 export default async function ServicesPage() {
-  const services = await getServices();
-
-  const displayServices = services.length > 0
-    ? services.map((s) => ({
-        slug: s.slug,
-        name: s.name,
-        icon: s.icon ?? "🙏",
-        shortDesc: s.shortDesc,
-        minPrice: s.packages[0] ? Number(s.packages[0].price) : null,
-        bookingsCount: s._count.packages,
-      }))
-    : FALLBACK.map((s) => ({ ...s, bookingsCount: 0 }));
-
-  const formatPrice = (p: number | null) =>
-    p ? `From ₹${new Intl.NumberFormat("en-IN").format(p)}` : null;
+  const dbServices = await getServices();
+  const services = dbServices.length > 0 ? dbServices : FALLBACK_SERVICES;
 
   return (
     <>
-      {/* Hero */}
-      <section
-        className="pt-32 pb-16 text-center relative overflow-hidden"
-        style={{ background: "linear-gradient(160deg, #0F0F1C 0%, #1A1A2E 40%, #2D1B69 100%)" }}
+      {/* JSON-LD */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "ItemList",
+            name: "Vrindavan Bhandara Seva Services",
+            itemListElement: services.map((s, i) => ({
+              "@type": "ListItem",
+              position: i + 1,
+              url: `https://vrindavanbhandara.com/services/${s.slug}`,
+              name: s.name,
+            })),
+          }),
+        }}
+      />
+
+      {/* ── Page header ───────────────────────────────────────────────── */}
+      <div
+        className="container"
+        style={{ paddingTop: "clamp(3rem, 6vw, 5rem)" }}
       >
+        {/* Breadcrumb */}
+        <nav
+          aria-label="Breadcrumb"
+          className="flex items-center gap-2 mb-6 text-[0.8125rem]"
+          style={{ color: "var(--muted)" }}
+        >
+          <Link href="/" className="breadcrumb-link">Home</Link>
+          <Chevron />
+          <span aria-current="page" style={{ color: "var(--fg)" }}>Services</span>
+        </nav>
+
+        {/* Title */}
+        <h1
+          className="font-display font-semibold"
+          style={{
+            fontSize: "clamp(2.25rem, 5vw, 3.5rem)",
+            letterSpacing: "-0.02em",
+            lineHeight: "1.05",
+            color: "var(--fg)",
+            marginBottom: "1rem",
+          }}
+        >
+          Every <em style={{ fontStyle: "italic", color: "var(--brand)" }}>Sacred Seva</em>,<br />
+          in one place
+        </h1>
+        <p
+          style={{
+            fontSize: "1.0625rem",
+            color: "var(--muted)",
+            maxWidth: "52ch",
+            lineHeight: "1.65",
+            marginBottom: "2.5rem",
+          }}
+        >
+          From intimate Brahmin feasts to large community Bhandaras — choose the Seva
+          that speaks to your heart. All performed in Vrindavan and Mathura by
+          experienced Brahmin pandits.
+        </p>
+      </div>
+
+      {/* ── Service list (filter + grid — client component) ─────────────── */}
+      <div
+        className="container"
+        style={{ paddingBottom: "clamp(4rem, 8vw, 7rem)" }}
+      >
+        <ServiceListClient services={services} />
+
+        {/* Featured CTA */}
         <div
-          className="absolute inset-0 pointer-events-none opacity-[0.03]"
-          style={{ backgroundImage: "radial-gradient(circle, #D4AF37 1px, transparent 1px)", backgroundSize: "40px 40px" }}
-        />
-        <div className="container relative">
-          <span className="section-label text-gold-400">Our Offerings</span>
-          <h1 className="font-heading text-white mt-3" style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)" }}>
-            All Sacred Seva Services
-          </h1>
-          <p className="text-white/60 mt-4 max-w-xl mx-auto text-base">
-            Every seva performed in the holy land of Vrindavan and Mathura with full devotion
-            and transparent proof delivery.
-          </p>
-        </div>
-      </section>
-
-      {/* Services Grid */}
-      <section className="section-py">
-        <div className="container">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {displayServices.map((service) => (
-              <Link
-                key={service.slug}
-                href={`/services/${service.slug}`}
-                className="card-luxury p-7 flex flex-col group relative overflow-hidden"
-              >
-                <div
-                  className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mb-5 transition-transform group-hover:scale-110"
-                  style={{ background: "linear-gradient(135deg, rgba(212,175,55,0.15), rgba(255,119,34,0.1))", border: "1px solid rgba(212,175,55,0.2)" }}
-                >
-                  {service.icon}
-                </div>
-
-                <h2 className="font-heading text-xl font-bold text-charcoal mb-2 group-hover:text-gold-600 transition-colors">
-                  {service.name}
-                </h2>
-
-                <p className="text-gray-500 text-sm leading-relaxed flex-1 mb-4">
-                  {service.shortDesc}
-                </p>
-
-                {service.minPrice && (
-                  <p className="text-gold-500 font-bold text-sm mb-4">
-                    {formatPrice(service.minPrice)}
-                  </p>
-                )}
-
-                {service.bookingsCount > 0 && (
-                  <p className="text-xs text-gray-400 mb-4">
-                    {new Intl.NumberFormat("en-IN").format(service.bookingsCount)} sevas completed
-                  </p>
-                )}
-
-                <div className="flex items-center gap-2 text-sm font-semibold text-gold-600 group-hover:text-saffron-500 transition-colors mt-auto">
-                  View & Book
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </div>
-
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-gold scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
-              </Link>
-            ))}
-          </div>
-
-          {/* Trust Strip */}
+          className="relative overflow-hidden mt-12 rounded-xl grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-8 items-center"
+          style={{
+            background: "var(--brand)",
+            padding: "clamp(1.75rem, 4vw, 2.5rem)",
+          }}
+          aria-label="Custom booking enquiry"
+        >
+          {/* Radial glow */}
           <div
-            className="mt-16 p-6 rounded-2xl text-center"
-            style={{ background: "rgba(212,175,55,0.06)", border: "1px solid rgba(212,175,55,0.15)" }}
-          >
-            <p className="text-sm text-charcoal font-semibold mb-3">
-              🔒 Every seva comes with transparent proof delivery
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background: "radial-gradient(circle at 90% 50%, oklch(42% 0.14 148 / 0.5), transparent 60%)",
+            }}
+          />
+          <div className="relative z-10">
+            <h2
+              className="font-display font-semibold mb-2"
+              style={{
+                fontSize: "clamp(1.5rem, 3vw, 2rem)",
+                letterSpacing: "-0.015em",
+                color: "var(--brand-fg)",
+                lineHeight: "1.2",
+              }}
+            >
+              Need a <em>custom Seva</em>?
+            </h2>
+            <p style={{ fontSize: "0.9rem", color: "oklch(98% 0.004 148 / 0.72)", lineHeight: "1.55", maxWidth: "44ch" }}>
+              We organize large-scale Bhandaras, temple events, and anniversary sevas.
+              Speak to our team for a custom quote.
             </p>
-            <div className="flex flex-wrap justify-center gap-6 text-xs text-gray-500">
-              {["Photo proof", "Video highlight", "WhatsApp updates", "24/7 support"].map((t) => (
-                <span key={t} className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-gold-400" />{t}
-                </span>
-              ))}
-            </div>
+          </div>
+          <div className="relative z-10 flex-shrink-0">
+            <Link href="/book" className="btn-amber-cta">
+              Book a Seva
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </Link>
           </div>
         </div>
-      </section>
+      </div>
     </>
   );
 }

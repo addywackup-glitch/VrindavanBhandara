@@ -1,220 +1,329 @@
 "use client";
 
-import { useState } from "react";
+// =============================================================================
+// Dashboard Sidebar — pixel-matches design_v1/dashboard.html
+// White sidebar, fixed left, collapses to off-canvas on mobile
+// Accounts for the global Navbar height via CSS custom property
+// =============================================================================
+
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
+import { motion, AnimatePresence } from "framer-motion";
 import type { Session } from "next-auth";
-import {
-  LayoutDashboard, BookOpen, User,
-  LogOut, Bell, Menu, X, ChevronRight, Flame,
-} from "lucide-react";
 
-// Must match the Navbar heights in Navbar.tsx
-const NAV_H_LG = "4.5rem";
-const NAV_H_SM = "4rem";
+// Nav items matching design_v1/dashboard.html
+const ACCOUNT_LINKS = [
+  {
+    href: "/dashboard",
+    label: "Overview",
+    exact: true,
+    icon: (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="3" y="3" width="7" height="7" rx="1" />
+        <rect x="14" y="3" width="7" height="7" rx="1" />
+        <rect x="3" y="14" width="7" height="7" rx="1" />
+        <rect x="14" y="14" width="7" height="7" rx="1" />
+      </svg>
+    ),
+  },
+  {
+    href: "/dashboard/bookings",
+    label: "My Bookings",
+    exact: false,
+    icon: (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 000 4h6a2 2 0 000-4M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+      </svg>
+    ),
+  },
+  {
+    href: "/dashboard/notifications",
+    label: "Notifications",
+    exact: false,
+    icon: (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" />
+      </svg>
+    ),
+  },
+  {
+    href: "/dashboard/profile",
+    label: "Profile",
+    exact: false,
+    icon: (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z" />
+      </svg>
+    ),
+  },
+] as const;
 
-const NAV_LINKS = [
-  { href: "/dashboard", label: "Overview", icon: LayoutDashboard, exact: true },
-  { href: "/dashboard/bookings", label: "My Bookings", icon: BookOpen },
-  { href: "/dashboard/profile", label: "Profile", icon: User },
-];
+const ACTION_LINKS = [
+  {
+    href: "/book",
+    label: "Book a New Seva",
+    icon: (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 5v14M5 12h14" />
+      </svg>
+    ),
+  },
+  {
+    href: "/services",
+    label: "Explore Services",
+    icon: (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="11" cy="11" r="8" />
+        <path d="M21 21l-4.35-4.35" />
+      </svg>
+    ),
+  },
+] as const;
+
+// Brand mark
+function BrandMark() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 3L3 9v12h6v-7h6v7h6V9L12 3z" />
+    </svg>
+  );
+}
+
+// User initials avatar
+function UserInitials({ name }: { name?: string | null }) {
+  const initials = name
+    ? name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase()
+    : "U";
+  return (
+    <div className="db-user-avatar" aria-hidden="true">
+      {initials}
+    </div>
+  );
+}
+
+// Single nav item
+function NavItem({
+  href,
+  label,
+  icon,
+  active,
+  badge,
+  onClick,
+}: {
+  href: string;
+  label: string;
+  icon: React.ReactNode;
+  active: boolean;
+  badge?: number;
+  onClick?: () => void;
+}) {
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      className={`db-nav-item${active ? " active" : ""}`}
+      aria-current={active ? "page" : undefined}
+    >
+      <span className="db-nav-icon">{icon}</span>
+      <span className="db-nav-label">{label}</span>
+      {badge !== undefined && badge > 0 && (
+        <span className="db-nav-badge" aria-label={`${badge} unread`}>
+          {badge}
+        </span>
+      )}
+    </Link>
+  );
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
 
 export function DashboardSidebar({
   children,
   session,
+  unreadCount = 0,
 }: {
   children: React.ReactNode;
   session: Session | null;
+  unreadCount?: number;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
+
   const isActive = (href: string, exact?: boolean) =>
     exact ? pathname === href : pathname.startsWith(href);
 
-  return (
-    <>
-      {/* ── Responsive CSS for Navbar height ─────────────────── */}
-      <style>{`
-        .db-wrapper        { padding-top: ${NAV_H_SM}; }
-        .db-sidebar        { top: ${NAV_H_SM}; height: calc(100vh - ${NAV_H_SM}); }
-        .db-overlay        { top: ${NAV_H_SM}; }
-        .db-main-content   { margin-left: 0; }
-        @media (min-width: 1024px) {
-          .db-wrapper       { padding-top: ${NAV_H_LG}; }
-          .db-sidebar       { top: ${NAV_H_LG}; height: calc(100vh - ${NAV_H_LG}); }
-          .db-main-content  { margin-left: 16rem; /* 256px = w-64 */ }
-        }
-      `}</style>
+  // Lock body scroll when mobile drawer is open (DOM side-effect only — no setState)
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileOpen]);
 
-      {/* ── Outer shell ─────────────────────────────────────── */}
-      <div className="db-wrapper min-h-screen flex" style={{ background: "#FDFAF5" }}>
-        {/* Mobile backdrop */}
+  const user = session?.user;
+
+  return (
+      <div className="db-shell" style={{ position: "relative" }}>
+        <a href="#main-content" className="auth-skip-link">
+          Skip to main content
+        </a>
+      {/* ── Mobile overlay ──────────────────────────────────────── */}
+      <AnimatePresence>
         {mobileOpen && (
-          <div
-            className="db-overlay fixed inset-x-0 bottom-0 bg-black/40 z-30 lg:hidden"
+          <motion.div
+            key="db-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="db-overlay"
             onClick={() => setMobileOpen(false)}
+            aria-hidden="true"
           />
         )}
+      </AnimatePresence>
 
-        {/* ── Sidebar ──────────────────────────────────────── */}
-        <aside
-          className={`db-sidebar fixed left-0 w-64 z-40 flex flex-col transition-transform duration-300 ${
-            mobileOpen ? "translate-x-0" : "-translate-x-full"
-          } lg:translate-x-0`}
-          style={{
-            background: "linear-gradient(180deg, #1C0A0A 0%, #2A1A1A 60%, #180F00 100%)",
-            borderRight: "1px solid rgba(184,153,71,0.12)",
-          }}
-        >
-          {/* User card */}
-          {session?.user && (
-            <div
-              className="px-4 py-4"
-              style={{ borderBottom: "1px solid rgba(184,153,71,0.1)" }}
-            >
-              <div
-                className="flex items-center gap-3 px-3 py-3 rounded-xl"
-                style={{ background: "rgba(255,255,255,0.05)" }}
-              >
-                <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
-                  style={{ background: "linear-gradient(135deg, #B89947, #8B1E1E)" }}
-                >
-                  {session.user.name?.charAt(0).toUpperCase()}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-white text-xs font-semibold truncate">{session.user.name}</p>
-                  <p className="text-[10px] truncate" style={{ color: "rgba(184,153,71,0.6)" }}>
-                    {session.user.email}
-                  </p>
-                </div>
-                <button
-                  className="lg:hidden"
-                  style={{ color: "rgba(255,255,255,0.4)" }}
-                  onClick={() => setMobileOpen(false)}
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
+      {/* ── Sidebar ─────────────────────────────────────────────── */}
+      <aside
+        className={`db-sidebar${mobileOpen ? " open" : ""}`}
+        aria-label="Dashboard navigation"
+        role="navigation"
+      >
+        {/* Logo */}
+        <div className="db-sidebar-header">
+          <Link href="/" className="db-sidebar-logo" aria-label="Vrindavan Bhandara — Home">
+            <div className="db-sidebar-logo-mark">
+              <BrandMark />
             </div>
-          )}
+            <div>
+              <div className="db-sidebar-logo-name">Vrindavan<br />Bhandara</div>
+            </div>
+          </Link>
+          {/* Mobile close */}
+          <button
+            className="db-close-btn lg:hidden"
+            onClick={() => setMobileOpen(false)}
+            aria-label="Close menu"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
 
-          {/* Navigation */}
-          <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-            {NAV_LINKS.map(({ href, label, icon: Icon, exact }) => {
-              const active = isActive(href, exact);
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all"
-                  style={{
-                    background: active
-                      ? "linear-gradient(135deg, rgba(184,153,71,0.22), rgba(139,30,30,0.18))"
-                      : "transparent",
-                    color: active ? "#D4AF37" : "rgba(255,255,255,0.55)",
-                    border: active
-                      ? "1px solid rgba(184,153,71,0.22)"
-                      : "1px solid transparent",
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!active) e.currentTarget.style.background = "rgba(255,255,255,0.06)";
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!active) e.currentTarget.style.background = "transparent";
-                  }}
-                >
-                  <Icon className="w-4 h-4 flex-shrink-0" />
-                  <span className="flex-1">{label}</span>
-                  {active && (
-                    <ChevronRight
-                      className="w-3.5 h-3.5"
-                      style={{ color: "rgba(212,175,55,0.45)" }}
-                    />
-                  )}
-                </Link>
-              );
-            })}
-          </nav>
+        {/* Navigation */}
+        <nav className="db-sidebar-nav" aria-label="My account">
+          <div className="db-nav-section-title">My Account</div>
+          {ACCOUNT_LINKS.map(({ href, label, icon, exact }) => (
+            <NavItem
+              key={href}
+              href={href}
+              label={label}
+              icon={icon}
+              active={isActive(href, exact)}
+              badge={label === "Notifications" ? unreadCount : undefined}
+              onClick={() => setMobileOpen(false)}
+            />
+          ))}
 
-          {/* Book New Seva CTA */}
-          <div className="px-4 pb-4">
-            <Link
-              href="/services"
-              className="flex items-center justify-center gap-2 w-full h-10 rounded-xl text-sm font-bold text-white transition-opacity hover:opacity-90"
-              style={{
-                background: "linear-gradient(135deg, #8B1E1E, #B89947)",
-                boxShadow: "0 4px 15px rgba(139,30,30,0.28)",
-              }}
+          <div className="db-nav-section-title" style={{ marginTop: "1.25rem" }}>
+            Quick Actions
+          </div>
+          {ACTION_LINKS.map(({ href, label, icon }) => (
+            <NavItem
+              key={href}
+              href={href}
+              label={label}
+              icon={icon}
+              active={false}
+              onClick={() => setMobileOpen(false)}
+            />
+          ))}
+        </nav>
+
+        {/* User block + Sign out */}
+        <div className="db-sidebar-footer">
+          <div className="db-user-block">
+            <UserInitials name={user?.name} />
+            <div className="db-user-info">
+              <div className="db-user-name">{user?.name ?? "Account"}</div>
+              <div className="db-user-email">{user?.email ?? ""}</div>
+            </div>
+          </div>
+          <button
+            onClick={() => signOut({ callbackUrl: "/" })}
+            className="db-signout-btn"
+            aria-label="Sign out of your account"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" />
+            </svg>
+            Sign Out
+          </button>
+        </div>
+      </aside>
+
+      {/* ── Main area ───────────────────────────────────────────── */}
+      <div className="db-main">
+        {/* Topbar */}
+        <header className="db-topbar">
+          <div className="db-topbar-left">
+            {/* Mobile hamburger */}
+            <button
+              className="db-menu-toggle"
+              onClick={() => setMobileOpen(true)}
+              aria-label="Open navigation menu"
+              aria-expanded={mobileOpen}
             >
-              <Flame className="w-3.5 h-3.5 flex-shrink-0" />
-              Book New Seva
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M3 12h18M3 6h18M3 18h18" />
+              </svg>
+            </button>
+            <span className="db-topbar-title">
+              {pathname === "/dashboard"
+                ? "Dashboard"
+                : pathname.includes("/bookings/")
+                ? "Booking Detail"
+                : pathname.endsWith("/bookings")
+                ? "My Bookings"
+                : pathname.endsWith("/notifications")
+                ? "Notifications"
+                : pathname.endsWith("/profile")
+                ? "Profile"
+                : "Dashboard"}
+            </span>
+          </div>
+
+          <div className="db-topbar-right">
+            {/* Notification bell */}
+            <Link
+              href="/dashboard/notifications"
+              className="db-notif-btn"
+              aria-label={
+                unreadCount > 0
+                  ? `Notifications — ${unreadCount} unread`
+                  : "Notifications"
+              }
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" />
+              </svg>
+              {unreadCount > 0 && (
+                <span className="db-notif-dot" aria-hidden="true" />
+              )}
+            </Link>
+            {/* Book Seva CTA */}
+            <Link href="/book" className="db-btn-book">
+              + Book Seva
             </Link>
           </div>
+        </header>
 
-          {/* Sign Out */}
-          <div
-            className="px-3 pb-6 pt-4"
-            style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
-          >
-            <button
-              onClick={() => signOut({ callbackUrl: "/" })}
-              className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm w-full transition-all"
-              style={{ color: "rgba(255,255,255,0.38)" }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = "#f87171";
-                e.currentTarget.style.background = "rgba(239,68,68,0.08)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = "rgba(255,255,255,0.38)";
-                e.currentTarget.style.background = "transparent";
-              }}
-            >
-              <LogOut className="w-4 h-4" />
-              Sign Out
-            </button>
-          </div>
-        </aside>
-
-        {/* ── Main content area ────────────────────────────── */}
-        <div className="db-main-content flex-1 flex flex-col min-w-0">
-          {/* Mobile top bar — only visible on small screens */}
-          <header
-            className="lg:hidden flex items-center justify-between px-4 h-12 sticky top-0 z-20"
-            style={{
-              background: "rgba(253,250,245,0.96)",
-              borderBottom: "1px solid rgba(184,153,71,0.12)",
-              backdropFilter: "blur(12px)",
-              WebkitBackdropFilter: "blur(12px)",
-            }}
-          >
-            <button
-              onClick={() => setMobileOpen(true)}
-              className="p-2 rounded-lg"
-              style={{ color: "#2A2825" }}
-              aria-label="Open menu"
-            >
-              <Menu className="w-5 h-5" />
-            </button>
-            <span
-              className="font-heading font-bold text-sm"
-              style={{ color: "#2A2825" }}
-            >
-              My Dashboard
-            </span>
-            <button className="p-2 rounded-lg" style={{ color: "#2A2825" }}>
-              <Bell className="w-5 h-5" />
-            </button>
-          </header>
-
-          {/* Page content */}
-          <main className="flex-1 p-5 lg:p-8" style={{ background: "#FDFAF5" }}>
-            {children}
-          </main>
-        </div>
+        {/* Page content */}
+        <main className="db-content" id="main-content" tabIndex={-1}>
+          {children}
+        </main>
       </div>
-    </>
+    </div>
   );
 }

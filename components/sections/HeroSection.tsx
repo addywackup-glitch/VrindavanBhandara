@@ -1,268 +1,238 @@
 "use client";
 
-import { useRef } from "react";
 import Link from "next/link";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { ArrowRight, Star, CheckCircle, Play } from "lucide-react";
+import { motion } from "framer-motion";
 
-const TRUST_BADGES = [
-  { icon: "🔒", text: "100% Secure" },
-  { icon: "📸", text: "Photo & Video Proof" },
-  { icon: "📸", text: "Photo & Video Proof" },
-  { icon: "🏛️", text: "5,000+ Sevas Done" },
-];
+// Trust indicators shown below CTAs
+const TRUST_ITEMS = [
+  "Photo & Video Proof",
+  "8,000+ Families Served",
+  "Since 2012",
+] as const;
 
-// Seeded PRNG (mulberry32) — deterministic so SSR and client output identical values.
-// Using Math.random() at module level causes hydration mismatch because the
-// server and client generate different sequences.
-function seededRandom(seed: number) {
-  let s = seed;
-  return () => {
-    s |= 0;
-    s = (s + 0x6d2b79f5) | 0;
-    let t = Math.imul(s ^ (s >>> 15), 1 | s);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
+// Fade-up animation helper
+function FadeUp({
+  children,
+  delay = 0,
+  className,
+}: {
+  children: React.ReactNode;
+  delay?: number;
+  className?: string;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.7, delay, ease: [0.22, 1, 0.36, 1] }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
 }
 
-const rng = seededRandom(0xdeadbeef);
-
-const FLOAT_PARTICLES = Array.from({ length: 15 }, (_, i) => ({
-  id: i,
-  size: rng() * 6 + 3,
-  x: rng() * 100,
-  y: rng() * 100,
-  delay: rng() * 5,
-  duration: rng() * 8 + 10,
-}));
-
 export function HeroSection() {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
-  const yBg = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
-  const opacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
-
   return (
     <section
-      ref={ref}
-      className="relative min-h-screen flex items-center overflow-hidden"
-      style={{ background: "linear-gradient(160deg, #FFFCF8 0%, #F5EEDB 60%, #E8DCC2 100%)" }}
+      className="relative min-h-svh flex flex-col items-center justify-center text-center overflow-hidden"
+      style={{
+        paddingTop: "120px",
+        paddingBottom: "80px",
+        paddingLeft: "clamp(1.25rem, 6vw, 6rem)",
+        paddingRight: "clamp(1.25rem, 6vw, 6rem)",
+      }}
+      aria-label="Hero"
     >
-      {/* Parallax radial glow background */}
-      <motion.div
-        style={{ y: yBg }}
-        className="absolute inset-0 pointer-events-none"
-      >
-        {/* Primary warm glow */}
-        <div
-          className="absolute w-[900px] h-[900px] rounded-full -top-32 -left-48"
-          style={{
-            background: "radial-gradient(circle, rgba(184,153,71,0.15) 0%, transparent 65%)",
-            filter: "blur(60px)",
-          }}
-        />
-        {/* Crimson glow */}
-        <div
-          className="absolute w-[600px] h-[600px] rounded-full bottom-0 right-0"
-          style={{
-            background: "radial-gradient(circle, rgba(139,30,30,0.08) 0%, transparent 65%)",
-            filter: "blur(80px)",
-          }}
-        />
-      </motion.div>
-
-      {/* Animated dot grid */}
+      {/* Dot-grid background texture */}
       <div
-        className="absolute inset-0 pointer-events-none opacity-[0.1]"
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
         style={{
-          backgroundImage: "radial-gradient(circle, #B89947 1px, transparent 1px)",
-          backgroundSize: "48px 48px",
+          backgroundImage: "radial-gradient(circle, oklch(30% 0.12 148 / 0.06) 1.5px, transparent 1.5px)",
+          backgroundSize: "32px 32px",
+          maskImage: "radial-gradient(ellipse 80% 80% at 50% 40%, black 40%, transparent 100%)",
+          WebkitMaskImage: "radial-gradient(ellipse 80% 80% at 50% 40%, black 40%, transparent 100%)",
         }}
       />
 
-      {/* Floating particles */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {FLOAT_PARTICLES.map((p) => (
-          <motion.div
-            key={p.id}
-            className="absolute rounded-full"
-            style={{
-              width: p.size,
-              height: p.size,
-              left: `${p.x}%`,
-              top: `${p.y}%`,
-              background: p.id % 2 === 0
-                ? "rgba(184,153,71,0.4)"
-                : "rgba(139,30,30,0.2)",
-            }}
-            animate={{
-              y: [0, -40, 0],
-              opacity: [0.2, 0.6, 0.2],
-            }}
-            transition={{
-              duration: p.duration,
-              delay: p.delay,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          />
-        ))}
-      </div>
-
-      {/* Rotating mandala - Darker for light background */}
-      <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-[0.08] pointer-events-none hidden xl:block">
-        <motion.svg
-          width="720"
-          height="720"
-          viewBox="0 0 720 720"
-          fill="none"
-          animate={{ rotate: 360 }}
-          transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
-        >
-          {[280, 240, 200, 160, 120, 80].map((r, i) => (
-            <circle key={r} cx="360" cy="360" r={r} stroke="#8B1E1E" strokeWidth={i % 2 === 0 ? 1.5 : 0.5} />
-          ))}
-          {Array.from({ length: 16 }).map((_, i) => {
-            const angle = (i * 22.5 * Math.PI) / 180;
-            return (
-              <line
-                key={i}
-                x1={360 + 280 * Math.cos(angle)} y1={360 + 280 * Math.sin(angle)}
-                x2={360 + 80 * Math.cos(angle)} y2={360 + 80 * Math.sin(angle)}
-                stroke="#8B1E1E" strokeWidth="0.5"
-              />
-            );
-          })}
-        </motion.svg>
-      </div>
-
-      {/* Main content */}
-      <motion.div style={{ opacity }} className="container relative z-10 pt-32 pb-20">
-        <div className="max-w-4xl">
-
-          {/* Trust chip */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="inline-flex items-center gap-2.5 px-5 py-2 rounded-full mb-8 border"
-            style={{
-              background: "rgba(184,153,71,0.1)",
-              borderColor: "rgba(184,153,71,0.3)",
-            }}
-          >
-            <Star className="w-3.5 h-3.5 fill-[#B89947] text-[#B89947]" />
-            <span className="text-[#8C702E] text-xs font-bold tracking-[0.12em] uppercase">
-              Trusted by 10,000+ Devotees Worldwide
-            </span>
-          </motion.div>
-
-          {/* Headline */}
-          <motion.h1
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-            className="font-heading text-[#2A2825] mb-6 leading-[1.05]"
-            style={{ fontSize: "clamp(2.8rem, 6vw, 5.5rem)" }}
-          >
-            Book{" "}
+      <div className="relative z-10" style={{ maxWidth: "900px", margin: "0 auto" }}>
+        {/* Eyebrow pill */}
+        <FadeUp delay={0.1}>
+          <div className="inline-flex items-center gap-2 mb-8">
             <span
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium tracking-[0.07em] uppercase"
               style={{
-                background: "linear-gradient(135deg, #8B1E1E 0%, #B89947 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
+                fontFamily: "var(--font-mono)",
+                background: "var(--surface-brand)",
+                color: "var(--brand)",
+                border: "1px solid oklch(30% 0.12 148 / 0.18)",
               }}
             >
-              Sacred Seva
+              <span
+                className="w-1.5 h-1.5 rounded-full animate-pulse-dot"
+                style={{ background: "var(--success)" }}
+                aria-hidden="true"
+              />
+              Serving devotees since 2012
             </span>
-            <br />
-            <span className="text-[#2A2825]">in Vrindavan &</span>{" "}
-            <span className="text-[#2A2825]">Mathura</span>
-          </motion.h1>
+          </div>
+        </FadeUp>
 
-          {/* Subheadline */}
-          <motion.p
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.25 }}
-            className="text-[#4A453F] text-xl leading-relaxed mb-10 max-w-2xl font-body"
+        {/* Headline */}
+        <FadeUp delay={0.2}>
+          <h1
+            className="font-display font-semibold mb-6"
+            style={{
+              fontSize: "clamp(2.75rem, 7vw, 5.5rem)",
+              letterSpacing: "-0.025em",
+              lineHeight: "1.02",
+              color: "var(--fg)",
+            }}
           >
-            Sponsor Bhandara, Brahmin Bhoj, Gau Seva & Festival Seva online —
-            and receive transparent{" "}
-            <strong className="text-[#8B1E1E] font-semibold">
+            Sacred Seva,{" "}
+            <em className="not-italic" style={{ color: "var(--brand)" }}>
+              from Anywhere
+            </em>
+          </h1>
+        </FadeUp>
+
+        {/* Subheadline */}
+        <FadeUp delay={0.32}>
+          <p
+            className="mb-10 mx-auto"
+            style={{
+              fontSize: "clamp(1rem, 2vw, 1.2rem)",
+              color: "var(--muted)",
+              maxWidth: "52ch",
+              lineHeight: "1.65",
+            }}
+          >
+            Sponsor Bhandara, Brahmin Bhoj, Gau Seva &amp; Festival Seva in
+            Vrindavan and Mathura — and receive transparent{" "}
+            <strong style={{ color: "var(--fg)", fontWeight: 600 }}>
               photo and video proof
             </strong>{" "}
             delivered to you.
-          </motion.p>
+          </p>
+        </FadeUp>
 
-          {/* CTAs */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.35 }}
-            className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-14"
-          >
+        {/* CTAs */}
+        <FadeUp delay={0.44}>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5">
             <Link
-              href="/services"
-              className="group relative inline-flex items-center justify-center gap-2.5 px-9 h-14 rounded-xl font-semibold text-base text-white overflow-hidden"
+              href="/book"
+              className="inline-flex items-center gap-2 rounded-lg font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
               style={{
-                background: "linear-gradient(135deg, #8B1E1E, #B89947)",
-                boxShadow: "0 0 30px rgba(139,30,30,0.25), 0 4px 15px rgba(0,0,0,0.1)",
+                fontFamily: "var(--font-body)",
+                fontSize: "1rem",
+                letterSpacing: "0.01em",
+                background: "var(--brand)",
+                color: "var(--brand-fg)",
+                padding: "0.875rem 2rem",
+                borderRadius: "var(--r-md)",
+                transition: "background var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base)",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "var(--brand-mid)";
+                e.currentTarget.style.transform = "translateY(-2px)";
+                e.currentTarget.style.boxShadow = "var(--sh-brand)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "var(--brand)";
+                e.currentTarget.style.transform = "translateY(0)";
+                e.currentTarget.style.boxShadow = "none";
               }}
             >
-              <span className="relative z-10">Book a Seva Today</span>
-              <ArrowRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
-              <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors" />
+              Book a Seva
+              <ArrowRight />
             </Link>
 
-            <button
-              className="group inline-flex items-center justify-center gap-3 px-7 h-14 rounded-xl font-semibold text-sm text-[#4A453F] hover:text-[#2A2825] transition-all bg-white/50 hover:bg-white/80 flex-shrink-0"
-              style={{ border: "1px solid rgba(184,153,71,0.3)" }}
+            <Link
+              href="/services"
+              className="inline-flex items-center gap-2 rounded-lg font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+              style={{
+                fontFamily: "var(--font-body)",
+                fontSize: "1rem",
+                letterSpacing: "0.01em",
+                background: "transparent",
+                color: "var(--fg)",
+                padding: "0.875rem 2rem",
+                borderRadius: "var(--r-md)",
+                border: "1.5px solid var(--border-strong)",
+                transition: "border-color var(--dur-base), background var(--dur-base), transform var(--dur-base) var(--ease-out)",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = "var(--brand-light)";
+                e.currentTarget.style.background = "var(--surface-brand)";
+                e.currentTarget.style.transform = "translateY(-2px)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "var(--border-strong)";
+                e.currentTarget.style.background = "transparent";
+                e.currentTarget.style.transform = "translateY(0)";
+              }}
             >
-              <span className="w-8 h-8 rounded-full flex items-center justify-center bg-white shadow-sm flex-shrink-0">
-                <Play className="w-3 h-3 fill-[#B89947] text-[#B89947] ml-0.5" />
-              </span>
-              Watch How It Works
-            </button>
-          </motion.div>
+              Explore Services
+            </Link>
+          </div>
+        </FadeUp>
 
-          {/* Trust badges */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-            className="flex flex-wrap gap-5"
-          >
-            {TRUST_BADGES.map((badge) => (
-              <div
-                key={badge.text}
-                className="flex items-center gap-2 text-[#4A453F] text-sm font-body font-medium"
+        {/* Trust items */}
+        <FadeUp delay={0.56}>
+          <div className="flex flex-wrap items-center justify-center gap-6 mt-10">
+            {TRUST_ITEMS.map((item) => (
+              <span
+                key={item}
+                className="flex items-center gap-2 text-sm font-medium"
+                style={{ color: "var(--muted)" }}
               >
-                <CheckCircle className="w-4 h-4 text-[#8B1E1E]" />
-                <span>{badge.text}</span>
-              </div>
+                <CheckIcon />
+                {item}
+              </span>
             ))}
-          </motion.div>
-        </div>
-      </motion.div>
+          </div>
+        </FadeUp>
+      </div>
 
-      {/* Bottom scroll cue */}
+      {/* Scroll cue */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 1.5 }}
-        className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2"
+        transition={{ delay: 1.5, duration: 0.6 }}
+        className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+        aria-hidden="true"
       >
-        <motion.div
+        <motion.span
+          className="block w-px h-14"
+          style={{ background: "linear-gradient(to bottom, transparent, var(--brand-light), transparent)" }}
           animate={{ scaleY: [0.4, 1, 0.4], opacity: [0.4, 1, 0.4] }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          className="w-px h-14"
-          style={{ background: "linear-gradient(to bottom, transparent, #8B1E1E, transparent)" }}
         />
-        <span className="text-[#8B1E1E] text-[9px] tracking-[0.3em] uppercase font-bold">Scroll</span>
+        <span
+          className="text-[9px] tracking-[0.3em] uppercase font-medium"
+          style={{ fontFamily: "var(--font-mono)", color: "var(--subtle)" }}
+        >
+          Scroll
+        </span>
       </motion.div>
     </section>
+  );
+}
+
+// Inline icon helpers — avoids Lucide dependency in this file
+function ArrowRight() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M5 12h14M12 5l7 7-7 7" />
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M20 6L9 17l-5-5" />
+    </svg>
   );
 }

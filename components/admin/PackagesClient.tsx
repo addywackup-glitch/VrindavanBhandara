@@ -79,11 +79,10 @@ export function PackagesClient({ packages, categories, total, page, totalPages, 
   return (
     <div>
       {/* Category filter */}
-      <div className="flex flex-wrap gap-2 mb-4">
+      <div className="adm-filter-row" style={{ marginBottom: "1rem" }}>
         <button
           onClick={() => router.push("/admin/packages")}
-          className="px-3 py-1.5 rounded-full text-xs font-semibold"
-          style={{ background: filter === "ALL" ? "#8B1E1E" : "#F5EEDB", color: filter === "ALL" ? "white" : "#5A3E2B" }}
+          className={`adm-filter-btn${filter === "ALL" ? " active" : ""}`}
         >
           All ({total})
         </button>
@@ -91,8 +90,7 @@ export function PackagesClient({ packages, categories, total, page, totalPages, 
           <button
             key={cat.id}
             onClick={() => router.push(`/admin/packages?categoryId=${cat.id}`)}
-            className="px-3 py-1.5 rounded-full text-xs font-semibold"
-            style={{ background: filter === cat.id ? "#8B1E1E" : "#F5EEDB", color: filter === cat.id ? "white" : "#5A3E2B" }}
+            className={`adm-filter-btn${filter === cat.id ? " active" : ""}`}
           >
             {cat.name}
           </button>
@@ -100,20 +98,17 @@ export function PackagesClient({ packages, categories, total, page, totalPages, 
       </div>
 
       {packages.length === 0 ? (
-        <div className="bg-white rounded-2xl border p-16 text-center" style={{ borderColor: "rgba(212,175,55,0.1)" }}>
-          <div className="text-5xl mb-4">📦</div>
-          <h3 className="font-semibold text-gray-700 mb-2">No packages yet</h3>
-          <Link href="/admin/packages/new" className="text-sm text-blue-600 hover:underline">Create your first package →</Link>
+        <div className="adm-empty">
+          <div className="adm-empty-title">No packages yet</div>
+          <Link href="/admin/packages/new" className="adm-link">Create your first package →</Link>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: "rgba(212,175,55,0.1)" }}>
-          <table className="w-full">
+        <div className="adm-table-card">
+          <table className="adm-table">
             <thead>
-              <tr className="border-b" style={{ borderColor: "rgba(212,175,55,0.08)", background: "#FDFAF5" }}>
+              <tr>
                 {["Order", "Name", "Category", "Price", "Bookings", "Status", "Actions"].map((h) => (
-                  <th key={h} className="text-left px-5 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-wider whitespace-nowrap">
-                    {h}
-                  </th>
+                  <th key={h} scope="col">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -178,21 +173,14 @@ export function PackagesClient({ packages, categories, total, page, totalPages, 
                   {/* Bookings */}
                   <td className="px-5 py-4 text-sm text-gray-600">{pkg.bookingCount}</td>
                   {/* Status */}
-                  <td className="px-5 py-4">
-                    <span
-                      className="text-[11px] font-bold px-2 py-0.5 rounded-full"
-                      style={{
-                        background: pkg.isActive ? "#dcfce7" : "#f9fafb",
-                        color: pkg.isActive ? "#15803d" : "#6b7280",
-                      }}
-                    >
+                  <td>
+                    <span className={`adm-badge ${pkg.isActive ? "adm-badge-confirmed" : "adm-badge-cancelled"}`}>
                       {pkg.isActive ? "Active" : "Inactive"}
                     </span>
                   </td>
-                  {/* Actions */}
-                  <td className="px-5 py-4">
-                    <div className="flex items-center gap-2">
-                      <Link href={`/admin/packages/${pkg.id}/edit`} title="Edit" className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600">
+                  <td>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.375rem" }}>
+                      <Link href={`/admin/packages/${pkg.id}/edit`} title="Edit" className="adm-action-btn">
                         <Pencil size={14} />
                       </Link>
                       <button
@@ -230,18 +218,14 @@ export function PackagesClient({ packages, categories, total, page, totalPages, 
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="border-t px-5 py-4 flex items-center justify-between" style={{ borderColor: "rgba(212,175,55,0.08)" }}>
-              <span className="text-xs text-gray-400">Page {page} of {totalPages}</span>
-              <div className="flex gap-2">
+            <div className="adm-pagination">
+              <span className="adm-pagination-info">Page {page} of {totalPages}</span>
+              <div className="adm-filter-row">
                 {page > 1 && (
-                  <button onClick={() => router.push(`?page=${page - 1}`)} className="px-3 py-1.5 text-xs rounded-lg bg-amber-50 text-amber-800 font-semibold">
-                    ← Prev
-                  </button>
+                  <button onClick={() => router.push(`?page=${page - 1}`)} className="adm-filter-btn">← Prev</button>
                 )}
                 {page < totalPages && (
-                  <button onClick={() => router.push(`?page=${page + 1}`)} className="px-3 py-1.5 text-xs rounded-lg bg-amber-50 text-amber-800 font-semibold">
-                    Next →
-                  </button>
+                  <button onClick={() => router.push(`?page=${page + 1}`)} className="adm-filter-btn active">Next →</button>
                 )}
               </div>
             </div>

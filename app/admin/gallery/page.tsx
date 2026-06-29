@@ -46,38 +46,28 @@ export default async function GalleryPage({
   const { images, total, page, totalPages } = await getImages(params);
 
   return (
-    <div className="max-w-7xl mx-auto">
-      <div className="flex items-center justify-between mb-8">
+    <>
+      <div className="adm-section-header">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Gallery</h1>
-          <p className="text-gray-500 text-sm mt-1">{total} images across all categories.</p>
+          <div className="adm-section-title">Gallery</div>
+          <p style={{ fontSize: "0.875rem", color: "var(--muted)", marginTop: "0.25rem" }}>
+            {total} images across all categories
+          </p>
         </div>
       </div>
 
-      {/* Category filter */}
-      <div className="flex flex-wrap gap-2 mb-6">
+      <div className="adm-filter-row" style={{ marginBottom: "1.25rem" }}>
         {CATEGORIES.map((cat) => (
           <Link
             key={cat}
             href={`?category=${cat}`}
-            className="px-3 py-1.5 rounded-full text-xs font-semibold transition-colors"
-            style={{
-              background: filterCategory === cat ? "#8B1E1E" : "#F5EEDB",
-              color: filterCategory === cat ? "white" : "#5A3E2B",
-            }}
+            className={`adm-filter-btn${filterCategory === cat ? " active" : ""}`}
           >
             {cat === "ALL" ? "All" : cat.replace(/_/g, " ")}
           </Link>
         ))}
-        <Link
-          href="?featured=true"
-          className="px-3 py-1.5 rounded-full text-xs font-semibold"
-          style={{
-            background: params.featured === "true" ? "#B89947" : "#F5EEDB",
-            color: params.featured === "true" ? "white" : "#5A3E2B",
-          }}
-        >
-          ⭐ Featured
+        <Link href="?featured=true" className={`adm-filter-btn${params.featured === "true" ? " active" : ""}`}>
+          Featured
         </Link>
       </div>
 
@@ -91,6 +81,6 @@ export default async function GalleryPage({
         totalPages={totalPages}
         filterCategory={filterCategory}
       />
-    </div>
+    </>
   );
 }

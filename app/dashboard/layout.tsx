@@ -12,5 +12,10 @@ export default async function DashboardLayout({
     redirect("/login?callbackUrl=/dashboard");
   }
 
-  return <DashboardSidebar session={session}>{children}</DashboardSidebar>;
+  // unreadCount will be wired to a notifications API in a future phase
+  return (
+    <DashboardSidebar session={session} unreadCount={0}>
+      {children}
+    </DashboardSidebar>
+  );
 }

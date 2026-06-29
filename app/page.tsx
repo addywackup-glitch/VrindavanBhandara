@@ -109,10 +109,20 @@ export default async function HomePage() {
           shortDesc: s.shortDesc,
           icon: s.icon ?? "🙏",
           price: s.packages[0]
-            ? `From ₹${s.packages[0].price.toString()}`
+            ? `₹${s.packages[0].price.toString()}`
             : undefined,
         }))
       : [];
+
+  // Transform testimonials for TestimonialsSection
+  const formattedTestimonials = testimonials.map((t) => ({
+    id: t.id,
+    rating: t.rating,
+    content: t.comment,
+    author: t.name,
+    location: [t.city, t.country].filter(Boolean).join(", "),
+    service: t.serviceType ?? undefined,
+  }));
 
   return (
     <>
@@ -164,12 +174,7 @@ export default async function HomePage() {
       <StatsSection stats={formattedStats} />
       <ServicesSection services={formattedServices} />
       <HowItWorksSection />
-      <TestimonialsSection
-        testimonials={testimonials.map((t) => ({
-          ...t,
-          serviceType: t.serviceType ?? null,
-        }))}
-      />
+      <TestimonialsSection testimonials={formattedTestimonials} />
     </>
   );
 }

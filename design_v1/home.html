@@ -1,0 +1,1471 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vrindavan Bhandara — Book Sacred Seva Online</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Noto+Sans+Devanagari:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:            oklch(99.2% 0.002 85);
+      --surface:       oklch(100% 0 0);
+      --surface-2:     oklch(97.5% 0.005 85);
+      --surface-brand: oklch(96.5% 0.035 148);
+      --surface-accent:oklch(97.5% 0.045 75);
+      --fg:            oklch(14% 0.016 250);
+      --muted:         oklch(46% 0.014 250);
+      --subtle:        oklch(68% 0.009 250);
+      --brand:         oklch(30% 0.12 148);
+      --brand-mid:     oklch(42% 0.14 148);
+      --brand-light:   oklch(58% 0.13 148);
+      --brand-fg:      oklch(98% 0.004 148);
+      --accent:        oklch(67% 0.155 58);
+      --accent-deep:   oklch(52% 0.145 55);
+      --accent-fg:     oklch(16% 0.02 58);
+      --success:       oklch(50% 0.14 145);
+      --border:        oklch(91% 0.008 250);
+      --border-strong: oklch(78% 0.012 250);
+      --n-50:  oklch(98.5% 0.003 250);
+      --n-100: oklch(96% 0.006 250);
+      --n-200: oklch(91% 0.008 250);
+      --font-display: 'Cormorant Garamond', Georgia, serif;
+      --font-body:    'DM Sans', system-ui, -apple-system, sans-serif;
+      --font-mono:    'JetBrains Mono', ui-monospace, monospace;
+      --sh-sm:  0 1px 4px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --sh-md:  0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.05);
+      --sh-lg:  0 8px 24px rgba(0,0,0,0.10), 0 4px 8px rgba(0,0,0,0.06);
+      --sh-brand:  0 4px 20px oklch(30% 0.12 148 / 0.24);
+      --sh-accent: 0 4px 16px oklch(67% 0.155 58 / 0.30);
+      --r-sm: 0.375rem; --r-md: 0.75rem; --r-lg: 1rem; --r-xl: 1.5rem; --r-full: 9999px;
+      --dur-base: 250ms; --dur-slow: 400ms;
+      --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+
+    /* ── Reduced-motion ───────────────────────────────────────────────── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+      .reveal { opacity: 1 !important; transform: none !important; }
+    }
+
+    html { font-size: 16px; scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--fg);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ── Navigation ──────────────────────────────────────────────────── */
+    .nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 0 clamp(1rem, 5vw, 3rem);
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      background: oklch(99.2% 0.002 85 / 0);
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+    .nav.scrolled {
+      background: oklch(100% 0 0 / 0.94);
+      box-shadow: 0 1px 0 var(--border);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      text-decoration: none;
+    }
+    .nav-logo-mark {
+      width: 32px; height: 32px;
+      background: var(--brand);
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+    .nav-logo-mark svg { width: 18px; height: 18px; stroke: var(--brand-fg); fill: none; stroke-width: 1.5; }
+    .nav-logo-name {
+      font-family: var(--font-display);
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--fg);
+      letter-spacing: -0.01em;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      list-style: none;
+    }
+    .nav-links a {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 0.5rem 0.875rem;
+      border-radius: var(--r-sm);
+      transition: color 150ms, background 150ms;
+      letter-spacing: 0.01em;
+    }
+    .nav-links a:hover { color: var(--fg); background: var(--n-50); }
+    .nav-right { display: flex; align-items: center; gap: 0.75rem; }
+    .btn-nav-login {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--muted);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 0.5rem 0.875rem;
+      border-radius: var(--r-sm);
+      text-decoration: none;
+      transition: color 150ms;
+    }
+    .btn-nav-login:hover { color: var(--fg); }
+    .btn-nav-primary {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--brand-fg);
+      background: var(--brand);
+      border: none;
+      cursor: pointer;
+      padding: 0.5625rem 1.25rem;
+      border-radius: var(--r-sm);
+      text-decoration: none;
+      letter-spacing: 0.01em;
+      transition: background var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base);
+    }
+    .btn-nav-primary:hover { background: var(--brand-mid); transform: translateY(-1px); box-shadow: var(--sh-brand); }
+    .nav-hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      padding: 8px;
+      background: none;
+      border: none;
+    }
+    .nav-hamburger span { width: 22px; height: 1.5px; background: var(--fg); display: block; transition: all 0.3s; }
+    @media (max-width: 768px) {
+      .nav-links, .btn-nav-login { display: none; }
+      .nav-hamburger { display: flex; }
+    }
+
+    /* Mobile menu */
+    .mobile-menu {
+      position: fixed;
+      top: 64px; left: 0; right: 0;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem clamp(1rem, 5vw, 3rem);
+      z-index: 99;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      transform: translateY(-100%);
+      opacity: 0;
+      transition: transform 0.3s var(--ease-out), opacity 0.3s;
+      pointer-events: none;
+    }
+    .mobile-menu.open { transform: translateY(0); opacity: 1; pointer-events: auto; }
+    .mobile-menu a {
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--fg);
+      text-decoration: none;
+      padding: 0.875rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .mobile-menu a:last-child { border-bottom: none; }
+
+    /* ── Hero ────────────────────────────────────────────────────────── */
+    .hero {
+      min-height: 100svh;
+      padding: 120px clamp(1.25rem, 6vw, 6rem) 80px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Subtle dot-grid background — the one visual texture */
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle, oklch(30% 0.12 148 / 0.06) 1.5px, transparent 1.5px);
+      background-size: 32px 32px;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 40%, black 40%, transparent 100%);
+      -webkit-mask-image: radial-gradient(ellipse 80% 80% at 50% 40%, black 40%, transparent 100%);
+      pointer-events: none;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--surface-brand);
+      color: var(--brand);
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+      padding: 0.375rem 0.875rem;
+      border-radius: var(--r-full);
+      border: 1px solid oklch(30% 0.12 148 / 0.18);
+      margin-bottom: 2rem;
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    .hero-eyebrow .dot { width: 6px; height: 6px; background: var(--success); border-radius: 50%; animation: pulse-dot 2.5s ease-in-out infinite; }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.75); }
+    }
+
+    .hero-headline {
+      font-family: var(--font-display);
+      font-size: clamp(2.75rem, 7vw, 5.5rem);
+      font-weight: 600;
+      letter-spacing: -0.025em;
+      line-height: 1.02;
+      color: var(--fg);
+      max-width: 14ch;
+      margin: 0 auto 1.5rem;
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    .hero-headline em {
+      font-style: italic;
+      color: var(--brand);
+    }
+
+    .hero-sub {
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      color: var(--muted);
+      max-width: 52ch;
+      line-height: 1.65;
+      margin: 0 auto 2.5rem;
+      opacity: 0;
+      transform: translateY(12px);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.875rem;
+      justify-content: center;
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    .btn-hero-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: var(--font-body);
+      font-size: 1rem;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      background: var(--brand);
+      color: var(--brand-fg);
+      padding: 0.875rem 2rem;
+      border-radius: var(--r-md);
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: background var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base);
+    }
+    .btn-hero-primary:hover { background: var(--brand-mid); transform: translateY(-2px); box-shadow: var(--sh-brand); }
+    .btn-hero-primary svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; transition: transform var(--dur-base) var(--ease-out); }
+    .btn-hero-primary:hover svg { transform: translateX(3px); }
+    .btn-hero-outline {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: var(--font-body);
+      font-size: 1rem;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      background: transparent;
+      color: var(--fg);
+      padding: 0.875rem 2rem;
+      border-radius: var(--r-md);
+      text-decoration: none;
+      border: 1.5px solid var(--border-strong);
+      cursor: pointer;
+      transition: border-color var(--dur-base), background var(--dur-base), transform var(--dur-base) var(--ease-out);
+    }
+    .btn-hero-outline:hover { border-color: var(--brand-light); background: var(--surface-brand); transform: translateY(-2px); }
+
+    .hero-trust {
+      margin-top: 3rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      justify-content: center;
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    .hero-trust-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8125rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .hero-trust-item svg { width: 15px; height: 15px; stroke: var(--success); fill: none; stroke-width: 2.5; }
+
+    /* Load animations */
+    .hero-loaded .hero-eyebrow { animation: fadeUp 0.6s var(--ease-out) 0.1s both; }
+    .hero-loaded .hero-headline { animation: fadeUp 0.7s var(--ease-out) 0.2s both; }
+    .hero-loaded .hero-sub     { animation: fadeUp 0.7s var(--ease-out) 0.32s both; }
+    .hero-loaded .hero-actions { animation: fadeUp 0.7s var(--ease-out) 0.44s both; }
+    .hero-loaded .hero-trust   { animation: fadeUp 0.7s var(--ease-out) 0.56s both; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Stats Bar ───────────────────────────────────────────────────── */
+    .stats-bar {
+      background: var(--brand);
+      padding: 3rem clamp(1.25rem, 6vw, 6rem);
+    }
+    .stats-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2rem;
+    }
+    @media (max-width: 640px) { .stats-inner { grid-template-columns: repeat(2, 1fr); } }
+    .stat-item { text-align: center; }
+    .stat-number {
+      font-family: var(--font-display);
+      font-size: clamp(2.25rem, 4vw, 3.5rem);
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1;
+      color: var(--brand-fg);
+      margin-bottom: 0.5rem;
+    }
+    .stat-label {
+      font-size: 0.875rem;
+      color: oklch(98% 0.004 148 / 0.75);
+      letter-spacing: 0.01em;
+      font-weight: 400;
+    }
+
+    /* ── Section commons ─────────────────────────────────────────────── */
+    .section { padding: clamp(4rem, 8vw, 7rem) clamp(1.25rem, 6vw, 6rem); }
+    .section-inner { max-width: 1200px; margin: 0 auto; }
+    .section-eyebrow {
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent-deep);
+      font-family: var(--font-mono);
+      margin-bottom: 1rem;
+    }
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      color: var(--fg);
+      margin-bottom: 1rem;
+    }
+    .section-sub {
+      font-size: 1.0625rem;
+      color: var(--muted);
+      max-width: 56ch;
+      line-height: 1.65;
+    }
+    .section-header { margin-bottom: 3.5rem; }
+    .section-header-split {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 2rem;
+      margin-bottom: 3.5rem;
+      flex-wrap: wrap;
+    }
+
+    /* Reveal animations */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.55s var(--ease-out), transform 0.55s var(--ease-out);
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: 0.08s; }
+    .reveal-delay-2 { transition-delay: 0.16s; }
+    .reveal-delay-3 { transition-delay: 0.24s; }
+    .reveal-delay-4 { transition-delay: 0.32s; }
+    .reveal-delay-5 { transition-delay: 0.40s; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .reveal { opacity: 1; transform: none; transition: none; }
+    }
+
+    /* ── Services Grid ───────────────────────────────────────────────── */
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+    }
+    @media (max-width: 1024px) { .services-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 560px)  { .services-grid { grid-template-columns: 1fr; } }
+
+    .service-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 1.75rem;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      transition: border-color var(--dur-base), box-shadow var(--dur-base), transform var(--dur-base) var(--ease-out);
+      cursor: pointer;
+    }
+    .service-card:hover {
+      border-color: var(--brand-light);
+      box-shadow: var(--sh-md);
+      transform: translateY(-3px);
+    }
+    .service-icon {
+      width: 48px; height: 48px;
+      background: var(--surface-brand);
+      border-radius: var(--r-md);
+      display: grid;
+      place-items: center;
+      margin-bottom: 1.25rem;
+      color: var(--brand);
+      transition: background var(--dur-base), transform var(--dur-base) var(--ease-out);
+    }
+    .service-card:hover .service-icon { background: oklch(93% 0.05 148); transform: scale(1.06); }
+    .service-icon svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+    .service-name {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--fg);
+      margin-bottom: 0.5rem;
+    }
+    .service-desc {
+      font-size: 0.875rem;
+      color: var(--muted);
+      line-height: 1.55;
+      flex: 1;
+      margin-bottom: 1.25rem;
+    }
+    .service-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--border);
+    }
+    .service-price { font-size: 0.8125rem; color: var(--subtle); }
+    .service-price strong { font-size: 0.9375rem; font-weight: 600; color: var(--accent-deep); }
+    .service-arrow {
+      width: 32px; height: 32px;
+      background: var(--n-100);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      transition: background var(--dur-base), transform var(--dur-base) var(--ease-out);
+    }
+    .service-card:hover .service-arrow { background: var(--brand); transform: rotate(-45deg) scale(1.1); }
+    .service-arrow svg { width: 14px; height: 14px; stroke: var(--muted); fill: none; stroke-width: 2; transition: stroke var(--dur-base); }
+    .service-card:hover .service-arrow svg { stroke: var(--brand-fg); }
+
+    /* ── How It Works ────────────────────────────────────────────────── */
+    .how-bg { background: var(--surface-2); }
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+      position: relative;
+    }
+    .steps-grid::before {
+      content: '';
+      position: absolute;
+      top: 2.25rem;
+      left: calc(12.5% + 1.5rem);
+      right: calc(12.5% + 1.5rem);
+      height: 1.5px;
+      background: var(--border);
+      z-index: 0;
+    }
+    @media (max-width: 768px) {
+      .steps-grid { grid-template-columns: repeat(2, 1fr); }
+      .steps-grid::before { display: none; }
+    }
+    @media (max-width: 480px) {
+      .steps-grid { grid-template-columns: 1fr; }
+    }
+    .step-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 1rem;
+      position: relative;
+      z-index: 1;
+    }
+    .step-num-circle {
+      width: 52px; height: 52px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+    }
+    .step-num-inner {
+      font-family: var(--font-display);
+      font-size: 1.625rem;
+      font-style: italic;
+      font-weight: 600;
+      color: var(--brand);
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+    .step-title {
+      font-family: var(--font-display);
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--fg);
+      letter-spacing: -0.01em;
+    }
+    .step-desc { font-size: 0.875rem; color: var(--muted); line-height: 1.55; max-width: 22ch; margin: 0 auto; }
+
+    /* ── Proof section ───────────────────────────────────────────────── */
+    .proof-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+    }
+    @media (max-width: 768px) { .proof-section { grid-template-columns: 1fr; gap: 2.5rem; } }
+
+    .proof-content {}
+    .proof-list {
+      margin-top: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+    .proof-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    .proof-icon {
+      width: 36px; height: 36px;
+      background: var(--surface-brand);
+      border-radius: var(--r-sm);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      color: var(--brand);
+      margin-top: 2px;
+    }
+    .proof-icon svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+    .proof-item-title { font-size: 0.9375rem; font-weight: 600; color: var(--fg); margin-bottom: 0.25rem; }
+    .proof-item-desc  { font-size: 0.875rem; color: var(--muted); line-height: 1.55; }
+
+    .proof-visual {
+      background: var(--brand);
+      border-radius: var(--r-xl);
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      min-height: 320px;
+      justify-content: flex-end;
+      position: relative;
+      overflow: hidden;
+    }
+    .proof-visual::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 70% 20%, oklch(42% 0.14 148 / 0.6), transparent 60%);
+    }
+    .proof-visual-label {
+      font-size: 0.75rem;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: oklch(98% 0.004 148 / 0.65);
+      font-family: var(--font-mono);
+      font-weight: 500;
+      position: relative;
+    }
+    .proof-visual-stat {
+      font-family: var(--font-display);
+      font-size: clamp(3rem, 7vw, 5rem);
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      color: var(--brand-fg);
+      position: relative;
+    }
+    .proof-visual-sub {
+      font-size: 0.875rem;
+      color: oklch(98% 0.004 148 / 0.75);
+      position: relative;
+      line-height: 1.5;
+    }
+
+    /* ── Testimonials ────────────────────────────────────────────────── */
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+    }
+    @media (max-width: 900px) { .testimonials-grid { grid-template-columns: 1fr; } }
+
+    .testimonial-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 1.75rem;
+      transition: box-shadow var(--dur-base), transform var(--dur-base) var(--ease-out);
+    }
+    .testimonial-card:hover { box-shadow: var(--sh-md); transform: translateY(-2px); }
+    .testimonial-stars { color: var(--accent); font-size: 0.875rem; letter-spacing: 0.06em; margin-bottom: 1.25rem; }
+    .testimonial-text {
+      font-family: var(--font-display);
+      font-size: 1.0625rem;
+      font-style: italic;
+      color: var(--fg);
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+    }
+    .testimonial-author { display: flex; align-items: center; gap: 0.75rem; }
+    .testimonial-avatar {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: var(--surface-brand);
+      display: grid;
+      place-items: center;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--brand);
+      flex-shrink: 0;
+    }
+    .testimonial-name { font-size: 0.875rem; font-weight: 600; color: var(--fg); }
+    .testimonial-city { font-size: 0.8125rem; color: var(--muted); }
+
+    /* ── CTA Banner ──────────────────────────────────────────────────── */
+    .cta-section {
+      background: var(--brand);
+      padding: clamp(4rem, 8vw, 7rem) clamp(1.25rem, 6vw, 6rem);
+      position: relative;
+      overflow: hidden;
+    }
+    .cta-section::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 80% 50%, oklch(42% 0.14 148 / 0.5), transparent 60%);
+      pointer-events: none;
+    }
+    .cta-inner {
+      max-width: 700px;
+      margin: 0 auto;
+      text-align: center;
+      position: relative;
+    }
+    .cta-title {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 4.5vw, 3.25rem);
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      color: var(--brand-fg);
+      margin-bottom: 1.25rem;
+    }
+    .cta-title em { font-style: italic; opacity: 0.85; }
+    .cta-sub { font-size: 1rem; color: oklch(98% 0.004 148 / 0.75); margin-bottom: 2.5rem; line-height: 1.65; }
+    .btn-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: var(--font-body);
+      font-size: 1.0625rem;
+      font-weight: 500;
+      background: var(--accent);
+      color: var(--accent-fg);
+      padding: 1rem 2.5rem;
+      border-radius: var(--r-md);
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      letter-spacing: 0.01em;
+      transition: background var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base);
+      box-shadow: var(--sh-accent);
+    }
+    .btn-cta:hover { background: oklch(60% 0.155 58); transform: translateY(-2px); box-shadow: 0 8px 24px oklch(67% 0.155 58 / 0.38); }
+    .btn-cta svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; transition: transform var(--dur-base); }
+    .btn-cta:hover svg { transform: translateX(3px); }
+
+    /* ── Footer ──────────────────────────────────────────────────────── */
+    .footer {
+      background: oklch(14% 0.016 250);
+      color: oklch(98% 0.004 148);
+      padding: clamp(3rem, 6vw, 5rem) clamp(1.25rem, 6vw, 6rem) 2rem;
+    }
+    .footer-inner { max-width: 1200px; margin: 0 auto; }
+    .footer-top {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 3rem;
+      margin-bottom: 3rem;
+      padding-bottom: 3rem;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    @media (max-width: 768px) {
+      .footer-top { grid-template-columns: 1fr 1fr; }
+      .footer-brand { grid-column: 1 / -1; }
+    }
+    @media (max-width: 480px) {
+      .footer-top { grid-template-columns: 1fr; }
+    }
+    .footer-brand-name {
+      font-family: var(--font-display);
+      font-size: 1.375rem;
+      font-weight: 600;
+      color: #fff;
+      letter-spacing: -0.01em;
+      margin-bottom: 0.75rem;
+    }
+    .footer-brand-desc { font-size: 0.875rem; color: rgba(255,255,255,0.5); line-height: 1.65; max-width: 32ch; margin-bottom: 1.5rem; }
+    .footer-contact-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8125rem;
+      color: rgba(255,255,255,0.55);
+      margin-bottom: 0.5rem;
+    }
+    .footer-contact-item svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 1.5; opacity: 0.6; flex-shrink: 0; }
+    .footer-col-title {
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.4);
+      font-family: var(--font-mono);
+      margin-bottom: 1.25rem;
+    }
+    .footer-links { list-style: none; display: flex; flex-direction: column; gap: 0.75rem; }
+    .footer-links a { font-size: 0.9rem; color: rgba(255,255,255,0.65); text-decoration: none; transition: color 150ms; }
+    .footer-links a:hover { color: #fff; }
+    .footer-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .footer-copy { font-size: 0.8125rem; color: rgba(255,255,255,0.35); }
+    .footer-legal { display: flex; gap: 1.5rem; }
+    .footer-legal a { font-size: 0.8125rem; color: rgba(255,255,255,0.35); text-decoration: none; transition: color 150ms; }
+    .footer-legal a:hover { color: rgba(255,255,255,0.7); }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--n-100); }
+    ::-webkit-scrollbar-thumb { background: var(--n-300); border-radius: 3px; }
+
+    /* ── Mobile bottom navigation ─────────────────────────────────────── */
+    .mobile-bottom-nav {
+      display: none;
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      height: 64px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      z-index: 200;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      align-items: stretch;
+    }
+    @media (max-width: 768px) {
+      .mobile-bottom-nav { display: flex; }
+      body { padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px)); }
+    }
+    .bottom-nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      color: var(--subtle);
+      text-decoration: none;
+      font-size: 0.6rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 0.5rem 0.25rem;
+      transition: color 150ms;
+      position: relative;
+    }
+    .bottom-nav-item svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.5; flex-shrink: 0; }
+    .bottom-nav-item.active { color: var(--brand); }
+    .bottom-nav-item.active::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 24px; height: 2.5px;
+      background: var(--brand);
+      border-radius: 0 0 3px 3px;
+    }
+    /* Center Book button */
+    .bottom-nav-book { color: var(--muted); }
+    .bottom-nav-pill {
+      width: 48px; height: 48px;
+      background: var(--brand);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--sh-brand);
+      transition: transform 150ms var(--ease-out), box-shadow 150ms;
+      margin-bottom: 2px;
+    }
+    .bottom-nav-book:active .bottom-nav-pill { transform: scale(0.93); }
+    .bottom-nav-pill svg { stroke: var(--brand-fg); width: 20px; height: 20px; }
+    .bottom-nav-book span { color: var(--brand); font-weight: 600; }
+
+    /* ── WhatsApp floating CTA ────────────────────────────────────────── */
+    .whatsapp-float {
+      position: fixed;
+      right: 1.5rem;
+      bottom: 1.5rem;
+      width: 52px; height: 52px;
+      background: #25D366;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      box-shadow: 0 4px 20px rgba(37,211,102,0.45), 0 2px 8px rgba(0,0,0,0.15);
+      z-index: 150;
+      transition: transform 200ms var(--ease-out), box-shadow 200ms;
+    }
+    .whatsapp-float:hover { transform: translateY(-2px) scale(1.06); box-shadow: 0 8px 28px rgba(37,211,102,0.55), 0 4px 12px rgba(0,0,0,0.18); }
+    .whatsapp-float svg { width: 28px; height: 28px; fill: #fff; flex-shrink: 0; }
+    @media (max-width: 768px) {
+      .whatsapp-float { bottom: calc(76px + env(safe-area-inset-bottom, 0px)); right: 1rem; width: 46px; height: 46px; }
+      .whatsapp-float svg { width: 24px; height: 24px; }
+    }
+
+    /* ── Hero lotus background element ───────────────────────────────── */
+    .hero-lotus {
+      position: absolute;
+      right: -5vw; top: 50%;
+      transform: translateY(-50%);
+      width: clamp(240px, 38vw, 520px);
+      height: clamp(240px, 38vw, 520px);
+      opacity: 0;
+      transition: opacity 1.2s 0.4s var(--ease-out);
+      pointer-events: none;
+    }
+    .hero-loaded .hero-lotus { opacity: 1; }
+    @media (max-width: 768px) {
+      .hero-lotus {
+        right: -20vw; top: auto;
+        bottom: 2rem;
+        width: clamp(180px, 60vw, 280px);
+        height: clamp(180px, 60vw, 280px);
+        opacity: 0;
+      }
+    }
+
+    /* ── Hindi Devanagari sub-labels ─────────────────────────────────── */
+    .service-name-deva {
+      font-family: 'Noto Sans Devanagari', 'Mangal', system-ui, sans-serif;
+      font-size: 0.75rem;
+      font-weight: 400;
+      color: var(--muted);
+      letter-spacing: 0.01em;
+      display: block;
+      margin-top: 2px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Navigation ──────────────────────────────────────────────────── -->
+<nav class="nav" id="nav">
+  <a href="index.html" class="nav-logo">
+    <div class="nav-logo-mark">
+      <svg viewBox="0 0 24 24"><path d="M12 3L3 9v12h6v-7h6v7h6V9L12 3z"/></svg>
+    </div>
+    <span class="nav-logo-name">Vrindavan Bhandara</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="services.html">Services</a></li>
+    <li><a href="#">About Us</a></li>
+    <li><a href="#">Gallery</a></li>
+    <li><a href="#">Contact</a></li>
+  </ul>
+  <div class="nav-right">
+    <a href="login.html" class="btn-nav-login">Sign In</a>
+    <a href="booking.html" class="btn-nav-primary">Book a Seva</a>
+  </div>
+  <button class="nav-hamburger" id="hamburger" aria-label="Open menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="services.html">Services</a>
+  <a href="#">About Us</a>
+  <a href="#">Gallery</a>
+  <a href="#">Contact</a>
+  <a href="login.html">Sign In</a>
+</div>
+
+<!-- ── Hero ────────────────────────────────────────────────────────── -->
+<section class="hero" id="hero">
+
+  <!-- Sacred lotus — geometric 8-petal, thin stroke, the single visual flourish -->
+  <svg class="hero-lotus" viewBox="0 0 400 400" fill="none" aria-hidden="true" focusable="false">
+    <g opacity="0.13" stroke="oklch(30% 0.12 148)" stroke-width="0.8">
+      <!-- Outer petals × 8 -->
+      <ellipse cx="200" cy="200" rx="32" ry="88" transform="rotate(0 200 200)"/>
+      <ellipse cx="200" cy="200" rx="32" ry="88" transform="rotate(45 200 200)"/>
+      <ellipse cx="200" cy="200" rx="32" ry="88" transform="rotate(90 200 200)"/>
+      <ellipse cx="200" cy="200" rx="32" ry="88" transform="rotate(135 200 200)"/>
+      <ellipse cx="200" cy="200" rx="32" ry="88" transform="rotate(180 200 200)"/>
+      <ellipse cx="200" cy="200" rx="32" ry="88" transform="rotate(225 200 200)"/>
+      <ellipse cx="200" cy="200" rx="32" ry="88" transform="rotate(270 200 200)"/>
+      <ellipse cx="200" cy="200" rx="32" ry="88" transform="rotate(315 200 200)"/>
+    </g>
+    <g opacity="0.18" stroke="oklch(30% 0.12 148)" stroke-width="0.7">
+      <!-- Middle petals × 8, offset 22.5° -->
+      <ellipse cx="200" cy="200" rx="22" ry="62" transform="rotate(22.5 200 200)"/>
+      <ellipse cx="200" cy="200" rx="22" ry="62" transform="rotate(67.5 200 200)"/>
+      <ellipse cx="200" cy="200" rx="22" ry="62" transform="rotate(112.5 200 200)"/>
+      <ellipse cx="200" cy="200" rx="22" ry="62" transform="rotate(157.5 200 200)"/>
+      <ellipse cx="200" cy="200" rx="22" ry="62" transform="rotate(202.5 200 200)"/>
+      <ellipse cx="200" cy="200" rx="22" ry="62" transform="rotate(247.5 200 200)"/>
+      <ellipse cx="200" cy="200" rx="22" ry="62" transform="rotate(292.5 200 200)"/>
+      <ellipse cx="200" cy="200" rx="22" ry="62" transform="rotate(337.5 200 200)"/>
+    </g>
+    <!-- Centre circles -->
+    <circle cx="200" cy="200" r="38" stroke="oklch(30% 0.12 148)" stroke-width="0.6" opacity="0.22"/>
+    <circle cx="200" cy="200" r="22" stroke="oklch(30% 0.12 148)" stroke-width="0.8" opacity="0.28"/>
+    <circle cx="200" cy="200" r="9"  stroke="oklch(30% 0.12 148)" stroke-width="1"   opacity="0.30"/>
+    <!-- Outer ring -->
+    <circle cx="200" cy="200" r="130" stroke="oklch(30% 0.12 148)" stroke-width="0.4" opacity="0.10" stroke-dasharray="4 8"/>
+  </svg>
+
+  <div class="hero-eyebrow">
+    <span class="dot"></span>
+    Over 5,200 Sacred Sevas Performed
+  </div>
+  <h1 class="hero-headline">
+    <em>Perform Sacred Seva</em> from Anywhere in India
+  </h1>
+  <p class="hero-sub">
+    Book Bhandara, Brahmin Bhoj, Gau Seva, and Annadan in Vrindavan and Mathura. We perform with devotion and send you photo & video proof within 24 hours.
+  </p>
+  <div class="hero-actions">
+    <a href="booking.html" class="btn-hero-primary">
+      Book a Seva
+      <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+    <a href="services.html" class="btn-hero-outline">Explore Services</a>
+  </div>
+  <div class="hero-trust">
+    <div class="hero-trust-item">
+      <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+      100% Secure Payments
+    </div>
+    <div class="hero-trust-item">
+      <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+      Photo & Video Proof
+    </div>
+    <div class="hero-trust-item">
+      <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+      Brahmin Pandits from Vrindavan
+    </div>
+    <div class="hero-trust-item">
+      <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+      12 Years of Service
+    </div>
+  </div>
+</section>
+
+<!-- ── Stats Bar ───────────────────────────────────────────────────── -->
+<section class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat-item reveal">
+      <div class="stat-number" data-count="5200">0</div>
+      <div class="stat-label">Sacred Sevas Performed</div>
+    </div>
+    <div class="stat-item reveal reveal-delay-1">
+      <div class="stat-number" data-count="52000">0</div>
+      <div class="stat-label">Devotees Fed</div>
+    </div>
+    <div class="stat-item reveal reveal-delay-2">
+      <div class="stat-number" data-count="12">0</div>
+      <div class="stat-label">Years of Trusted Service</div>
+    </div>
+    <div class="stat-item reveal reveal-delay-3">
+      <div class="stat-number" data-count="4.9" data-decimal="true">0</div>
+      <div class="stat-label">Average Customer Rating</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Services ────────────────────────────────────────────────────── -->
+<section class="section">
+  <div class="section-inner">
+    <div class="section-header-split">
+      <div>
+        <div class="section-eyebrow">Our Services</div>
+        <h2 class="section-title reveal">Every Seva, <em>performed with purpose</em></h2>
+        <p class="section-sub reveal reveal-delay-1">From intimate Brahmin feasts to large community Bhandaras — choose the Seva that speaks to your heart.</p>
+      </div>
+      <a href="services.html" style="display:inline-flex;align-items:center;gap:0.5rem;font-size:0.875rem;font-weight:500;color:var(--brand);text-decoration:none;white-space:nowrap;flex-shrink:0">
+        View all services
+        <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+    <div class="services-grid">
+      <a href="service-detail.html" class="service-card reveal">
+        <div class="service-icon">
+          <svg viewBox="0 0 24 24"><path d="M5 8h14M7 8c0-2.5 2-5 5-5s5 2.5 5 5M6.5 8l1.5 11h8l1.5-11"/><path d="M9.5 12.5h5M10 16.5h4"/></svg>
+        </div>
+        <div class="service-name">Bhandara Seva<span class="service-name-deva">भंडारा सेवा</span></div>
+        <div class="service-desc">Large-scale community feast for 100–1,000+ devotees in Vrindavan or Mathura. Food, venue, and Brahmin blessings included.</div>
+        <div class="service-footer">
+          <div class="service-price">From <strong>₹5,000</strong></div>
+          <div class="service-arrow">
+            <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </div>
+        </div>
+      </a>
+      <a href="service-detail.html" class="service-card reveal reveal-delay-1">
+        <div class="service-icon">
+          <svg viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="9" ry="9"/><ellipse cx="12" cy="12" rx="5" ry="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/></svg>
+        </div>
+        <div class="service-name">Brahmin Bhoj Seva<span class="service-name-deva">ब्राह्मण भोज सेवा</span></div>
+        <div class="service-desc">Sacred feast for 11, 21, or 51 Brahmin pandits with Vedic recitation, tilak, and dakshina ceremony.</div>
+        <div class="service-footer">
+          <div class="service-price">From <strong>₹2,100</strong></div>
+          <div class="service-arrow">
+            <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </div>
+        </div>
+      </a>
+      <a href="service-detail.html" class="service-card reveal reveal-delay-2">
+        <div class="service-icon">
+          <svg viewBox="0 0 24 24"><path d="M8 3c0 0-5 3-5 8 0 3 2 5 4 6l1-3c-1-1-2-2-2-3 0-3 2-5 2-5"/><path d="M16 3c0 0 5 3 5 8 0 3-2 5-4 6l-1-3c1-1 2-2 2-3 0-3-2-5-2-5"/><path d="M12 3v18M9 21h6"/></svg>
+        </div>
+        <div class="service-name">Gau Seva<span class="service-name-deva">गौ सेवा</span></div>
+        <div class="service-desc">Daily nourishment, medical care, and shelter for Lord Krishna's sacred cows in Vrindavan gaushalas.</div>
+        <div class="service-footer">
+          <div class="service-price">From <strong>₹501/month</strong></div>
+          <div class="service-arrow">
+            <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </div>
+        </div>
+      </a>
+      <a href="service-detail.html" class="service-card reveal reveal-delay-3">
+        <div class="service-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2L8 6H4v4l-2 2 2 2v4h4l4 4 4-4h4v-4l2-2-2-2V6h-4L12 2z"/></svg>
+        </div>
+        <div class="service-name">Vidhwa Seva<span class="service-name-deva">विधवा सेवा</span></div>
+        <div class="service-desc">Wholesome meals, warm clothing, and essential support for widows dedicated to devotional service in the holy dham.</div>
+        <div class="service-footer">
+          <div class="service-price">From <strong>₹1,100</strong></div>
+          <div class="service-arrow">
+            <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </div>
+        </div>
+      </a>
+      <a href="service-detail.html" class="service-card reveal reveal-delay-4">
+        <div class="service-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 3v4M3 12h4M17 12h4M12 17v4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M15.6 8.4l2.8-2.8M5.6 18.4l2.8-2.8"/></svg>
+        </div>
+        <div class="service-name">Annadan Seva<span class="service-name-deva">अन्नदान सेवा</span></div>
+        <div class="service-desc">Food donation for the needy, pilgrims, and sadhus in the holy dhams — a direct act of divine seva.</div>
+        <div class="service-footer">
+          <div class="service-price">From <strong>₹2,001</strong></div>
+          <div class="service-arrow">
+            <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </div>
+        </div>
+      </a>
+      <a href="service-detail.html" class="service-card reveal reveal-delay-5">
+        <div class="service-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 22V12M12 12l-5-5M12 12l5-5M5 7l3 3M16 7l3 3"/><circle cx="12" cy="5" r="2"/></svg>
+        </div>
+        <div class="service-name">Sadhu Bhojan Seva<span class="service-name-deva">साधु भोजन सेवा</span></div>
+        <div class="service-desc">Provide sattvic meals to ascetic saints and monks entirely dedicated to devotion in Vrindavan's ashrams.</div>
+        <div class="service-footer">
+          <div class="service-price">From <strong>₹1,100</strong></div>
+          <div class="service-arrow">
+            <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ── How It Works ────────────────────────────────────────────────── -->
+<section class="section how-bg">
+  <div class="section-inner">
+    <div class="section-header" style="text-align:center">
+      <div class="section-eyebrow reveal">Simple Process</div>
+      <h2 class="section-title reveal reveal-delay-1">Book in minutes, <em>we handle the rest</em></h2>
+      <p class="section-sub reveal reveal-delay-2" style="margin:0 auto">You focus on your intention. We take care of every detail — from the pujari to the prasad delivery.</p>
+    </div>
+    <div class="steps-grid">
+      <div class="step-item reveal">
+        <div class="step-num-circle">
+          <span class="step-num-inner">1</span>
+        </div>
+        <div class="step-title">Choose Your Seva</div>
+        <div class="step-desc">Select from Bhandara, Brahmin Bhoj, Gau Seva and more. Pick your package and date.</div>
+      </div>
+      <div class="step-item reveal reveal-delay-1">
+        <div class="step-num-circle">
+          <span class="step-num-inner">2</span>
+        </div>
+        <div class="step-title">Share Your Sankalp</div>
+        <div class="step-desc">Provide the name(s) for whom the Seva is being performed and any special intentions.</div>
+      </div>
+      <div class="step-item reveal reveal-delay-2">
+        <div class="step-num-circle">
+          <span class="step-num-inner">3</span>
+        </div>
+        <div class="step-title">We Perform with Care</div>
+        <div class="step-desc">Our experienced Brahmin pandits perform every Seva with full devotion and Vedic traditions.</div>
+      </div>
+      <div class="step-item reveal reveal-delay-3">
+        <div class="step-num-circle">
+          <span class="step-num-inner">4</span>
+        </div>
+        <div class="step-title">Receive Proof</div>
+        <div class="step-desc">Photos and videos of your Seva are delivered to your dashboard and WhatsApp within 24 hours.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Proof Section ───────────────────────────────────────────────── -->
+<section class="section">
+  <div class="section-inner">
+    <div class="proof-section">
+      <div class="proof-content reveal">
+        <div class="section-eyebrow">Transparent by Design</div>
+        <h2 class="section-title">Every Seva is documented for you</h2>
+        <p class="section-sub">We believe in complete transparency. From the moment your Seva begins to its completion, you receive real-time evidence of every sacred act performed in your name.</p>
+        <div class="proof-list">
+          <div class="proof-item">
+            <div class="proof-icon">
+              <svg viewBox="0 0 24 24"><path d="M15 8h.01M9 11l3 3 7-7"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+            </div>
+            <div>
+              <div class="proof-item-title">Live photo updates</div>
+              <div class="proof-item-desc">30–50 high-resolution photos from your Seva, uploaded to your dashboard in real time.</div>
+            </div>
+          </div>
+          <div class="proof-item">
+            <div class="proof-icon">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M10 8l6 4-6 4V8z" fill="currentColor" stroke="none"/></svg>
+            </div>
+            <div>
+              <div class="proof-item-title">Video documentation</div>
+              <div class="proof-item-desc">A full-length video of your Seva, including the sankalp recitation with your name.</div>
+            </div>
+          </div>
+          <div class="proof-item">
+            <div class="proof-icon">
+              <svg viewBox="0 0 24 24"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M8 12h4l3 3"/></svg>
+            </div>
+            <div>
+              <div class="proof-item-title">WhatsApp delivery</div>
+              <div class="proof-item-desc">All proof is delivered directly to your WhatsApp number within 2–24 hours of completion.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="proof-visual reveal reveal-delay-2">
+        <div class="proof-visual-label">SEVAS DOCUMENTED</div>
+        <div class="proof-visual-stat">5,200+</div>
+        <div class="proof-visual-sub">Every single Seva since 2012 has been photographed, documented, and delivered to our customers.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Pull Quote ──────────────────────────────────────────────────── -->
+<section style="background:var(--surface-2);padding:clamp(3rem,6vw,5rem) clamp(1.25rem,6vw,6rem)">
+  <div style="max-width:900px;margin:0 auto;text-align:center">
+    <div class="reveal" style="font-family:var(--font-display);font-size:clamp(1.75rem,4vw,2.75rem);font-style:italic;font-weight:400;line-height:1.3;letter-spacing:-0.015em;color:var(--fg)">
+      "Yato Dharmam tato Jaya. Where there is dharma, there is victory."
+    </div>
+    <div class="reveal reveal-delay-1" style="margin-top:1.5rem;font-size:0.875rem;color:var(--muted);letter-spacing:0.04em;text-transform:uppercase;font-family:var(--font-mono);font-weight:500">Mahabharata · Our guiding principle</div>
+  </div>
+</section>
+
+<!-- ── Testimonials ────────────────────────────────────────────────── -->
+<section class="section">
+  <div class="section-inner">
+    <div class="section-header" style="text-align:center">
+      <div class="section-eyebrow reveal">What People Say</div>
+      <h2 class="section-title reveal reveal-delay-1">Trusted by families <em>across the world</em></h2>
+    </div>
+    <div class="testimonials-grid">
+      <div class="testimonial-card reveal">
+        <div class="testimonial-stars">★★★★★</div>
+        <div class="testimonial-text">"My mother had a last wish to sponsor a Bhandara in Vrindavan. She passed away before she could. We booked it through Vrindavan Bhandara — they performed it beautifully and sent 42 photos. My mother's wish was fulfilled."</div>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">RS</div>
+          <div>
+            <div class="testimonial-name">Rajesh Sharma</div>
+            <div class="testimonial-city">Mumbai · Bhandara Seva</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card reveal reveal-delay-1">
+        <div class="testimonial-stars">★★★★★</div>
+        <div class="testimonial-text">"I've been sponsoring Gau Seva every month for two years. The photos each month remind me why I started this. These cows are genuinely cared for. I'd give six stars if I could."</div>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">MP</div>
+          <div>
+            <div class="testimonial-name">Meera Patel</div>
+            <div class="testimonial-city">Ahmedabad · Gau Seva (Monthly)</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card reveal reveal-delay-2">
+        <div class="testimonial-stars">★★★★★</div>
+        <div class="testimonial-text">"We book the Brahmin Bhoj on every family occasion. It is the most meaningful thing we do. The Pandits recite our family members' names in the sankalp — it feels deeply personal."</div>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">AJ</div>
+          <div>
+            <div class="testimonial-name">Arvind Joshi</div>
+            <div class="testimonial-city">Pune · Brahmin Bhoj Seva</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ─────────────────────────────────────────────────────────── -->
+<section class="cta-section">
+  <div class="cta-inner reveal">
+    <h2 class="cta-title">Begin your <em>Seva</em> today</h2>
+    <p class="cta-sub">Join thousands of families across India who trust Vrindavan Bhandara to perform their sacred Seva with authenticity, devotion, and complete transparency.</p>
+    <a href="booking.html" class="btn-cta">
+      Book a Seva
+      <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+</section>
+
+<!-- ── Footer ──────────────────────────────────────────────────────── -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="footer-brand-name">Vrindavan Bhandara</div>
+        <div class="footer-brand-desc">India's most trusted platform for sacred Seva booking in Vrindavan and Mathura. Established 2012.</div>
+        <div class="footer-contact-item">
+          <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 8.63 19.79 19.79 0 01.99 2 2 2 0 013 .04h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L7.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0122 14.92z"/></svg>
+          +91 98765 43210
+        </div>
+        <div class="footer-contact-item">
+          <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M22 6l-10 7L2 6"/></svg>
+          seva@vrindavanbhandara.com
+        </div>
+      </div>
+      <div>
+        <div class="footer-col-title">Services</div>
+        <ul class="footer-links">
+          <li><a href="#">Bhandara Seva</a></li>
+          <li><a href="#">Brahmin Bhoj Seva</a></li>
+          <li><a href="#">Gau Seva</a></li>
+          <li><a href="#">Vidhwa Seva</a></li>
+          <li><a href="#">Annadan Seva</a></li>
+          <li><a href="#">Sadhu Bhojan</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Company</div>
+        <ul class="footer-links">
+          <li><a href="#">About Us</a></li>
+          <li><a href="#">Our Pandits</a></li>
+          <li><a href="#">Gallery</a></li>
+          <li><a href="#">Testimonials</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Account</div>
+        <ul class="footer-links">
+          <li><a href="login.html">Sign In</a></li>
+          <li><a href="register.html">Register</a></li>
+          <li><a href="dashboard.html">My Dashboard</a></li>
+          <li><a href="#">My Bookings</a></li>
+          <li><a href="admin-login.html">Admin</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-copy">© 2025 Vrindavan Bhandara. All rights reserved.</div>
+      <div class="footer-legal">
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+        <a href="#">Refund Policy</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ── Mobile Bottom Navigation ─────────────────────────────────── -->
+<nav class="mobile-bottom-nav" aria-label="Main navigation">
+  <a href="home.html" class="bottom-nav-item active" aria-current="page">
+    <svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
+    <span>Home</span>
+  </a>
+  <a href="services.html" class="bottom-nav-item">
+    <svg viewBox="0 0 24 24"><path d="M4 6h16M4 10h16M4 14h10M4 18h7"/></svg>
+    <span>Sevas</span>
+  </a>
+  <a href="booking.html" class="bottom-nav-item bottom-nav-book">
+    <div class="bottom-nav-pill">
+      <svg viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+    </div>
+    <span>Book</span>
+  </a>
+  <a href="dashboard.html" class="bottom-nav-item">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    <span>My Sevas</span>
+  </a>
+  <a href="#" class="bottom-nav-item">
+    <svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.5" fill="currentColor" stroke="none"/></svg>
+    <span>More</span>
+  </a>
+</nav>
+
+<!-- ── WhatsApp Floating CTA ─────────────────────────────────────── -->
+<a href="https://wa.me/919876543210?text=Namaste%2C%20I%20would%20like%20to%20enquire%20about%20booking%20a%20Seva." target="_blank" rel="noopener noreferrer" class="whatsapp-float" aria-label="Chat on WhatsApp for Seva enquiry">
+  <svg viewBox="0 0 24 24" fill="currentColor">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+  </svg>
+</a>
+
+<script>
+  // ── Sticky nav ──────────────────────────────────────────────────
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 20);
+  }, { passive: true });
+
+  // ── Hamburger ───────────────────────────────────────────────────
+  const ham = document.getElementById('hamburger');
+  const menu = document.getElementById('mobileMenu');
+  ham.addEventListener('click', () => {
+    const open = menu.classList.toggle('open');
+    ham.querySelectorAll('span')[0].style.transform = open ? 'rotate(45deg) translate(5px, 5px)' : '';
+    ham.querySelectorAll('span')[1].style.opacity = open ? '0' : '1';
+    ham.querySelectorAll('span')[2].style.transform = open ? 'rotate(-45deg) translate(5px, -5px)' : '';
+  });
+
+  // ── Hero load animation ─────────────────────────────────────────
+  window.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('hero').classList.add('hero-loaded');
+  });
+
+  // ── Scroll reveals ──────────────────────────────────────────────
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // ── Animated counters (respects prefers-reduced-motion) ─────────
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const counterObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      const el = e.target;
+      const target = parseFloat(el.dataset.count);
+      const isDecimal = el.dataset.decimal === 'true';
+      // Snap to final value immediately when reduced-motion is preferred
+      if (prefersReducedMotion) {
+        if (isDecimal) el.textContent = target.toFixed(1);
+        else if (target >= 10000) el.textContent = (target / 1000).toFixed(1) + 'K+';
+        else if (target === 12) el.textContent = target + ' Yrs';
+        else el.textContent = target.toLocaleString('en-IN') + '+';
+        counterObserver.unobserve(el);
+        return;
+      }
+      const duration = 1800;
+      const start = Date.now();
+      const eased = t => 1 - Math.pow(1 - t, 3);
+      const tick = () => {
+        const progress = Math.min((Date.now() - start) / duration, 1);
+        const value = target * eased(progress);
+        if (isDecimal) {
+          el.textContent = value.toFixed(1);
+        } else if (target >= 10000) {
+          el.textContent = (value / 1000).toFixed(1) + 'K+';
+        } else {
+          el.textContent = Math.round(value).toLocaleString('en-IN') + (target === 12 ? '' : '+');
+        }
+        if (target === 12) el.textContent = Math.round(value) + ' Yrs';
+        if (progress < 1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+      counterObserver.unobserve(el);
+    });
+  }, { threshold: 0.5 });
+  document.querySelectorAll('[data-count]').forEach(el => counterObserver.observe(el));
+</script>
+</body>
+</html>

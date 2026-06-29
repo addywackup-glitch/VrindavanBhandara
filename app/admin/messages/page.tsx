@@ -50,22 +50,25 @@ export default async function MessagesPage({
   ]);
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-800">Messages</h1>
-        <p className="text-gray-500 text-sm mt-1">{total} total messages. {unread} unread.</p>
+    <>
+      <div className="adm-section-header">
+        <div>
+          <div className="adm-section-title">Messages</div>
+          <p style={{ fontSize: "0.875rem", color: "var(--muted)", marginTop: "0.25rem" }}>
+            {total} total · {unread} unread
+          </p>
+        </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="adm-stats-row" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
         {[
-          { label: "Unread", count: unread, color: "#8B1E1E", bg: "#FDF2F2" },
-          { label: "Total", count: total, color: "#1d4ed8", bg: "#EFF6FF" },
-          { label: "Replied", count: replied, color: "#15803d", bg: "#F0FDF4" },
+          { label: "Unread", value: unread },
+          { label: "Total", value: total },
+          { label: "Replied", value: replied },
         ].map((s) => (
-          <div key={s.label} className="bg-white rounded-2xl border p-4 text-center" style={{ borderColor: "rgba(212,175,55,0.1)" }}>
-            <p className="text-2xl font-bold" style={{ color: s.color }}>{s.count}</p>
-            <p className="text-xs text-gray-500 mt-0.5">{s.label}</p>
+          <div key={s.label} className="adm-stat-card">
+            <div className="adm-stat-label">{s.label}</div>
+            <div className="adm-stat-value">{s.value}</div>
           </div>
         ))}
       </div>
@@ -77,6 +80,6 @@ export default async function MessagesPage({
         totalPages={totalPages}
         filter={filter}
       />
-    </div>
+    </>
   );
 }

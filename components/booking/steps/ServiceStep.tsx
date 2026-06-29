@@ -1,26 +1,30 @@
 "use client";
 
+// =============================================================================
+// Step 1 — Choose Your Seva
+// Fetches active services from /api/services and renders a selection grid
+// =============================================================================
+
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { ArrowRight, Loader2 } from "lucide-react";
 import type { BookingFormData } from "@/types";
 
-type ServiceCategory = {
+type ServiceCard = {
   id: string;
   type: string;
   name: string;
   slug: string;
   shortDesc: string;
   icon: string | null;
+  minPrice?: number | null;
 };
 
-const FALLBACK_SERVICES: ServiceCategory[] = [
-  { id: "bhandara", type: "BHANDARA", name: "Bhandara Booking", slug: "bhandara", shortDesc: "Large-scale community feast for hundreds of devotees", icon: "🍱" },
-  { id: "brahmin-bhoj", type: "BRAHMIN_BHOJ", name: "Brahmin Bhoj Seva", slug: "brahmin-bhoj", shortDesc: "Sacred feast for Brahmin priests", icon: "🪔" },
-  { id: "gau-seva", type: "GAU_SEVA", name: "Gau Seva", slug: "gau-seva", shortDesc: "Daily, weekly or monthly care for sacred cows", icon: "🐄" },
-  { id: "sadhu-bhojan", type: "SADHU_BHOJAN", name: "Sadhu Bhojan Seva", slug: "sadhu-bhojan", shortDesc: "Meals for saints and ascetics", icon: "🌸" },
-  { id: "festival-seva", type: "FESTIVAL_SEVA", name: "Festival Seva", slug: "festival-seva", shortDesc: "Janmashtami, Holi, Radhashtami & more", icon: "🎊" },
-  { id: "annadan-seva", type: "ANNADAN_SEVA", name: "Annadan Seva", slug: "annadan", shortDesc: "Food donation for the needy in the holy dhams", icon: "🌾" },
+const FALLBACK_SERVICES: ServiceCard[] = [
+  { id: "bhandara", type: "BHANDARA", name: "Bhandara Seva", slug: "bhandara", shortDesc: "Large-scale community feast for hundreds of devotees", icon: "🍱", minPrice: 5000 },
+  { id: "brahmin-bhoj", type: "BRAHMIN_BHOJ", name: "Brahmin Bhoj Seva", slug: "brahmin-bhoj", shortDesc: "Sacred feast for Brahmin priests", icon: "🪔", minPrice: 2100 },
+  { id: "gau-seva", type: "GAU_SEVA", name: "Gau Seva", slug: "gau-seva", shortDesc: "Daily, weekly or monthly care for sacred cows", icon: "🐄", minPrice: 501 },
+  { id: "sadhu-bhojan", type: "SADHU_BHOJAN", name: "Sadhu Bhojan Seva", slug: "sadhu-bhojan", shortDesc: "Meals for saints and ascetics", icon: "🌸", minPrice: 1100 },
+  { id: "annadan", type: "ANNADAN_SEVA", name: "Annadan Seva", slug: "annadan", shortDesc: "Food donation for the needy in the holy dhams", icon: "🌾", minPrice: 2001 },
+  { id: "vidhwa-seva", type: "VIDHWA_SEVA", name: "Vidhwa Seva", slug: "vidhwa-seva", shortDesc: "Serving widows of Vrindavan with food & care", icon: "🕊️", minPrice: 1100 },
 ];
 
 type Props = {
@@ -29,98 +33,135 @@ type Props = {
   onNext: () => void;
 };
 
+function formatINR(n: number) {
+  return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n);
+}
+
+function ServiceSkeleton() {
+  return (
+    <div className="service-selector" aria-busy="true" aria-label="Loading services">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div
+          key={i}
+          className="service-opt"
+          style={{
+            background: "var(--n-50)",
+            borderColor: "var(--border)",
+            cursor: "default",
+            animation: "pulse 1.5s ease-in-out infinite",
+            animationDelay: `${i * 0.1}s`,
+          }}
+        >
+          <div style={{ width: 40, height: 40, borderRadius: "var(--r-sm)", background: "var(--n-100)" }} />
+          <div style={{ height: 14, width: "70%", borderRadius: 4, background: "var(--n-200)" }} />
+          <div style={{ height: 12, width: "50%", borderRadius: 4, background: "var(--n-100)" }} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function ServiceStep({ form, updateForm, onNext }: Props) {
-  const [services, setServices] = useState<ServiceCategory[]>([]);
+  const [services, setServices] = useState<ServiceCard[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
     fetch("/api/services")
       .then((r) => r.json())
-      .then((d) => {
-        if (d.success && d.data?.length > 0) {
+      .then((d: { success: boolean; data?: ServiceCard[] }) => {
+        if (cancelled) return;
+        if (d.success && d.data && d.data.length > 0) {
           setServices(d.data);
         } else {
           setServices(FALLBACK_SERVICES);
         }
       })
-      .catch(() => setServices(FALLBACK_SERVICES))
-      .finally(() => setLoading(false));
+      .catch(() => {
+        if (!cancelled) {
+          setFetchError(true);
+          setServices(FALLBACK_SERVICES);
+        }
+      })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
   }, []);
 
-  const handleSelect = (service: ServiceCategory) => {
+  const handleSelect = (service: ServiceCard) => {
     updateForm({
       serviceCategoryId: service.id,
+      serviceSlug: service.slug,
       serviceType: service.type,
       serviceName: service.name,
       packageId: "",
       packageName: "",
       packagePrice: 0,
+      packageOriginalPrice: null,
+      packageMaxGuests: null,
+      packageBadge: null,
     });
   };
 
+  const canContinue = !!form.serviceCategoryId;
+
   return (
     <div>
-      <h2 className="font-heading text-2xl text-charcoal mb-2">Choose Your Seva</h2>
-      <p className="text-gray-500 text-sm mb-8">
-        Select the type of sacred seva you wish to sponsor in Vrindavan or Mathura.
-      </p>
+      <div className="step-heading">Choose your Seva</div>
+      <div className="step-sub">
+        Select the sacred service you&apos;d like to sponsor in Vrindavan or Mathura.
+      </div>
+
+      {fetchError && (
+        <p style={{ fontSize: "0.8125rem", color: "var(--muted)", marginBottom: "0.75rem" }}>
+          Using default services — could not connect to server.
+        </p>
+      )}
 
       {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-8 h-8 animate-spin text-gold-500" />
-        </div>
+        <ServiceSkeleton />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {services.map((service, i) => {
+        <div className="service-selector" role="listbox" aria-label="Choose a seva">
+          {services.map((service) => {
             const isSelected = form.serviceCategoryId === service.id;
             return (
-              <motion.button
+              <button
                 key={service.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.06 }}
+                role="option"
+                aria-selected={isSelected}
+                className={`service-opt${isSelected ? " selected" : ""}`}
                 onClick={() => handleSelect(service)}
-                className={`relative p-5 rounded-2xl border-2 text-left transition-all duration-200 group ${
-                  isSelected
-                    ? "border-gold-500 bg-gold-50 shadow-luxury"
-                    : "border-gray-100 bg-white hover:border-gold-300 hover:shadow-card"
-                }`}
+                type="button"
               >
-                {isSelected && (
-                  <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-gradient-gold flex items-center justify-center">
-                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                )}
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-3 transition-transform group-hover:scale-110"
-                  style={{ background: "linear-gradient(135deg, rgba(212,175,55,0.15), rgba(255,119,34,0.1))" }}
-                >
+                <div className="service-opt-icon" aria-hidden="true">
                   {service.icon ?? "🙏"}
                 </div>
-                <h3 className={`font-heading font-bold text-base mb-1 ${isSelected ? "text-gold-700" : "text-charcoal"}`}>
-                  {service.name}
-                </h3>
-                <p className="text-gray-500 text-xs leading-relaxed">{service.shortDesc}</p>
-              </motion.button>
+                <div className="service-opt-name">{service.name}</div>
+                {service.minPrice != null && (
+                  <div className="service-opt-price">From {formatINR(service.minPrice)}</div>
+                )}
+                <div className="service-opt-check" aria-hidden="true" />
+              </button>
             );
           })}
         </div>
       )}
 
-      {form.serviceCategoryId && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mt-6 flex justify-end"
+      <div className="step-nav">
+        <div />
+        <button
+          className="btn-next"
+          onClick={onNext}
+          disabled={!canContinue || loading}
+          aria-disabled={!canContinue || loading}
+          type="button"
         >
-          <button onClick={onNext} className="btn-gold px-8 py-3">
-            Continue to Packages
-            <ArrowRight className="w-4 h-4 ml-1" />
-          </button>
-        </motion.div>
-      )}
+          Continue
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M5 12h14M12 5l7 7-7 7" />
+          </svg>
+        </button>
+      </div>
     </div>
   );
 }

@@ -3,9 +3,9 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { formatAdminDate } from "@/lib/admin-ui";
 
-export const metadata: Metadata = { title: "User Management" };
+export const metadata: Metadata = { title: "Customers" };
 
 type SearchParams = { search?: string; page?: string };
 
@@ -31,9 +31,7 @@ async function getUsers({ search, page }: SearchParams) {
       orderBy: { createdAt: "desc" },
       skip,
       take: pageSize,
-      include: {
-        _count: { select: { bookings: true } },
-      },
+      include: { _count: { select: { bookings: true } } },
     }),
     prisma.user.count({ where }),
   ]);
@@ -53,105 +51,86 @@ export default async function AdminUsersPage({
   const { users, total, page, totalPages } = await getUsers(params);
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
+    <>
+      <div className="adm-section-header">
         <div>
-          <h1 className="font-heading text-2xl font-bold text-gray-800">Users</h1>
-          <p className="text-sm text-gray-400 mt-0.5">{total.toLocaleString("en-IN")} registered customers</p>
+          <div className="adm-section-title">Customers</div>
+          <p style={{ fontSize: "0.875rem", color: "var(--muted)", marginTop: "0.25rem" }}>
+            {total.toLocaleString("en-IN")} registered customers
+          </p>
         </div>
       </div>
 
-      {/* Search */}
-      <div className="rounded-2xl p-4 mb-5" style={{ background: "white", border: "1px solid rgba(212,175,55,0.1)" }}>
-        <form method="GET" className="flex gap-3">
-          <input
-            name="search"
-            defaultValue={params.search}
-            placeholder="Search by name, email, or phone..."
-            className="flex-1 px-4 py-2.5 rounded-xl text-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-300 text-gray-700"
-          />
-          <button
-            type="submit"
-            className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white"
-            style={{ background: "linear-gradient(135deg, #D4AF37, #FF7722)" }}
-          >
-            Search
-          </button>
-        </form>
+      <div className="adm-detail-card" style={{ marginBottom: "1.25rem" }}>
+        <div className="adm-detail-card-body" style={{ paddingTop: "1rem", paddingBottom: "1rem" }}>
+          <form method="GET">
+            <div className="adm-search-wrap" style={{ maxWidth: 480 }}>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" /></svg>
+              <input
+                name="search"
+                className="adm-search-input"
+                style={{ width: "100%" }}
+                defaultValue={params.search}
+                placeholder="Search by name, email, phone, or booking #…"
+                aria-label="Search customers"
+              />
+            </div>
+          </form>
+        </div>
       </div>
 
-      {/* Table */}
-      <div className="rounded-2xl overflow-hidden" style={{ background: "white", boxShadow: "0 2px 12px rgba(0,0,0,0.05)", border: "1px solid rgba(212,175,55,0.08)" }}>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr style={{ background: "#FAFAF8" }}>
-                {["Name", "Email", "Phone", "Bookings", "Joined", "Status", ""].map((h) => (
-                  <th key={h} className="text-left px-5 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-wider whitespace-nowrap">
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user) => (
-                <tr key={user.id} className="border-t border-gray-50 hover:bg-amber-50/20 transition-colors">
-                  <td className="px-5 py-3.5">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
-                        style={{ background: "linear-gradient(135deg, #D4AF37, #FF7722)" }}
-                      >
-                        {user.name.charAt(0).toUpperCase()}
-                      </div>
-                      <span className="font-semibold text-gray-800 text-xs">{user.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-5 py-3.5 text-xs text-gray-500">{user.email}</td>
-                  <td className="px-5 py-3.5 text-xs text-gray-500">{user.phone ?? "—"}</td>
-                  <td className="px-5 py-3.5">
-                    <span className="font-bold text-gray-700 text-xs">{user._count.bookings}</span>
-                  </td>
-                  <td className="px-5 py-3.5 text-xs text-gray-400 whitespace-nowrap">
-                    {new Date(user.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold ${user.isActive ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
-                      {user.isActive ? "Active" : "Inactive"}
-                    </span>
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <Link
-                      href={`/admin/bookings?search=${encodeURIComponent(user.email)}`}
-                      className="text-[11px] font-semibold text-yellow-600 hover:text-orange-500 flex items-center gap-1"
-                    >
-                      Bookings <ArrowRight className="w-3 h-3" />
-                    </Link>
-                  </td>
-                </tr>
+      <div className="adm-table-card">
+        <table className="adm-table">
+          <thead>
+            <tr>
+              {["Customer", "Email", "Phone", "Bookings", "Joined", "Status", ""].map((h) => (
+                <th key={h || "action"} scope="col">{h}</th>
               ))}
-            </tbody>
-          </table>
-          {users.length === 0 && (
-            <div className="py-20 text-center text-gray-400 text-sm">No users found</div>
-          )}
-        </div>
-
-        {/* Pagination */}
+            </tr>
+          </thead>
+          <tbody>
+            {users.map((user) => (
+              <tr key={user.id}>
+                <td>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                    <div className="adm-profile-avatar" style={{ width: 32, height: 32, fontSize: "0.75rem" }}>
+                      {user.name.charAt(0).toUpperCase()}
+                    </div>
+                    <span style={{ fontWeight: 600 }}>{user.name}</span>
+                  </div>
+                </td>
+                <td style={{ color: "var(--muted)", fontSize: "0.8125rem" }}>{user.email}</td>
+                <td style={{ color: "var(--muted)", fontSize: "0.8125rem" }}>{user.phone ?? "—"}</td>
+                <td style={{ fontWeight: 600 }}>{user._count.bookings}</td>
+                <td style={{ color: "var(--muted)", fontSize: "0.8125rem", whiteSpace: "nowrap" }}>
+                  {formatAdminDate(user.createdAt)}
+                </td>
+                <td>
+                  <span className={`adm-badge ${user.isActive ? "adm-badge-confirmed" : "adm-badge-cancelled"}`}>
+                    {user.isActive ? "Active" : "Inactive"}
+                  </span>
+                </td>
+                <td>
+                  <Link href={`/admin/users/${user.id}`} className="adm-action-btn">View Profile</Link>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {users.length === 0 && (
+          <div className="adm-empty"><div className="adm-empty-title">No customers found</div></div>
+        )}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-5 py-4 border-t border-gray-50">
-            <p className="text-xs text-gray-400">Page {page} of {totalPages}</p>
-            <div className="flex gap-2">
+          <div className="adm-pagination">
+            <p className="adm-pagination-info">Page {page} of {totalPages}</p>
+            <div className="adm-filter-row">
               {page > 1 && (
-                <Link href={`/admin/users?page=${page - 1}${params.search ? `&search=${params.search}` : ""}`}
-                  className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 text-gray-600 hover:bg-gray-200">
+                <Link href={`/admin/users?page=${page - 1}${params.search ? `&search=${params.search}` : ""}`} className="adm-filter-btn">
                   Previous
                 </Link>
               )}
               {page < totalPages && (
-                <Link href={`/admin/users?page=${page + 1}${params.search ? `&search=${params.search}` : ""}`}
-                  className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white"
-                  style={{ background: "linear-gradient(135deg, #D4AF37, #FF7722)" }}>
+                <Link href={`/admin/users?page=${page + 1}${params.search ? `&search=${params.search}` : ""}`} className="adm-filter-btn active">
                   Next
                 </Link>
               )}
@@ -159,6 +138,6 @@ export default async function AdminUsersPage({
           </div>
         )}
       </div>
-    </div>
+    </>
   );
 }
