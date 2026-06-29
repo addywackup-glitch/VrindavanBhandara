@@ -13,7 +13,7 @@ import type { SessionUser } from "@/types";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
-  session: { strategy: "jwt" },
+  session: { strategy: "jwt", maxAge: 24 * 60 * 60, updateAge: 60 * 60 },
   pages: {
     signIn: "/login",
     error: "/login",
@@ -22,7 +22,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      allowDangerousEmailAccountLinking: true,
+      allowDangerousEmailAccountLinking: false,
     }),
     Credentials({
       name: "credentials",
@@ -57,8 +57,33 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           if (admin?.isActive) {
             token.adminRole = admin.role;
           }
-        } catch {
-          // silently ignore — token will be missing adminRole but RBAC will handle it
+        } catch (error) {
+          console.error("[auth:jwt] adminRole hydration failed", error);
+        }
+      }
+
+      // Re-validate account status periodically (every 15 minutes)
+      const lastCheck = (token.isActiveCheck as number | undefined) ?? 0;
+      if (token.id && Date.now() - lastCheck > 15 * 60 * 1000) {
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.id as string },
+            select: {
+              isActive: true,
+              role: true,
+              admin: { select: { role: true, isActive: true } },
+            },
+          });
+          token.isActiveCheck = Date.now();
+          if (!dbUser?.isActive) {
+            token.error = "UserInactive";
+          } else {
+            delete token.error;
+            token.role = dbUser.role;
+            token.adminRole = dbUser.admin?.isActive ? dbUser.admin.role : undefined;
+          }
+        } catch (error) {
+          console.error("[auth:jwt] session refresh failed", error);
         }
       }
 
@@ -82,6 +107,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return token;
     },
     async session({ session, token }) {
+      if (token.error === "UserInactive") {
+        return { ...session, user: undefined, expires: new Date(0).toISOString() };
+      }
       if (token) {
         session.user.id = token.id as string;
         session.user.role = token.role as SessionUser["role"];

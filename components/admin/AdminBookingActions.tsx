@@ -2,54 +2,76 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Upload, Loader2, CheckCircle, X } from "lucide-react";
+import type { BookingStatus } from "@prisma/client";
+import { BOOKING_STATUS_LABELS, DESTRUCTIVE_STATUSES } from "@/lib/booking-transitions";
 
-const NEXT_STATUS: Record<string, { label: string; status: string; color: string }> = {
-  PENDING: { label: "Confirm Booking", status: "CONFIRMED", color: "#3B82F6" },
-  CONFIRMED: { label: "Mark In Progress", status: "IN_PROGRESS", color: "#FF7722" },
-  IN_PROGRESS: { label: "Mark Completed", status: "COMPLETED", color: "#10B981" },
+type TransitionAction = {
+  status: BookingStatus;
+  label: string;
+  variant: "primary" | "danger";
 };
+
+const ACTION_LABELS: Record<BookingStatus, string> = {
+  CONFIRMED: "Confirm Booking",
+  IN_PROGRESS: "Mark In Progress",
+  COMPLETED: "Mark Completed",
+  CANCELLED: "Cancel Booking",
+  REFUNDED: "Process Refund",
+  PENDING: "Set Pending",
+};
+
+function buildActions(allowed: BookingStatus[]): TransitionAction[] {
+  return allowed.map((status) => ({
+    status,
+    label: ACTION_LABELS[status] ?? status,
+    variant: DESTRUCTIVE_STATUSES.includes(status) ? "danger" : "primary",
+  }));
+}
 
 export function AdminBookingActions({
   bookingId,
   currentStatus,
+  allowedTransitions,
 }: {
   bookingId: string;
-  currentStatus: string;
+  currentStatus: BookingStatus;
+  allowedTransitions: BookingStatus[];
 }) {
   const router = useRouter();
+  const [adminNotes, setAdminNotes] = useState("");
+  const [completionNotes, setCompletionNotes] = useState("");
+  const [proofUrl, setProofUrl] = useState("");
+  const [proofType, setProofType] = useState<"PHOTO" | "VIDEO">("PHOTO");
+  const [proofCaption, setProofCaption] = useState("");
+  const [pendingAction, setPendingAction] = useState<TransitionAction | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [note, setNote] = useState("");
+  const [isUploadingProof, setIsUploadingProof] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  // Proof upload state
-  const [proofUrl, setProofUrl] = useState("");
-  const [proofType, setProofType] = useState<"IMAGE" | "VIDEO">("IMAGE");
-  const [proofCaption, setProofCaption] = useState("");
-  const [isUploadingProof, setIsUploadingProof] = useState(false);
+  const actions = buildActions(allowedTransitions);
 
-  const nextAction = NEXT_STATUS[currentStatus];
-
-  const handleStatusUpdate = async () => {
-    if (!nextAction) return;
+  const executeStatusUpdate = async (status: BookingStatus) => {
     setIsUpdating(true);
     setError(null);
     setSuccess(null);
-
     try {
       const res = await fetch(`/api/admin/bookings/${bookingId}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: nextAction.status, note: note || undefined }),
+        body: JSON.stringify({
+          status,
+          adminNotes: adminNotes || undefined,
+          completionNotes: status === "COMPLETED" ? completionNotes || undefined : undefined,
+        }),
       });
       const data = await res.json();
-      if (!res.ok) {
+      if (!res.ok || !data.success) {
         setError(data.error ?? "Failed to update status");
         return;
       }
-      setSuccess(`Status updated to ${nextAction.status}`);
-      setNote("");
+      setSuccess(`Status updated to ${BOOKING_STATUS_LABELS[status]}`);
+      setPendingAction(null);
       router.refresh();
     } catch {
       setError("Network error. Please try again.");
@@ -65,7 +87,6 @@ export function AdminBookingActions({
     }
     setIsUploadingProof(true);
     setError(null);
-
     try {
       const res = await fetch(`/api/admin/bookings/${bookingId}/proof`, {
         method: "POST",
@@ -73,7 +94,7 @@ export function AdminBookingActions({
         body: JSON.stringify({ url: proofUrl, type: proofType, caption: proofCaption || undefined }),
       });
       const data = await res.json();
-      if (!res.ok) {
+      if (!res.ok || !data.success) {
         setError(data.error ?? "Failed to upload proof");
         return;
       }
@@ -89,86 +110,147 @@ export function AdminBookingActions({
   };
 
   return (
-    <div className="space-y-4">
-      {/* Feedback */}
-      {error && (
-        <div className="flex items-center gap-2 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs">
-          <X className="w-4 h-4 flex-shrink-0" />
-          {error}
-        </div>
-      )}
-      {success && (
-        <div className="flex items-center gap-2 p-3 rounded-xl bg-green-50 border border-green-200 text-green-700 text-xs">
-          <CheckCircle className="w-4 h-4 flex-shrink-0" />
-          {success}
+    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+      {error && <div className="adm-alert adm-alert-error" role="alert">{error}</div>}
+      {success && <div className="adm-alert adm-alert-success" role="status">{success}</div>}
+
+      {/* Status transitions */}
+      {actions.length > 0 && (
+        <div className="adm-detail-card" style={{ marginBottom: 0 }}>
+          <div className="adm-detail-card-header">Update Status</div>
+          <div className="adm-detail-card-body">
+            <p style={{ fontSize: "0.8125rem", color: "var(--muted)", marginBottom: "0.875rem" }}>
+              Current: <strong>{BOOKING_STATUS_LABELS[currentStatus]}</strong>
+            </p>
+            <label className="adm-label" htmlFor="admin-notes">Admin notes (optional)</label>
+            <textarea
+              id="admin-notes"
+              className="adm-textarea"
+              value={adminNotes}
+              onChange={(e) => setAdminNotes(e.target.value)}
+              placeholder="Internal note for this status change…"
+              rows={2}
+              style={{ marginBottom: "0.75rem" }}
+            />
+            {allowedTransitions.includes("COMPLETED") && (
+              <>
+                <label className="adm-label" htmlFor="completion-notes">Completion notes</label>
+                <textarea
+                  id="completion-notes"
+                  className="adm-textarea"
+                  value={completionNotes}
+                  onChange={(e) => setCompletionNotes(e.target.value)}
+                  placeholder="Notes for the devotee upon completion…"
+                  rows={2}
+                  style={{ marginBottom: "0.75rem" }}
+                />
+              </>
+            )}
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+              {actions.map((action) => (
+                <button
+                  key={action.status}
+                  type="button"
+                  className={action.variant === "danger" ? "adm-action-btn danger" : "adm-topbar-btn"}
+                  style={{ width: "100%", justifyContent: "center" }}
+                  onClick={() => setPendingAction(action)}
+                  disabled={isUpdating}
+                >
+                  {action.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Status Transition */}
-      {nextAction && (
+      {/* Confirmation dialog */}
+      {pendingAction && (
         <div
-          className="rounded-xl p-4"
-          style={{ border: "1px solid rgba(212,175,55,0.2)", background: "rgba(212,175,55,0.04)" }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="confirm-title"
+          style={{
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 100,
+            display: "grid", placeItems: "center", padding: "1rem",
+          }}
+          onClick={() => !isUpdating && setPendingAction(null)}
         >
-          <p className="text-xs font-bold text-gray-600 mb-3">Update Status</p>
-          <textarea
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="Optional note for this status update..."
-            rows={2}
-            className="w-full p-2.5 rounded-lg text-xs border border-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-300 text-gray-700 mb-3 resize-none"
-          />
-          <button
-            onClick={handleStatusUpdate}
-            disabled={isUpdating}
-            className="w-full py-2.5 rounded-xl text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
-            style={{ background: `linear-gradient(135deg, ${nextAction.color}, ${nextAction.color}CC)` }}
+          <div
+            className="adm-detail-card"
+            style={{ maxWidth: 420, width: "100%", marginBottom: 0 }}
+            onClick={(e) => e.stopPropagation()}
           >
-            {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-            {nextAction.label}
-          </button>
+            <div className="adm-detail-card-header" id="confirm-title">Confirm Action</div>
+            <div className="adm-detail-card-body">
+              <p style={{ fontSize: "0.9375rem", color: "var(--fg)", marginBottom: "1rem", lineHeight: 1.6 }}>
+                {pendingAction.variant === "danger"
+                  ? `Are you sure you want to ${pendingAction.label.toLowerCase()}? This action follows backend transition rules and may notify the customer.`
+                  : `Proceed with "${pendingAction.label}"?`}
+              </p>
+              <div style={{ display: "flex", gap: "0.625rem", justifyContent: "flex-end" }}>
+                <button type="button" className="adm-filter-btn" onClick={() => setPendingAction(null)} disabled={isUpdating}>
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className={pendingAction.variant === "danger" ? "adm-action-btn danger" : "adm-topbar-btn"}
+                  onClick={() => executeStatusUpdate(pendingAction.status)}
+                  disabled={isUpdating}
+                  aria-busy={isUpdating}
+                >
+                  {isUpdating ? "Updating…" : pendingAction.label}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Proof Upload */}
-      <div
-        className="rounded-xl p-4"
-        style={{ border: "1px solid rgba(59,130,246,0.2)", background: "rgba(59,130,246,0.03)" }}
-      >
-        <p className="text-xs font-bold text-gray-600 mb-3 flex items-center gap-2">
-          <Upload className="w-3.5 h-3.5" /> Add Proof Media
-        </p>
-        <div className="space-y-2">
-          <select
-            value={proofType}
-            onChange={(e) => setProofType(e.target.value as "IMAGE" | "VIDEO")}
-            className="w-full p-2.5 rounded-lg text-xs border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-300 text-gray-700 bg-white"
-          >
-            <option value="IMAGE">Photo</option>
-            <option value="VIDEO">Video</option>
-          </select>
-          <input
-            type="url"
-            value={proofUrl}
-            onChange={(e) => setProofUrl(e.target.value)}
-            placeholder="CDN URL (e.g. https://cdn.example.com/proof.jpg)"
-            className="w-full p-2.5 rounded-lg text-xs border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-300 text-gray-700"
-          />
-          <input
-            type="text"
-            value={proofCaption}
-            onChange={(e) => setProofCaption(e.target.value)}
-            placeholder="Caption (optional)"
-            className="w-full p-2.5 rounded-lg text-xs border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-300 text-gray-700"
-          />
-          <button
-            onClick={handleProofUpload}
-            disabled={isUploadingProof || !proofUrl.trim()}
-            className="w-full py-2.5 rounded-xl text-sm font-bold text-white bg-blue-500 hover:bg-blue-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-          >
-            {isUploadingProof ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-            Add Proof
-          </button>
+      {/* Proof upload */}
+      <div className="adm-detail-card" style={{ marginBottom: 0 }}>
+        <div className="adm-detail-card-header">Add Proof Media</div>
+        <div className="adm-detail-card-body">
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.625rem" }}>
+            <label className="adm-label" htmlFor="proof-type">Media type</label>
+            <select
+              id="proof-type"
+              className="adm-select"
+              value={proofType}
+              onChange={(e) => setProofType(e.target.value as "PHOTO" | "VIDEO")}
+            >
+              <option value="PHOTO">Photo</option>
+              <option value="VIDEO">Video</option>
+            </select>
+            <label className="adm-label" htmlFor="proof-url">CDN URL</label>
+            <input
+              id="proof-url"
+              type="url"
+              className="adm-input"
+              value={proofUrl}
+              onChange={(e) => setProofUrl(e.target.value)}
+              placeholder="https://cdn.example.com/proof.jpg"
+            />
+            <label className="adm-label" htmlFor="proof-caption">Caption (optional)</label>
+            <input
+              id="proof-caption"
+              type="text"
+              className="adm-input"
+              value={proofCaption}
+              onChange={(e) => setProofCaption(e.target.value)}
+              placeholder="Brief description"
+            />
+            <button
+              type="button"
+              className="adm-topbar-btn"
+              style={{ width: "100%", justifyContent: "center", marginTop: "0.25rem" }}
+              onClick={handleProofUpload}
+              disabled={isUploadingProof || !proofUrl.trim()}
+              aria-busy={isUploadingProof}
+            >
+              {isUploadingProof ? "Uploading…" : "Add Proof"}
+            </button>
+          </div>
         </div>
       </div>
     </div>

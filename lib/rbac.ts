@@ -110,7 +110,10 @@ export async function requireAdmin(permission?: Permission) {
     throw new Error("FORBIDDEN");
   }
 
-  if (permission && session.user.adminRole) {
+  if (permission) {
+    if (!session.user.adminRole) {
+      throw new Error("FORBIDDEN");
+    }
     const allowed = hasPermission(session.user.adminRole as AdminRole, permission);
     if (!allowed) {
       throw new Error("FORBIDDEN");

@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>All Seva Services — Vrindavan Bhandara</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: oklch(99.2% 0.002 85); --surface: oklch(100% 0 0); --surface-2: oklch(97.5% 0.005 85);
+      --surface-brand: oklch(96.5% 0.035 148); --surface-accent: oklch(97.5% 0.045 75);
+      --fg: oklch(14% 0.016 250); --muted: oklch(46% 0.014 250); --subtle: oklch(68% 0.009 250);
+      --brand: oklch(30% 0.12 148); --brand-mid: oklch(42% 0.14 148); --brand-light: oklch(58% 0.13 148);
+      --brand-fg: oklch(98% 0.004 148); --accent: oklch(67% 0.155 58); --accent-deep: oklch(52% 0.145 55);
+      --accent-fg: oklch(16% 0.02 58); --success: oklch(50% 0.14 145); --warning: oklch(68% 0.15 68);
+      --border: oklch(91% 0.008 250); --border-strong: oklch(78% 0.012 250);
+      --n-50: oklch(98.5% 0.003 250); --n-100: oklch(96% 0.006 250); --n-200: oklch(91% 0.008 250);
+      --font-display: 'Cormorant Garamond', Georgia, serif; --font-body: 'DM Sans', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+      --sh-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.05);
+      --sh-brand: 0 4px 20px oklch(30% 0.12 148 / 0.24);
+      --r-sm: 0.375rem; --r-md: 0.75rem; --r-lg: 1rem; --r-xl: 1.5rem; --r-full: 9999px;
+      --dur-base: 250ms; --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+    body { font-family: var(--font-body); background: var(--bg); color: var(--fg); line-height: 1.6; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+
+    /* Nav */
+    .nav {
+      position: sticky; top: 0; z-index: 100;
+      background: oklch(100% 0 0 / 0.94); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 clamp(1rem, 5vw, 3rem); height: 64px;
+      display: flex; align-items: center; justify-content: space-between; gap: 1.5rem;
+    }
+    .nav-logo { display: flex; align-items: center; gap: 0.625rem; text-decoration: none; }
+    .nav-logo-mark { width: 32px; height: 32px; background: var(--brand); border-radius: 8px; display: grid; place-items: center; }
+    .nav-logo-mark svg { width: 18px; height: 18px; stroke: var(--brand-fg); fill: none; stroke-width: 1.5; }
+    .nav-logo-name { font-family: var(--font-display); font-size: 1.125rem; font-weight: 600; color: var(--fg); letter-spacing: -0.01em; }
+    .nav-right { display: flex; align-items: center; gap: 0.75rem; }
+    .btn-sm-primary {
+      font-size: 0.875rem; font-weight: 500; color: var(--brand-fg); background: var(--brand);
+      border: none; cursor: pointer; padding: 0.5625rem 1.25rem; border-radius: var(--r-sm);
+      text-decoration: none; letter-spacing: 0.01em;
+      transition: background var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-out);
+    }
+    .btn-sm-primary:hover { background: var(--brand-mid); transform: translateY(-1px); box-shadow: var(--sh-brand); }
+
+    /* Page header */
+    .page-header {
+      padding: clamp(3rem, 6vw, 5rem) clamp(1.25rem, 6vw, 6rem) 0;
+      max-width: 1200px; margin: 0 auto;
+    }
+    .breadcrumb {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-size: 0.8125rem; color: var(--muted); margin-bottom: 1.5rem;
+    }
+    .breadcrumb a { color: var(--muted); text-decoration: none; transition: color 150ms; }
+    .breadcrumb a:hover { color: var(--fg); }
+    .breadcrumb svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+    .page-title {
+      font-family: var(--font-display); font-size: clamp(2.25rem, 5vw, 3.5rem); font-weight: 600;
+      letter-spacing: -0.02em; line-height: 1.05; color: var(--fg); margin-bottom: 1rem;
+    }
+    .page-title em { font-style: italic; color: var(--brand); }
+    .page-sub { font-size: 1.0625rem; color: var(--muted); max-width: 52ch; line-height: 1.65; margin-bottom: 2.5rem; }
+
+    /* Filter bar */
+    .filter-bar {
+      padding: 0 clamp(1.25rem, 6vw, 6rem);
+      max-width: 1200px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+      padding-top: 2rem; padding-bottom: 2.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .filter-tabs { display: flex; gap: 0.375rem; flex-wrap: wrap; }
+    .filter-tab {
+      font-size: 0.875rem; font-weight: 500; color: var(--muted); background: transparent;
+      border: 1.5px solid var(--border); border-radius: var(--r-full);
+      padding: 0.4375rem 1rem; cursor: pointer; letter-spacing: 0.01em;
+      transition: all 150ms;
+    }
+    .filter-tab:hover { border-color: var(--brand-light); color: var(--brand); background: var(--surface-brand); }
+    .filter-tab.active { background: var(--brand); color: var(--brand-fg); border-color: var(--brand); }
+    .sort-select {
+      font-family: var(--font-body); font-size: 0.875rem; color: var(--fg);
+      background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--r-sm);
+      padding: 0.4375rem 2.25rem 0.4375rem 0.875rem; cursor: pointer; outline: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='1.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 0.5rem center;
+      transition: border-color 150ms;
+    }
+    .sort-select:hover { border-color: var(--brand-light); }
+
+    /* Services grid */
+    .services-main {
+      padding: clamp(2rem, 4vw, 3.5rem) clamp(1.25rem, 6vw, 6rem);
+      max-width: 1200px; margin: 0 auto;
+    }
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+    @media (max-width: 1024px) { .services-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 560px)  { .services-grid { grid-template-columns: 1fr; } }
+
+    .service-card {
+      background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--r-lg);
+      text-decoration: none; color: inherit; display: flex; flex-direction: column;
+      overflow: hidden;
+      transition: border-color var(--dur-base), box-shadow var(--dur-base), transform var(--dur-base) var(--ease-out);
+    }
+    .service-card:hover { border-color: var(--brand-light); box-shadow: var(--sh-md); transform: translateY(-3px); }
+
+    .service-card-img {
+      height: 160px; background: var(--surface-brand);
+      display: flex; align-items: center; justify-content: center;
+      position: relative; overflow: hidden;
+    }
+    .service-card-img svg { width: 52px; height: 52px; stroke: var(--brand); fill: none; stroke-width: 1.2; opacity: 0.5; }
+    .service-badge {
+      position: absolute; top: 0.875rem; left: 0.875rem;
+      font-size: 0.6875rem; font-weight: 500; letter-spacing: 0.04em;
+      padding: 0.25rem 0.625rem; border-radius: var(--r-full);
+    }
+    .badge-popular { background: var(--accent); color: var(--accent-fg); }
+    .badge-recurring { background: var(--surface-brand); color: var(--brand); border: 1px solid oklch(30% 0.12 148 / 0.2); }
+
+    .service-card-body { padding: 1.5rem; display: flex; flex-direction: column; flex: 1; gap: 0.5rem; }
+    .service-name {
+      font-family: var(--font-display); font-size: 1.25rem; font-weight: 600;
+      letter-spacing: -0.01em; color: var(--fg);
+    }
+    .service-desc { font-size: 0.875rem; color: var(--muted); line-height: 1.55; flex: 1; }
+    .service-tags { display: flex; flex-wrap: wrap; gap: 0.375rem; margin-top: 0.5rem; }
+    .service-tag {
+      font-size: 0.75rem; font-weight: 500; color: var(--subtle); background: var(--n-100);
+      padding: 0.1875rem 0.625rem; border-radius: var(--r-full);
+    }
+    .service-card-footer {
+      padding: 1rem 1.5rem 1.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      border-top: 1px solid var(--border); gap: 1rem;
+    }
+    .service-price-label { font-size: 0.8125rem; color: var(--subtle); }
+    .service-price-val { font-size: 1rem; font-weight: 600; color: var(--accent-deep); font-variant-numeric: tabular-nums; }
+    .btn-book {
+      font-size: 0.875rem; font-weight: 500; color: var(--brand-fg); background: var(--brand);
+      border: none; cursor: pointer; padding: 0.5625rem 1.25rem; border-radius: var(--r-sm);
+      text-decoration: none; letter-spacing: 0.01em; white-space: nowrap;
+      transition: background var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-out);
+    }
+    .btn-book:hover { background: var(--brand-mid); transform: translateY(-1px); }
+
+    /* Featured CTA */
+    .featured-cta {
+      background: var(--brand); border-radius: var(--r-xl);
+      padding: 2.5rem; display: grid; grid-template-columns: 1fr auto; gap: 2rem; align-items: center;
+      margin-top: 3rem; position: relative; overflow: hidden;
+    }
+    @media (max-width: 640px) { .featured-cta { grid-template-columns: 1fr; } }
+    .featured-cta::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(circle at 90% 50%, oklch(42% 0.14 148 / 0.5), transparent 60%);
+    }
+    .featured-cta-title {
+      font-family: var(--font-display); font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 600;
+      letter-spacing: -0.015em; color: var(--brand-fg); margin-bottom: 0.625rem; position: relative;
+    }
+    .featured-cta-title em { font-style: italic; }
+    .featured-cta-sub { font-size: 0.9rem; color: oklch(98% 0.004 148 / 0.72); line-height: 1.55; max-width: 44ch; position: relative; }
+    .btn-cta-amber {
+      display: inline-flex; align-items: center; gap: 0.5rem; white-space: nowrap;
+      font-size: 0.9375rem; font-weight: 500; background: var(--accent); color: var(--accent-fg);
+      padding: 0.875rem 1.75rem; border-radius: var(--r-md); text-decoration: none; border: none; cursor: pointer;
+      position: relative; letter-spacing: 0.01em;
+      transition: background var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-out);
+      box-shadow: 0 4px 16px oklch(67% 0.155 58 / 0.30);
+    }
+    .btn-cta-amber:hover { background: oklch(60% 0.155 58); transform: translateY(-2px); }
+    .btn-cta-amber svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+    /* Reveal */
+    .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.5s var(--ease-out), transform 0.5s var(--ease-out); }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-d1 { transition-delay: 0.07s; }
+    .reveal-d2 { transition-delay: 0.14s; }
+    .reveal-d3 { transition-delay: 0.21s; }
+    .reveal-d4 { transition-delay: 0.28s; }
+    .reveal-d5 { transition-delay: 0.35s; }
+    @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="home.html" class="nav-logo">
+    <div class="nav-logo-mark"><svg viewBox="0 0 24 24"><path d="M12 3L3 9v12h6v-7h6v7h6V9L12 3z"/></svg></div>
+    <span class="nav-logo-name">Vrindavan Bhandara</span>
+  </a>
+  <div class="nav-right">
+    <a href="login.html" style="font-size:0.875rem;font-weight:500;color:var(--muted);text-decoration:none;padding:0.5rem 0.875rem;border-radius:var(--r-sm);transition:color 150ms" onmouseover="this.style.color='var(--fg)'" onmouseout="this.style.color='var(--muted)'">Sign In</a>
+    <a href="booking.html" class="btn-sm-primary">Book a Seva</a>
+  </div>
+</nav>
+
+<!-- Page Header -->
+<div class="page-header">
+  <div class="breadcrumb">
+    <a href="home.html">Home</a>
+    <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+    <span>Services</span>
+  </div>
+  <h1 class="page-title">Every <em>Sacred Seva</em>,<br />in one place</h1>
+  <p class="page-sub">From intimate Brahmin feasts to large community Bhandaras — choose the Seva that speaks to your heart. All performed in Vrindavan and Mathura by experienced Brahmin pandits.</p>
+</div>
+
+<!-- Filter Bar -->
+<div class="filter-bar">
+  <div class="filter-tabs">
+    <button class="filter-tab active" onclick="filterServices(this,'all')">All Sevas</button>
+    <button class="filter-tab" onclick="filterServices(this,'feast')">Community Feasts</button>
+    <button class="filter-tab" onclick="filterServices(this,'care')">Care Seva</button>
+    <button class="filter-tab" onclick="filterServices(this,'donation')">Donation Seva</button>
+  </div>
+  <select class="sort-select" id="sortSelect">
+    <option>Sort: Recommended</option>
+    <option>Price: Low to High</option>
+    <option>Price: High to Low</option>
+    <option>Most Booked</option>
+  </select>
+</div>
+
+<!-- Services Grid -->
+<div class="services-main">
+  <div class="services-grid" id="servicesGrid">
+
+    <!-- Bhandara Seva -->
+    <a href="service-detail.html" class="service-card reveal" data-category="feast">
+      <div class="service-card-img" style="background:oklch(95% 0.04 148)">
+        <svg viewBox="0 0 24 24"><path d="M5 8h14M7 8c0-2.5 2-5 5-5s5 2.5 5 5M6.5 8l1.5 11h8l1.5-11M9.5 12.5h5M10 16.5h4"/></svg>
+        <span class="service-badge badge-popular">Most Booked</span>
+      </div>
+      <div class="service-card-body">
+        <div class="service-name">Bhandara Seva</div>
+        <div class="service-desc">Large-scale community feast for 100–1,000+ devotees in Vrindavan or Mathura. All arrangements included — food, venue, Brahmin blessings, and prasad distribution.</div>
+        <div class="service-tags">
+          <span class="service-tag">100–1,000+ People</span>
+          <span class="service-tag">1–3 Day Booking</span>
+          <span class="service-tag">Photo + Video Proof</span>
+        </div>
+      </div>
+      <div class="service-card-footer">
+        <div>
+          <div class="service-price-label">Starting from</div>
+          <div class="service-price-val">₹5,000</div>
+        </div>
+        <a href="booking.html" class="btn-book" onclick="event.stopPropagation()">Book Now</a>
+      </div>
+    </a>
+
+    <!-- Brahmin Bhoj -->
+    <a href="service-detail.html" class="service-card reveal reveal-d1" data-category="feast">
+      <div class="service-card-img" style="background:oklch(95% 0.04 148)">
+        <svg viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="9" ry="9"/><ellipse cx="12" cy="12" rx="5" ry="5"/><circle cx="12" cy="12" r="1.5" fill="var(--brand)" stroke="none"/></svg>
+        <span class="service-badge badge-popular">Family Favourite</span>
+      </div>
+      <div class="service-card-body">
+        <div class="service-name">Brahmin Bhoj Seva</div>
+        <div class="service-desc">Sacred feast for 11, 21, or 51 Brahmin pandits with full Vedic recitation, sankalp, tilak ceremony, and dakshina. Your family names are recited during the sankalp.</div>
+        <div class="service-tags">
+          <span class="service-tag">11 / 21 / 51 Brahmins</span>
+          <span class="service-tag">Name Sankalp</span>
+          <span class="service-tag">Same-Day Confirmation</span>
+        </div>
+      </div>
+      <div class="service-card-footer">
+        <div>
+          <div class="service-price-label">Starting from</div>
+          <div class="service-price-val">₹2,100</div>
+        </div>
+        <a href="booking.html" class="btn-book" onclick="event.stopPropagation()">Book Now</a>
+      </div>
+    </a>
+
+    <!-- Gau Seva -->
+    <a href="service-detail.html" class="service-card reveal reveal-d2" data-category="care">
+      <div class="service-card-img" style="background:oklch(95% 0.04 148)">
+        <svg viewBox="0 0 24 24"><path d="M8 3c0 0-5 3-5 8 0 3 2 5 4 6l1-3c-1-1-2-2-2-3 0-3 2-5 2-5M16 3c0 0 5 3 5 8 0 3-2 5-4 6l-1-3c1-1 2-2 2-3 0-3-2-5-2-5M12 3v18M9 21h6"/></svg>
+        <span class="service-badge badge-recurring">Monthly Plan</span>
+      </div>
+      <div class="service-card-body">
+        <div class="service-name">Gau Seva</div>
+        <div class="service-desc">Daily nourishment, medical care, and warm shelter for Lord Krishna's sacred cows in Vrindavan gaushalas. Receive monthly photo updates of your sponsored cows.</div>
+        <div class="service-tags">
+          <span class="service-tag">Daily / Monthly</span>
+          <span class="service-tag">Monthly Photo Updates</span>
+          <span class="service-tag">Cancel Anytime</span>
+        </div>
+      </div>
+      <div class="service-card-footer">
+        <div>
+          <div class="service-price-label">Starting from</div>
+          <div class="service-price-val">₹501/month</div>
+        </div>
+        <a href="booking.html" class="btn-book" onclick="event.stopPropagation()">Book Now</a>
+      </div>
+    </a>
+
+    <!-- Vidhwa Seva -->
+    <a href="service-detail.html" class="service-card reveal reveal-d3" data-category="care">
+      <div class="service-card-img" style="background:oklch(95% 0.04 148)">
+        <svg viewBox="0 0 24 24"><path d="M12 2L8 6H4v4l-2 2 2 2v4h4l4 4 4-4h4v-4l2-2-2-2V6h-4L12 2z"/></svg>
+      </div>
+      <div class="service-card-body">
+        <div class="service-name">Vidhwa Seva</div>
+        <div class="service-desc">Wholesome meals, warm clothing, and essential support for widows dedicated to devotional service in Vrindavan. A profoundly meritorious Seva in Sanatan Dharma.</div>
+        <div class="service-tags">
+          <span class="service-tag">Monthly Support</span>
+          <span class="service-tag">Essential Care</span>
+          <span class="service-tag">Photo Proof</span>
+        </div>
+      </div>
+      <div class="service-card-footer">
+        <div>
+          <div class="service-price-label">Starting from</div>
+          <div class="service-price-val">₹1,100</div>
+        </div>
+        <a href="booking.html" class="btn-book" onclick="event.stopPropagation()">Book Now</a>
+      </div>
+    </a>
+
+    <!-- Annadan Seva -->
+    <a href="service-detail.html" class="service-card reveal reveal-d4" data-category="donation">
+      <div class="service-card-img" style="background:oklch(95% 0.04 148)">
+        <svg viewBox="0 0 24 24"><path d="M12 3v4M3 12h4M17 12h4M12 17v4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M15.6 8.4l2.8-2.8M5.6 18.4l2.8-2.8"/></svg>
+      </div>
+      <div class="service-card-body">
+        <div class="service-name">Annadan Seva</div>
+        <div class="service-desc">Food donation for the needy, pilgrims, and sadhus in the holy dhams. A direct and powerful act of dharma — feeding the hungry is considered equivalent to serving the Divine.</div>
+        <div class="service-tags">
+          <span class="service-tag">One-time / Recurring</span>
+          <span class="service-tag">50–500 People</span>
+          <span class="service-tag">Video Proof</span>
+        </div>
+      </div>
+      <div class="service-card-footer">
+        <div>
+          <div class="service-price-label">Starting from</div>
+          <div class="service-price-val">₹2,001</div>
+        </div>
+        <a href="booking.html" class="btn-book" onclick="event.stopPropagation()">Book Now</a>
+      </div>
+    </a>
+
+    <!-- Sadhu Bhojan -->
+    <a href="service-detail.html" class="service-card reveal reveal-d5" data-category="feast">
+      <div class="service-card-img" style="background:oklch(95% 0.04 148)">
+        <svg viewBox="0 0 24 24"><path d="M12 22V12M12 12l-5-5M12 12l5-5M5 7l3 3M16 7l3 3"/><circle cx="12" cy="5" r="2"/></svg>
+      </div>
+      <div class="service-card-body">
+        <div class="service-name">Sadhu Bhojan Seva</div>
+        <div class="service-desc">Sattvic meals for ascetic saints and monks entirely dedicated to devotional service in Vrindavan's ashrams. Receive special blessings for your family from the sadhus.</div>
+        <div class="service-tags">
+          <span class="service-tag">Ashram Delivery</span>
+          <span class="service-tag">Sankalp Blessing</span>
+          <span class="service-tag">Same-Day Proof</span>
+        </div>
+      </div>
+      <div class="service-card-footer">
+        <div>
+          <div class="service-price-label">Starting from</div>
+          <div class="service-price-val">₹1,100</div>
+        </div>
+        <a href="booking.html" class="btn-book" onclick="event.stopPropagation()">Book Now</a>
+      </div>
+    </a>
+
+  </div><!-- /grid -->
+
+  <!-- Featured CTA -->
+  <div class="featured-cta reveal">
+    <div>
+      <div class="featured-cta-title">Not sure which <em>Seva</em> to choose?</div>
+      <div class="featured-cta-sub">Our team is available 7 days a week to help you select the right Seva for your occasion — anniversary, shraddha, birthday, or any auspicious day.</div>
+    </div>
+    <a href="booking.html" class="btn-cta-amber">
+      Book a Seva
+      <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+
+</div><!-- /services-main -->
+
+<script>
+  // Scroll reveals
+  const obs = new IntersectionObserver(e => e.forEach(x => { if (x.isIntersecting) { x.target.classList.add('visible'); obs.unobserve(x.target); } }), { threshold: 0.12, rootMargin: '0px 0px -30px 0px' });
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+  // Filter tabs
+  function filterServices(btn, category) {
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.service-card').forEach(card => {
+      const show = category === 'all' || card.dataset.category === category;
+      card.style.display = show ? '' : 'none';
+    });
+  }
+</script>
+</body>
+</html>

@@ -1,158 +1,201 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { CheckCircle } from "lucide-react";
+
+// =============================================================================
+// How It Works — 4-step process on surface-2 background
+// Design: circles with italic display numbers, connector line on desktop
+// =============================================================================
 
 const STEPS = [
   {
-    number: "01",
-    icon: "🙏",
+    number: "1",
     title: "Choose Your Seva",
     description:
-      "Browse our sacred seva options — Bhandara, Brahmin Bhoj, Gau Seva, Sadhu Bhojan, or Festival Seva. Select the one that resonates with your intention.",
+      "Browse Bhandara, Brahmin Bhoj, Gau Seva, Sadhu Bhojan, or Festival Seva. Select the one that resonates with your intention.",
   },
   {
-    number: "02",
-    icon: "📦",
-    title: "Select a Package",
+    number: "2",
+    title: "Pick a Package & Date",
     description:
-      "Choose from Basic, Standard, Premium, or Maharaj packages. Each package includes specific services performed with full traditional rituals.",
+      "Choose your package and an auspicious date. Our team confirms your booking within minutes.",
   },
   {
-    number: "03",
-    icon: "📅",
-    title: "Pick Your Date",
+    number: "3",
+    title: "We Perform the Seva",
     description:
-      "Choose an auspicious date for your seva. Our team ensures the seva is performed precisely on your chosen date.",
+      "Experienced priests perform your Seva at the exact time, with full Vedic rituals reciting your sankalp.",
   },
   {
-    number: "04",
-    icon: "💳",
-    title: "Secure Payment",
-    description:
-      "Pay securely online via Razorpay — UPI, cards, net banking. Payments are 100% encrypted and protected.",
-  },
-  {
-    number: "05",
-    icon: "📸",
+    number: "4",
     title: "Receive Proof",
     description:
-      "After completion, you receive photos and videos of your seva being performed. Full transparency guaranteed.",
+      "30–50 photos and a video of your Seva are delivered to your WhatsApp and dashboard within 24 hours.",
   },
-];
+] as const;
+
+function StepItem({ step, index }: { step: (typeof STEPS)[number]; index: number }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ duration: 0.55, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
+      className="flex flex-col items-center text-center gap-4 relative z-10"
+    >
+      {/* Step circle */}
+      <div
+        className="flex items-center justify-center flex-shrink-0"
+        style={{
+          width: "52px",
+          height: "52px",
+          background: "var(--surface)",
+          border: "1.5px solid var(--border)",
+          borderRadius: "50%",
+        }}
+        aria-hidden="true"
+      >
+        <span
+          className="font-display font-semibold"
+          style={{
+            fontStyle: "italic",
+            fontSize: "1.625rem",
+            letterSpacing: "-0.02em",
+            lineHeight: 1,
+            color: "var(--brand)",
+          }}
+        >
+          {step.number}
+        </span>
+      </div>
+
+      {/* Title */}
+      <h3
+        className="font-display font-semibold"
+        style={{
+          fontSize: "1.125rem",
+          letterSpacing: "-0.01em",
+          color: "var(--fg)",
+          lineHeight: "1.2",
+        }}
+      >
+        {step.title}
+      </h3>
+
+      {/* Description */}
+      <p
+        className="text-sm"
+        style={{
+          color: "var(--muted)",
+          lineHeight: "1.55",
+          maxWidth: "22ch",
+          margin: "0 auto",
+        }}
+      >
+        {step.description}
+      </p>
+    </motion.div>
+  );
+}
+
+const TRUST_GUARANTEES = [
+  "No hidden charges",
+  "Seva on exact date",
+  "Photos & video proof",
+  "24/7 support",
+] as const;
 
 export function HowItWorksSection() {
   return (
-    <section className="section-py bg-white relative overflow-hidden">
-      {/* Background accent */}
-      <div
-        className="absolute top-0 left-0 right-0 h-1 opacity-30"
-        style={{ background: "var(--gradient-gold)" }}
-      />
-
+    <section
+      className="section-py"
+      style={{ background: "var(--surface-2)" }}
+      aria-label="How it works"
+    >
       <div className="container">
+        {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-16"
+          transition={{ duration: 0.6 }}
+          className="text-center mb-14"
         >
-          <span className="section-label">How It Works</span>
-          <h2 className="section-title mt-3">
-            Book Your Seva in 6 Simple Steps
+          <p className="text-eyebrow mb-4">Simple Process</p>
+          <h2
+            className="font-display font-semibold"
+            style={{
+              fontSize: "clamp(2rem, 4vw, 3rem)",
+              letterSpacing: "-0.02em",
+              lineHeight: "1.1",
+              color: "var(--fg)",
+            }}
+          >
+            Book in 4 simple steps
           </h2>
-          <div className="divider-gold mx-auto" />
-          <p className="section-subtitle mt-4 max-w-xl mx-auto">
-            From selection to proof delivery — the entire seva journey is transparent,
-            simple, and fully managed for you.
+          <p
+            className="mt-4 mx-auto"
+            style={{
+              fontSize: "1.0625rem",
+              color: "var(--muted)",
+              maxWidth: "52ch",
+              lineHeight: "1.65",
+            }}
+          >
+            From selection to proof delivery — the entire seva journey is
+            transparent, simple, and fully managed for you.
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {STEPS.map((step, index) => (
-            <motion.div
-              key={step.number}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="relative"
-            >
-              {/* Card */}
-              <div className="card-luxury p-7 h-full group relative overflow-hidden">
-                {/* Step number watermark — absolute so it never pushes content */}
-                <span
-                  className="absolute top-4 right-5 font-heading font-bold leading-none select-none pointer-events-none"
-                  style={{
-                    fontSize: "4rem",
-                    background: "var(--gradient-gold)",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                    backgroundClip: "text",
-                    opacity: 0.12,
-                  }}
-                >
-                  {step.number}
-                </span>
+        {/* Steps grid — connector line on desktop */}
+        <div
+          className="relative grid grid-cols-2 md:grid-cols-4 gap-8"
+          aria-label="Process steps"
+        >
+          {/* Horizontal connector (desktop only) */}
+          <div
+            aria-hidden="true"
+            className="hidden md:block absolute"
+            style={{
+              top: "calc(26px)",
+              left: "calc(12.5% + 1.5rem)",
+              right: "calc(12.5% + 1.5rem)",
+              height: "1.5px",
+              background: "var(--border)",
+              zIndex: 0,
+            }}
+          />
 
-                {/* Icon box — always top-left, consistent height */}
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-5 flex-shrink-0 transition-transform group-hover:scale-110"
-                  style={{
-                    background: "linear-gradient(135deg, rgba(212,175,55,0.15), rgba(255,119,34,0.1))",
-                    border: "1px solid rgba(212,175,55,0.2)",
-                  }}
-                >
-                  {step.icon}
-                </div>
-
-                <h3 className="font-heading text-lg font-bold text-charcoal mb-3 group-hover:text-gold-600 transition-colors">
-                  {step.title}
-                </h3>
-
-                <p className="text-gray-500 text-sm leading-relaxed">
-                  {step.description}
-                </p>
-
-                {/* Hover accent bottom bar */}
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-gold scale-x-0 group-hover:scale-x-100 transition-transform origin-left rounded-b-xl" />
-              </div>
-
-              {/* Connector arrow (desktop) */}
-              {index < STEPS.length - 1 && (index + 1) % 3 !== 0 && (
-                <div className="absolute top-1/2 -right-4 hidden lg:flex items-center z-10">
-                  <div className="w-8 h-0.5 bg-gradient-gold" />
-                  <div className="w-0 h-0 border-t-[5px] border-t-transparent border-b-[5px] border-b-transparent border-l-[8px] border-l-gold-500" />
-                </div>
-              )}
-            </motion.div>
+          {STEPS.map((step, i) => (
+            <StepItem key={step.number} step={step} index={i} />
           ))}
         </div>
 
-        {/* Bottom trust line */}
+        {/* Trust guarantee row */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="mt-16 p-6 rounded-2xl text-center"
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="mt-14 rounded-lg flex flex-wrap justify-center gap-x-8 gap-y-3"
           style={{
-            background: "linear-gradient(135deg, rgba(212,175,55,0.08), rgba(255,119,34,0.05))",
-            border: "1px solid rgba(212,175,55,0.15)",
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+            padding: "1.25rem 2rem",
           }}
         >
-          <div className="flex flex-wrap justify-center gap-6 text-sm text-charcoal/70">
-            {[
-              "No hidden charges",
-              "Seva on exact date",
-              "Photos & video proof",
-              "24/7 support",
-            ].map((item) => (
-              <div key={item} className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-gold-500" />
-                {item}
-              </div>
-            ))}
-          </div>
+          {TRUST_GUARANTEES.map((item) => (
+            <span
+              key={item}
+              className="flex items-center gap-2 text-sm font-medium"
+              style={{ color: "var(--muted)" }}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+                <path d="M20 6L9 17l-5-5" />
+              </svg>
+              {item}
+            </span>
+          ))}
         </motion.div>
       </div>
     </section>

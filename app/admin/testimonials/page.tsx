@@ -50,7 +50,6 @@ export default async function TestimonialsPage({
   const filter = params.filter ?? "ALL";
   const { testimonials, total, page, totalPages } = await getTestimonials(params);
 
-  // Stats
   const [totalPending, totalApproved, totalFeatured] = await Promise.all([
     prisma.testimonial.count({ where: { isApproved: false } }),
     prisma.testimonial.count({ where: { isApproved: true } }),
@@ -58,30 +57,25 @@ export default async function TestimonialsPage({
   ]);
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-8">
+    <>
+      <div className="adm-section-header">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Testimonials</h1>
-          <p className="text-gray-500 text-sm mt-1">Moderate and feature customer reviews.</p>
+          <div className="adm-section-title">Testimonials</div>
+          <p style={{ fontSize: "0.875rem", color: "var(--muted)", marginTop: "0.25rem" }}>
+            Moderate and feature customer reviews
+          </p>
         </div>
       </div>
 
-      {/* Summary stats */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="adm-stats-row" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
         {[
-          { label: "Pending Review", count: totalPending, color: "#b45309", bg: "#fffbeb" },
-          { label: "Approved", count: totalApproved, color: "#15803d", bg: "#f0fdf4" },
-          { label: "Featured", count: totalFeatured, color: "#B89947", bg: "#fefce8" },
+          { label: "Pending Review", value: totalPending },
+          { label: "Approved", value: totalApproved },
+          { label: "Featured", value: totalFeatured },
         ].map((s) => (
-          <div
-            key={s.label}
-            className="bg-white rounded-2xl p-4 border text-center"
-            style={{ borderColor: "rgba(212,175,55,0.1)" }}
-          >
-            <p className="text-2xl font-bold" style={{ color: s.color }}>
-              {s.count}
-            </p>
-            <p className="text-xs text-gray-500 mt-0.5">{s.label}</p>
+          <div key={s.label} className="adm-stat-card">
+            <div className="adm-stat-label">{s.label}</div>
+            <div className="adm-stat-value">{s.value}</div>
           </div>
         ))}
       </div>
@@ -98,6 +92,6 @@ export default async function TestimonialsPage({
         totalPages={totalPages}
         filter={filter}
       />
-    </div>
+    </>
   );
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Fragment } from "react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
@@ -20,11 +21,11 @@ const PERMISSION_GROUPS: Record<string, Permission[]> = {
 
 const ADMIN_ROLES: AdminRole[] = ["SUPER_ADMIN", "OPERATIONS_ADMIN", "CONTENT_ADMIN", "SUPPORT_ADMIN"];
 
-const ROLE_LABELS: Record<AdminRole, { label: string; color: string; bg: string; description: string }> = {
-  SUPER_ADMIN: { label: "Super Admin", color: "#7c3aed", bg: "#f5f3ff", description: "Full access to all features and settings." },
-  OPERATIONS_ADMIN: { label: "Operations Admin", color: "#1d4ed8", bg: "#eff6ff", description: "Manages bookings, payments, proofs, and analytics." },
-  CONTENT_ADMIN: { label: "Content Admin", color: "#15803d", bg: "#f0fdf4", description: "Manages blog, testimonials, gallery, and campaigns." },
-  SUPPORT_ADMIN: { label: "Support Admin", color: "#b45309", bg: "#fffbeb", description: "Read-only access to bookings, users, and payments." },
+const ROLE_LABELS: Record<AdminRole, { label: string; className: string; description: string }> = {
+  SUPER_ADMIN: { label: "Super Admin", className: "adm-badge-completed", description: "Full access to all features and settings." },
+  OPERATIONS_ADMIN: { label: "Operations Admin", className: "adm-badge-confirmed", description: "Manages bookings, payments, proofs, and analytics." },
+  CONTENT_ADMIN: { label: "Content Admin", className: "adm-badge-confirmed", description: "Manages blog, testimonials, gallery, and campaigns." },
+  SUPPORT_ADMIN: { label: "Support Admin", className: "adm-badge-pending", description: "Read-only access to bookings, users, and payments." },
 };
 
 export default async function RolesPage() {
@@ -37,55 +38,45 @@ export default async function RolesPage() {
   });
 
   return (
-    <div className="max-w-7xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-800">Roles & Permissions</h1>
-        <p className="text-gray-500 text-sm mt-1">
-          Permission matrix for each admin role. Role assignments are managed in the database.
-        </p>
+    <>
+      <div className="adm-section-header">
+        <div>
+          <div className="adm-section-title">Roles & Admins</div>
+          <p style={{ fontSize: "0.875rem", color: "var(--muted)", marginTop: "0.25rem" }}>
+            Permission matrix for each admin role
+          </p>
+        </div>
       </div>
 
-      {/* Permission Matrix */}
-      <div className="bg-white rounded-2xl border mb-8 overflow-x-auto" style={{ borderColor: "rgba(212,175,55,0.1)" }}>
-        <div className="px-6 py-4 border-b flex items-center gap-2" style={{ borderColor: "rgba(212,175,55,0.08)", background: "#FDFAF5" }}>
-          <h2 className="font-bold text-gray-700 text-sm">Permission Matrix</h2>
-        </div>
-        <table className="w-full min-w-[600px]">
+      <div className="adm-table-card" style={{ marginBottom: "1.75rem" }}>
+        <div className="adm-detail-card-header">Permission Matrix</div>
+        <table className="adm-table">
           <thead>
-            <tr className="border-b" style={{ borderColor: "rgba(212,175,55,0.08)" }}>
-              <th className="text-left px-6 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Permission</th>
-              {ADMIN_ROLES.map((role) => {
-                const meta = ROLE_LABELS[role];
-                return (
-                  <th key={role} className="text-center px-4 py-3 text-[11px] font-bold uppercase tracking-wider whitespace-nowrap" style={{ color: meta.color }}>
-                    {meta.label}
-                  </th>
-                );
-              })}
+            <tr>
+              <th scope="col">Permission</th>
+              {ADMIN_ROLES.map((role) => (
+                <th key={role} scope="col" style={{ textAlign: "center" }}>
+                  {ROLE_LABELS[role].label}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
             {Object.entries(PERMISSION_GROUPS).map(([group, permissions]) => (
-              <>
-                <tr key={group + "-header"} style={{ background: "#FDFAF5" }}>
-                  <td colSpan={5} className="px-6 py-2 text-[11px] font-bold text-gray-400 uppercase tracking-widest">
+              <Fragment key={group}>
+                <tr style={{ background: "var(--n-50)" }}>
+                  <td colSpan={5} style={{ fontSize: "0.6875rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--muted)" }}>
                     {group}
                   </td>
                 </tr>
                 {permissions.map((perm) => (
-                  <tr key={perm} className="border-t hover:bg-amber-50/20 transition-colors" style={{ borderColor: "rgba(212,175,55,0.06)" }}>
-                    <td className="px-6 py-3 text-sm font-mono text-gray-600">{perm}</td>
+                  <tr key={perm}>
+                    <td style={{ fontFamily: "var(--font-mono)", fontSize: "0.8125rem" }}>{perm}</td>
                     {ADMIN_ROLES.map((role) => {
                       const allowed = hasPermission(role, perm);
                       return (
-                        <td key={role} className="text-center py-3">
-                          <span
-                            className="inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold"
-                            style={{
-                              background: allowed ? "#dcfce7" : "#f9fafb",
-                              color: allowed ? "#15803d" : "#d1d5db",
-                            }}
-                          >
+                        <td key={role} style={{ textAlign: "center" }}>
+                          <span className={`adm-badge ${allowed ? "adm-badge-confirmed" : "adm-badge-refunded"}`}>
                             {allowed ? "✓" : "—"}
                           </span>
                         </td>
@@ -93,61 +84,44 @@ export default async function RolesPage() {
                     })}
                   </tr>
                 ))}
-              </>
+              </Fragment>
             ))}
           </tbody>
         </table>
       </div>
 
-      {/* Role descriptions */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+      <div className="adm-bottom-grid" style={{ marginBottom: "1.75rem" }}>
         {ADMIN_ROLES.map((role) => {
           const meta = ROLE_LABELS[role];
           const roleAdmins = admins.filter((a) => a.role === role);
           return (
-            <div
-              key={role}
-              className="bg-white rounded-2xl border p-5"
-              style={{ borderColor: "rgba(212,175,55,0.1)" }}
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={{ background: meta.bg, color: meta.color }}>
-                  {meta.label}
+            <div key={role} className="adm-side-card">
+              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.75rem" }}>
+                <span className={`adm-badge ${meta.className}`}>{meta.label}</span>
+                <span style={{ fontSize: "0.8125rem", color: "var(--muted)" }}>
+                  {roleAdmins.length} admin{roleAdmins.length !== 1 ? "s" : ""}
                 </span>
-                <span className="text-xs text-gray-400">{roleAdmins.length} admin{roleAdmins.length !== 1 ? "s" : ""}</span>
               </div>
-              <p className="text-sm text-gray-600 mb-4">{meta.description}</p>
-
-              {roleAdmins.length > 0 && (
-                <div className="space-y-2">
-                  {roleAdmins.map((admin) => (
-                    <div key={admin.id} className="flex items-center gap-2">
-                      <div
-                        className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
-                        style={{ background: "linear-gradient(135deg, #B89947, #8B1E1E)" }}
-                      >
-                        {admin.user.name.charAt(0).toUpperCase()}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-xs font-semibold text-gray-700 truncate">{admin.user.name}</p>
-                        <p className="text-[10px] text-gray-400 truncate">{admin.user.email}</p>
-                      </div>
-                      {!admin.isActive && (
-                        <span className="text-[10px] bg-red-50 text-red-500 px-1.5 py-0.5 rounded-full ml-auto shrink-0">Inactive</span>
-                      )}
-                    </div>
-                  ))}
+              <p style={{ fontSize: "0.875rem", color: "var(--muted)", marginBottom: "1rem", lineHeight: 1.5 }}>{meta.description}</p>
+              {roleAdmins.map((admin) => (
+                <div key={admin.id} style={{ display: "flex", alignItems: "center", gap: "0.625rem", marginBottom: "0.5rem" }}>
+                  <div className="adm-profile-avatar">{admin.user.name.charAt(0).toUpperCase()}</div>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <p style={{ fontSize: "0.8125rem", fontWeight: 600 }}>{admin.user.name}</p>
+                    <p style={{ fontSize: "0.75rem", color: "var(--muted)", overflow: "hidden", textOverflow: "ellipsis" }}>{admin.user.email}</p>
+                  </div>
+                  {!admin.isActive && <span className="adm-badge adm-badge-cancelled">Inactive</span>}
+                  {!admin.user.isActive && <span className="adm-badge adm-badge-cancelled">Disabled</span>}
                 </div>
-              )}
+              ))}
             </div>
           );
         })}
       </div>
 
-      <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 text-xs text-blue-700">
-        <strong>Assigning Roles:</strong> To add or change an admin role, update the <code>admins</code> table in the database (or use Prisma Studio).
-        A Role Management UI with invite-by-email is planned for Phase 2.
+      <div className="adm-alert adm-alert-success">
+        To add or change an admin role, update the admins table in the database. Role assignments use the existing RBAC permission matrix.
       </div>
-    </div>
+    </>
   );
 }

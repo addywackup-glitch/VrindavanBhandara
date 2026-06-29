@@ -146,17 +146,42 @@ export function BlogEditor({ initialData, mode }: Props) {
     }
   }
 
-  // Simple markdown preview renderer
+  // Simple markdown preview renderer (escaped + safe links)
+  function escapeHtml(text: string) {
+    return text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function safeHref(href: string) {
+    try {
+      const url = new URL(href, "https://vrindavanbhandara.com");
+      if (url.protocol === "http:" || url.protocol === "https:") return url.href;
+    } catch {
+      /* invalid */
+    }
+    return "#";
+  }
+
   function renderPreview(md: string) {
-    return md
+    const escaped = escapeHtml(md);
+    return escaped
       .replace(/^## (.+)$/gm, "<h2 class='text-xl font-bold mt-6 mb-3 text-gray-800'>$1</h2>")
       .replace(/^### (.+)$/gm, "<h3 class='text-lg font-semibold mt-4 mb-2 text-gray-700'>$1</h3>")
       .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
       .replace(/_(.+?)_/g, "<em>$1</em>")
       .replace(/`(.+?)`/g, "<code class='bg-gray-100 px-1 rounded text-sm font-mono'>$1</code>")
       .replace(/^- (.+)$/gm, "<li class='ml-4 list-disc'>$1</li>")
-      .replace(/\[(.+?)\]\((.+?)\)/g, "<a href='$2' class='text-blue-600 underline'>$1</a>")
-      .replace(/!\[(.+?)\]\((.+?)\)/g, "<img src='$2' alt='$1' class='rounded-xl my-4 max-w-full' />")
+      .replace(/\[(.+?)\]\((.+?)\)/g, (_m, label, href) => {
+        const safe = safeHref(String(href));
+        return `<a href="${escapeHtml(safe)}" rel="noopener noreferrer" class="text-blue-600 underline">${label}</a>`;
+      })
+      .replace(/!\[(.+?)\]\((.+?)\)/g, (_m, alt, src) => {
+        const safe = safeHref(String(src));
+        return `<img src="${escapeHtml(safe)}" alt="${alt}" class="rounded-xl my-4 max-w-full" />`;
+      })
       .replace(/\n\n/g, "</p><p class='mb-4 text-gray-700 leading-relaxed'>")
       .replace(/^(?!<[h|l|p])(.+)$/gm, "<p class='mb-4 text-gray-700 leading-relaxed'>$1</p>");
   }

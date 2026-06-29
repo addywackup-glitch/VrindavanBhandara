@@ -41,12 +41,11 @@ export function SettingsClient({ settingKey, label, type, placeholder, initialVa
     }
   }
 
-  const inputClass = "flex-1 px-4 py-2 text-sm border rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-200 min-w-0";
-  const borderStyle = { borderColor: "rgba(212,175,55,0.2)" };
+  const inputClass = "adm-input";
 
   return (
-    <div className="flex items-center gap-3 flex-wrap">
-      <label className="text-sm text-gray-600 font-medium w-56 shrink-0">{label}</label>
+    <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
+      <label className="adm-label" style={{ width: 220, marginBottom: 0 }}>{label}</label>
 
       {type === "boolean" ? (
         <button
@@ -68,7 +67,7 @@ export function SettingsClient({ settingKey, label, type, placeholder, initialVa
           onChange={(e) => setValue(e.target.value)}
           placeholder={placeholder}
           className={inputClass}
-          style={borderStyle}
+          style={{ flex: 1 }}
         />
       )}
 
@@ -76,11 +75,8 @@ export function SettingsClient({ settingKey, label, type, placeholder, initialVa
         <button
           onClick={save}
           disabled={saving || saved}
-          className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl transition-all"
-          style={{
-            background: saved ? "#dcfce7" : "#F5EEDB",
-            color: saved ? "#15803d" : "#5A3E2B",
-          }}
+          className={saved ? "adm-action-btn" : "adm-topbar-btn"}
+          style={{ fontSize: "0.75rem", padding: "0.375rem 0.75rem", display: "inline-flex", alignItems: "center", gap: "0.375rem" }}
         >
           {saving ? <Loader2 size={12} className="animate-spin" /> : saved ? <Check size={12} /> : null}
           {saving ? "Saving…" : saved ? "Saved!" : "Save"}

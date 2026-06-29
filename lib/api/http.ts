@@ -87,8 +87,10 @@ export async function requireActor(): Promise<Actor> {
 export async function requireAdmin(permission?: Permission): Promise<Actor> {
   const actor = await requireActor();
   if (actor.role !== "ADMIN") throw new AuthorizationError();
-  if (permission && actor.adminRole && !hasPermission(actor.adminRole, permission)) {
-    throw new AuthorizationError();
+  if (permission) {
+    if (!actor.adminRole || !hasPermission(actor.adminRole, permission)) {
+      throw new AuthorizationError();
+    }
   }
   return actor;
 }

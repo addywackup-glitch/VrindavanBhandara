@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Phone, Mail, MapPin, Clock } from "lucide-react";
+import { ContactForm } from "@/components/contact/ContactForm";
 
 export const metadata: Metadata = {
   title: "Contact Us — Vrindavan Bhandara",
@@ -112,54 +113,7 @@ export default function ContactPage() {
               <h2 className="font-heading text-xl font-bold text-charcoal mb-6">
                 Send Us a Message
               </h2>
-              <form
-                action="https://formspree.io/f/placeholder"
-                method="POST"
-                className="space-y-4"
-              >
-                <div>
-                  <label className="block text-xs font-semibold text-charcoal mb-1.5">Full Name</label>
-                  <input
-                    type="text"
-                    name="name"
-                    required
-                    placeholder="Your Name"
-                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-gold-400 focus:outline-none text-sm transition-colors"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-charcoal mb-1.5">Email Address</label>
-                  <input
-                    type="email"
-                    name="email"
-                    required
-                    placeholder="your@email.com"
-                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-gold-400 focus:outline-none text-sm transition-colors"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-charcoal mb-1.5">WhatsApp Number</label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    placeholder="+91 XXXXX XXXXX"
-                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-gold-400 focus:outline-none text-sm transition-colors"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-charcoal mb-1.5">Message</label>
-                  <textarea
-                    name="message"
-                    required
-                    rows={4}
-                    placeholder="Tell us about your seva requirements..."
-                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-gold-400 focus:outline-none text-sm transition-colors resize-none"
-                  />
-                </div>
-                <button type="submit" className="btn-gold w-full justify-center py-3.5">
-                  Send Message →
-                </button>
-              </form>
+              <ContactForm />
             </div>
           </div>
         </div>

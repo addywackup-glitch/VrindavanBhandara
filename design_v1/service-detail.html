@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bhandara Seva — Vrindavan Bhandara</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: oklch(99.2% 0.002 85); --surface: oklch(100% 0 0); --surface-2: oklch(97.5% 0.005 85);
+      --surface-brand: oklch(96.5% 0.035 148); --fg: oklch(14% 0.016 250); --muted: oklch(46% 0.014 250);
+      --subtle: oklch(68% 0.009 250); --brand: oklch(30% 0.12 148); --brand-mid: oklch(42% 0.14 148);
+      --brand-light: oklch(58% 0.13 148); --brand-fg: oklch(98% 0.004 148);
+      --accent: oklch(67% 0.155 58); --accent-deep: oklch(52% 0.145 55); --accent-fg: oklch(16% 0.02 58);
+      --success: oklch(50% 0.14 145); --success-surface: oklch(95.5% 0.045 145);
+      --border: oklch(91% 0.008 250); --border-strong: oklch(78% 0.012 250);
+      --n-50: oklch(98.5% 0.003 250); --n-100: oklch(96% 0.006 250); --n-200: oklch(91% 0.008 250);
+      --font-display: 'Cormorant Garamond', Georgia, serif; --font-body: 'DM Sans', system-ui, sans-serif;
+      --sh-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.05);
+      --sh-brand: 0 4px 20px oklch(30% 0.12 148 / 0.24); --sh-accent: 0 4px 16px oklch(67% 0.155 58 / 0.30);
+      --r-sm: 0.375rem; --r-md: 0.75rem; --r-lg: 1rem; --r-xl: 1.5rem; --r-full: 9999px;
+      --dur-base: 250ms; --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+    body { font-family: var(--font-body); background: var(--bg); color: var(--fg); line-height: 1.6; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+
+    /* Nav */
+    .nav {
+      position: sticky; top: 0; z-index: 100;
+      background: oklch(100% 0 0 / 0.94); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border); padding: 0 clamp(1rem, 5vw, 3rem); height: 64px;
+      display: flex; align-items: center; justify-content: space-between; gap: 1.5rem;
+    }
+    .nav-logo { display: flex; align-items: center; gap: 0.625rem; text-decoration: none; }
+    .nav-logo-mark { width: 32px; height: 32px; background: var(--brand); border-radius: 8px; display: grid; place-items: center; }
+    .nav-logo-mark svg { width: 18px; height: 18px; stroke: var(--brand-fg); fill: none; stroke-width: 1.5; }
+    .nav-logo-name { font-family: var(--font-display); font-size: 1.125rem; font-weight: 600; color: var(--fg); letter-spacing: -0.01em; }
+    .nav-right { display: flex; align-items: center; gap: 0.75rem; }
+    .btn-sm-primary { font-size: 0.875rem; font-weight: 500; color: var(--brand-fg); background: var(--brand); border: none; cursor: pointer; padding: 0.5625rem 1.25rem; border-radius: var(--r-sm); text-decoration: none; letter-spacing: 0.01em; transition: background var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-out); }
+    .btn-sm-primary:hover { background: var(--brand-mid); transform: translateY(-1px); box-shadow: var(--sh-brand); }
+    .btn-sm-ghost { font-size: 0.875rem; font-weight: 500; color: var(--muted); background: transparent; border: 1.5px solid var(--border); cursor: pointer; padding: 0.5rem 1.125rem; border-radius: var(--r-sm); text-decoration: none; transition: all 150ms; }
+    .btn-sm-ghost:hover { color: var(--fg); border-color: var(--border-strong); }
+
+    /* Layout */
+    .page-wrap { max-width: 1200px; margin: 0 auto; padding: 0 clamp(1.25rem, 6vw, 6rem); }
+    .breadcrumb { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: var(--muted); padding: 1.5rem 0; }
+    .breadcrumb a { color: var(--muted); text-decoration: none; transition: color 150ms; }
+    .breadcrumb a:hover { color: var(--fg); }
+    .breadcrumb svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+
+    /* Hero */
+    .service-hero {
+      display: grid; grid-template-columns: 1fr 380px; gap: 4rem; align-items: start;
+      padding-bottom: 4rem; border-bottom: 1px solid var(--border);
+    }
+    @media (max-width: 900px) { .service-hero { grid-template-columns: 1fr; gap: 2.5rem; } }
+
+    .service-eyebrow { font-size: 0.75rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent-deep); font-family: var(--font-display); margin-bottom: 1rem; }
+    .service-title { font-family: var(--font-display); font-size: clamp(2.25rem, 5vw, 3.75rem); font-weight: 600; letter-spacing: -0.022em; line-height: 1.05; color: var(--fg); margin-bottom: 1.25rem; }
+    .service-title em { font-style: italic; color: var(--brand); }
+    .service-desc-hero { font-size: 1.0625rem; color: var(--muted); line-height: 1.65; margin-bottom: 2rem; max-width: 58ch; }
+
+    .service-meta-row { display: flex; flex-wrap: wrap; gap: 1.25rem; margin-bottom: 2rem; }
+    .service-meta-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--muted); }
+    .service-meta-item svg { width: 16px; height: 16px; stroke: var(--brand); fill: none; stroke-width: 1.5; flex-shrink: 0; }
+    .service-meta-item strong { color: var(--fg); font-weight: 600; }
+
+    /* Booking Card */
+    .booking-card {
+      background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--r-xl);
+      padding: 1.75rem; position: sticky; top: 80px;
+      box-shadow: var(--sh-md);
+    }
+    .booking-card-title { font-family: var(--font-display); font-size: 1.375rem; font-weight: 600; letter-spacing: -0.01em; color: var(--fg); margin-bottom: 0.25rem; }
+    .booking-price { font-size: 2rem; font-weight: 600; color: var(--accent-deep); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; margin-bottom: 0.375rem; }
+    .booking-price sup { font-size: 1.125rem; vertical-align: super; font-weight: 500; }
+    .booking-price-note { font-size: 0.8125rem; color: var(--muted); margin-bottom: 1.5rem; }
+    .pkg-selector { display: flex; flex-direction: column; gap: 0.625rem; margin-bottom: 1.5rem; }
+    .pkg-option {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.875rem 1rem; border-radius: var(--r-md); border: 1.5px solid var(--border);
+      cursor: pointer; transition: all var(--dur-base); gap: 0.75rem;
+    }
+    .pkg-option:hover { border-color: var(--brand-light); background: var(--surface-brand); }
+    .pkg-option.selected { border-color: var(--brand); background: var(--surface-brand); }
+    .pkg-option-left { display: flex; align-items: center; gap: 0.75rem; }
+    .pkg-radio { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--border-strong); display: grid; place-items: center; flex-shrink: 0; transition: all var(--dur-base); }
+    .pkg-option.selected .pkg-radio { border-color: var(--brand); }
+    .pkg-option.selected .pkg-radio::after { content: ''; width: 8px; height: 8px; background: var(--brand); border-radius: 50%; display: block; }
+    .pkg-name { font-size: 0.9rem; font-weight: 500; color: var(--fg); }
+    .pkg-people { font-size: 0.8125rem; color: var(--muted); }
+    .pkg-price { font-size: 0.9rem; font-weight: 600; color: var(--accent-deep); white-space: nowrap; }
+    .btn-book-full {
+      width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+      font-family: var(--font-body); font-size: 1rem; font-weight: 500;
+      background: var(--brand); color: var(--brand-fg); padding: 0.875rem 1.5rem;
+      border-radius: var(--r-md); text-decoration: none; border: none; cursor: pointer;
+      letter-spacing: 0.01em; transition: background var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base); margin-bottom: 0.875rem;
+    }
+    .btn-book-full:hover { background: var(--brand-mid); transform: translateY(-1px); box-shadow: var(--sh-brand); }
+    .btn-book-full svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
+    .booking-trust-row { display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+    .trust-item { display: flex; align-items: center; gap: 0.375rem; font-size: 0.75rem; color: var(--muted); }
+    .trust-item svg { width: 13px; height: 13px; stroke: var(--success); fill: none; stroke-width: 2.5; }
+
+    /* Content tabs */
+    .content-area { padding: 3rem 0; }
+    .content-layout { display: grid; grid-template-columns: 1fr 380px; gap: 4rem; align-items: start; }
+    @media (max-width: 900px) { .content-layout { grid-template-columns: 1fr; } }
+    .content-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 2.5rem; }
+    .content-tab { font-size: 0.9rem; font-weight: 500; color: var(--muted); padding: 0.75rem 1.25rem; border-bottom: 2px solid transparent; cursor: pointer; transition: all 150ms; margin-bottom: -1px; letter-spacing: 0.01em; }
+    .content-tab:hover { color: var(--fg); }
+    .content-tab.active { color: var(--brand); border-bottom-color: var(--brand); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Section headings in content */
+    .content-h { font-family: var(--font-display); font-size: 1.5rem; font-weight: 600; letter-spacing: -0.01em; color: var(--fg); margin-bottom: 1rem; }
+    .content-p { font-size: 0.9375rem; color: var(--muted); line-height: 1.65; margin-bottom: 1.5rem; }
+
+    /* Benefits list */
+    .benefit-list { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem; }
+    .benefit-item { display: flex; align-items: flex-start; gap: 0.875rem; }
+    .benefit-icon { width: 32px; height: 32px; background: var(--success-surface); border-radius: var(--r-sm); display: grid; place-items: center; flex-shrink: 0; margin-top: 2px; }
+    .benefit-icon svg { width: 16px; height: 16px; stroke: var(--success); fill: none; stroke-width: 2; }
+    .benefit-title { font-size: 0.9375rem; font-weight: 600; color: var(--fg); margin-bottom: 0.25rem; }
+    .benefit-desc { font-size: 0.875rem; color: var(--muted); line-height: 1.55; }
+
+    /* Gallery grid */
+    .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
+    @media (max-width: 600px) { .gallery-grid { grid-template-columns: repeat(2, 1fr); } }
+    .gallery-item { aspect-ratio: 4/3; border-radius: var(--r-md); background: var(--surface-brand); display: grid; place-items: center; cursor: pointer; overflow: hidden; transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base); }
+    .gallery-item:hover { transform: scale(1.02); box-shadow: var(--sh-md); }
+    .gallery-item svg { width: 32px; height: 32px; stroke: var(--brand-light); fill: none; stroke-width: 1; opacity: 0.4; }
+
+    /* FAQ accordion */
+    .faq-list { display: flex; flex-direction: column; gap: 0.75rem; }
+    .faq-item { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--r-lg); overflow: hidden; transition: border-color 150ms; }
+    .faq-item.open { border-color: var(--brand-light); }
+    .faq-question { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.125rem 1.25rem; background: none; border: none; cursor: pointer; text-align: left; font-family: var(--font-body); font-size: 0.9375rem; font-weight: 500; color: var(--fg); }
+    .faq-question svg { width: 18px; height: 18px; stroke: var(--muted); fill: none; stroke-width: 1.75; flex-shrink: 0; transition: transform var(--dur-base) var(--ease-out); }
+    .faq-item.open .faq-question svg { transform: rotate(180deg); stroke: var(--brand); }
+    .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.35s var(--ease-out); }
+    .faq-item.open .faq-answer { max-height: 400px; }
+    .faq-answer-inner { padding: 0 1.25rem 1.25rem; font-size: 0.9rem; color: var(--muted); line-height: 1.65; border-top: 1px solid var(--border); padding-top: 1rem; }
+
+    /* Testimonials sidebar */
+    .sidebar-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--r-lg); padding: 1.5rem; margin-bottom: 1.25rem; }
+    .sidebar-title { font-family: var(--font-display); font-size: 1.25rem; font-weight: 600; letter-spacing: -0.01em; color: var(--fg); margin-bottom: 1.25rem; }
+    .review-card { padding-bottom: 1.25rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border); }
+    .review-card:last-child { padding-bottom: 0; margin-bottom: 0; border-bottom: none; }
+    .review-stars { color: var(--accent); font-size: 0.8125rem; letter-spacing: 0.04em; margin-bottom: 0.5rem; }
+    .review-text { font-size: 0.875rem; font-style: italic; color: var(--fg); line-height: 1.55; margin-bottom: 0.75rem; font-family: var(--font-display); }
+    .review-author { font-size: 0.8125rem; color: var(--muted); }
+
+    /* Related services */
+    .related-item { display: flex; align-items: center; gap: 1rem; padding: 0.875rem 0; border-bottom: 1px solid var(--border); text-decoration: none; color: inherit; transition: all 150ms; }
+    .related-item:last-child { border-bottom: none; }
+    .related-item:hover .related-name { color: var(--brand); }
+    .related-icon { width: 40px; height: 40px; background: var(--surface-brand); border-radius: var(--r-md); display: grid; place-items: center; flex-shrink: 0; }
+    .related-icon svg { width: 18px; height: 18px; stroke: var(--brand); fill: none; stroke-width: 1.5; }
+    .related-name { font-size: 0.9rem; font-weight: 500; color: var(--fg); transition: color 150ms; }
+    .related-price { font-size: 0.8125rem; color: var(--muted); }
+
+    /* Reveal */
+    .reveal { opacity: 0; transform: translateY(16px); transition: opacity 0.5s var(--ease-out), transform 0.5s var(--ease-out); }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="home.html" class="nav-logo">
+    <div class="nav-logo-mark"><svg viewBox="0 0 24 24"><path d="M12 3L3 9v12h6v-7h6v7h6V9L12 3z"/></svg></div>
+    <span class="nav-logo-name">Vrindavan Bhandara</span>
+  </a>
+  <div class="nav-right">
+    <a href="services.html" class="btn-sm-ghost">All Services</a>
+    <a href="booking.html" class="btn-sm-primary">Book a Seva</a>
+  </div>
+</nav>
+
+<div class="page-wrap">
+  <div class="breadcrumb">
+    <a href="home.html">Home</a>
+    <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+    <a href="services.html">Services</a>
+    <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+    <span>Bhandara Seva</span>
+  </div>
+
+  <!-- ── Service Hero ─────────────────────────────────────────────── -->
+  <div class="service-hero">
+    <div class="reveal">
+      <div class="service-eyebrow">Community Feast Seva</div>
+      <h1 class="service-title"><em>Bhandara Seva</em><br />in Vrindavan</h1>
+      <p class="service-desc-hero">A Bhandara is one of the most meritorious Sevas in Sanatan Dharma — feeding hundreds of devotees in the holy dham is said to multiply blessings manifold. We organize everything on your behalf and deliver complete documentation.</p>
+      <div class="service-meta-row">
+        <div class="service-meta-item">
+          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 7a4 4 0 100 8 4 4 0 000-8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+          <span><strong>100 – 1,000+</strong> People Served</span>
+        </div>
+        <div class="service-meta-item">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          <span><strong>Any Date</strong> — Book 3+ days in advance</span>
+        </div>
+        <div class="service-meta-item">
+          <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          <span>WhatsApp updates within <strong>24 hours</strong></span>
+        </div>
+      </div>
+
+      <!-- Image gallery preview -->
+      <div class="gallery-grid">
+        <div class="gallery-item"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>
+        <div class="gallery-item"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>
+        <div class="gallery-item"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>
+        <div class="gallery-item" style="display:flex;flex-direction:column;gap:0.375rem;align-items:center;justify-content:center;background:var(--brand);color:var(--brand-fg)">
+          <svg style="width:28px;height:28px;stroke:var(--brand-fg);fill:none;stroke-width:1.5;opacity:0.9" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M10 8l6 4-6 4V8z" fill="currentColor" stroke="none"/></svg>
+          <span style="font-size:0.75rem;font-weight:500;opacity:0.85">Watch Proof Video</span>
+        </div>
+        <div class="gallery-item"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>
+        <div class="gallery-item" style="background:var(--n-100);position:relative">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+          <div style="position:absolute;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;border-radius:var(--r-md)">
+            <span style="color:#fff;font-size:0.875rem;font-weight:500">+38 photos</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Booking card -->
+    <div class="booking-card reveal" style="transition-delay:0.15s">
+      <div class="booking-card-title">Select a Package</div>
+      <div class="booking-price"><sup>₹</sup>5,000</div>
+      <div class="booking-price-note">per Bhandara · prices vary by package</div>
+
+      <div class="pkg-selector" id="pkgSelector">
+        <div class="pkg-option selected" onclick="selectPkg(this, '5,000', '100–150 People')">
+          <div class="pkg-option-left">
+            <div class="pkg-radio"></div>
+            <div>
+              <div class="pkg-name">Laghu Bhandara</div>
+              <div class="pkg-people">100–150 devotees</div>
+            </div>
+          </div>
+          <div class="pkg-price">₹5,000</div>
+        </div>
+        <div class="pkg-option" onclick="selectPkg(this, '8,500', '200–300 People')">
+          <div class="pkg-option-left">
+            <div class="pkg-radio"></div>
+            <div>
+              <div class="pkg-name">Madhyam Bhandara</div>
+              <div class="pkg-people">200–300 devotees</div>
+            </div>
+          </div>
+          <div class="pkg-price">₹8,500</div>
+        </div>
+        <div class="pkg-option" onclick="selectPkg(this, '15,000', '500+ People')">
+          <div class="pkg-option-left">
+            <div class="pkg-radio"></div>
+            <div>
+              <div class="pkg-name">Maha Bhandara</div>
+              <div class="pkg-people">500–1,000+ devotees</div>
+            </div>
+          </div>
+          <div class="pkg-price">₹15,000</div>
+        </div>
+      </div>
+
+      <a href="booking.html" class="btn-book-full" id="bookBtn">
+        Book Bhandara Seva
+        <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+      <div class="booking-trust-row">
+        <div class="trust-item">
+          <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          Secure payment
+        </div>
+        <div class="trust-item">
+          <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          Photo proof
+        </div>
+        <div class="trust-item">
+          <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          Refund policy
+        </div>
+      </div>
+    </div>
+  </div><!-- /service-hero -->
+
+  <!-- ── Content Area ─────────────────────────────────────────────── -->
+  <div class="content-area">
+    <div class="content-layout">
+      <div>
+        <div class="content-tabs">
+          <button class="content-tab active" onclick="switchTab(this,'overview')">Overview</button>
+          <button class="content-tab" onclick="switchTab(this,'includes')">What's Included</button>
+          <button class="content-tab" onclick="switchTab(this,'gallery')">Gallery</button>
+          <button class="content-tab" onclick="switchTab(this,'faq')">FAQs</button>
+        </div>
+
+        <!-- Overview -->
+        <div class="tab-content active" id="tab-overview">
+          <h2 class="content-h">About this Seva</h2>
+          <p class="content-p">Bhandara means "storehouse" in Sanskrit — a generous community feast where food is offered freely to all who arrive. In the spiritual tradition, organizing a Bhandara in a holy dham like Vrindavan or Mathura carries extraordinary merit. Our team prepares sattvic (pure vegetarian) meals under hygienic conditions and serves them to devotees at sacred locations.</p>
+          <p class="content-p">Every Bhandara begins with a sankalp — a sacred intention — recited by our Brahmin pandits, naming you and your family as the sponsor. Your intention, whether for the welfare of a departed soul, to celebrate a birth or wedding, or simply as an offering of gratitude, is formally acknowledged in the divine presence.</p>
+
+          <h2 class="content-h">Benefits</h2>
+          <div class="benefit-list">
+            <div class="benefit-item">
+              <div class="benefit-icon"><svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg></div>
+              <div>
+                <div class="benefit-title">Meritorious karma (Punya)</div>
+                <div class="benefit-desc">Feeding the hungry in a holy dham is one of the highest meritorious acts in Sanatan Dharma, creating powerful spiritual merit for your family.</div>
+              </div>
+            </div>
+            <div class="benefit-item">
+              <div class="benefit-icon"><svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg></div>
+              <div>
+                <div class="benefit-title">Pitru Tarpan (Ancestral Blessings)</div>
+                <div class="benefit-desc">A Bhandara performed in the name of departed souls is believed to grant them peace and liberation. Particularly auspicious on shraddha tithi.</div>
+              </div>
+            </div>
+            <div class="benefit-item">
+              <div class="benefit-icon"><svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg></div>
+              <div>
+                <div class="benefit-title">Shared divine joy</div>
+                <div class="benefit-desc">The smiles of hundreds of devotees receiving food in Krishna's dham carry their own blessings back to you as the donor.</div>
+              </div>
+            </div>
+            <div class="benefit-item">
+              <div class="benefit-icon"><svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg></div>
+              <div>
+                <div class="benefit-title">Complete transparency</div>
+                <div class="benefit-desc">You receive photo and video proof of your Seva within 24 hours — the only platform that offers this level of documented accountability.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Includes -->
+        <div class="tab-content" id="tab-includes">
+          <h2 class="content-h">What's included in every Bhandara</h2>
+          <div class="benefit-list">
+            <div class="benefit-item"><div class="benefit-icon"><svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg></div><div><div class="benefit-title">Sacred Sankalp recitation</div><div class="benefit-desc">Your name and family names formally recited by a Brahmin pandit at the start of the Bhandara.</div></div></div>
+            <div class="benefit-item"><div class="benefit-icon"><svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg></div><div><div class="benefit-title">Sattvic meal preparation</div><div class="benefit-desc">Pure vegetarian food — dal, sabzi, rice, puri, kheer, and seasonal vegetables — prepared under hygienic conditions.</div></div></div>
+            <div class="benefit-item"><div class="benefit-icon"><svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg></div><div><div class="benefit-title">Venue in the holy dham</div><div class="benefit-desc">Organized at a sacred location in Vrindavan or Mathura — near temples, ghats, or community halls.</div></div></div>
+            <div class="benefit-item"><div class="benefit-icon"><svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg></div><div><div class="benefit-title">30–50 photos + full video</div><div class="benefit-desc">Comprehensive documentation including the sankalp, food preparation, serving, and the devotees receiving prasad.</div></div></div>
+            <div class="benefit-item"><div class="benefit-icon"><svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg></div><div><div class="benefit-title">WhatsApp delivery within 24hrs</div><div class="benefit-desc">All photos and videos delivered directly to your WhatsApp number and uploaded to your dashboard.</div></div></div>
+            <div class="benefit-item"><div class="benefit-icon"><svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg></div><div><div class="benefit-title">Digital certificate</div><div class="benefit-desc">A downloadable Seva certificate bearing your name, date, and details of the Bhandara.</div></div></div>
+          </div>
+        </div>
+
+        <!-- Gallery -->
+        <div class="tab-content" id="tab-gallery">
+          <h2 class="content-h">Gallery from previous Bhandaras</h2>
+          <p class="content-p">These are actual photos from Bhandaras we have organized. Every Seva you book will be documented with equal care.</p>
+          <div class="gallery-grid" style="grid-template-columns:repeat(3,1fr)">
+            <div class="gallery-item" style="height:160px"></div>
+            <div class="gallery-item" style="height:160px"></div>
+            <div class="gallery-item" style="height:160px"></div>
+            <div class="gallery-item" style="height:160px"></div>
+            <div class="gallery-item" style="height:160px"></div>
+            <div class="gallery-item" style="height:160px"></div>
+          </div>
+        </div>
+
+        <!-- FAQ -->
+        <div class="tab-content" id="tab-faq">
+          <h2 class="content-h">Frequently Asked Questions</h2>
+          <div class="faq-list">
+            <div class="faq-item">
+              <button class="faq-question" onclick="toggleFaq(this)">
+                How far in advance must I book?
+                <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+              </button>
+              <div class="faq-answer"><div class="faq-answer-inner">We recommend booking at least 3 days in advance to ensure proper arrangements. For special occasions like Ekadashi, Purnima, or shraddha tithis, we recommend booking 7–10 days ahead as these dates fill up quickly.</div></div>
+            </div>
+            <div class="faq-item">
+              <button class="faq-question" onclick="toggleFaq(this)">
+                Can I specify a particular temple or ghat?
+                <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+              </button>
+              <div class="faq-answer"><div class="faq-answer-inner">Yes. During booking you can specify your preferred location — ISKCON Vrindavan, Banke Bihari Temple, Yamuna Ghat, Radha Raman Temple, or any other sacred location in Vrindavan or Mathura. Subject to availability and any temple-specific restrictions.</div></div>
+            </div>
+            <div class="faq-item">
+              <button class="faq-question" onclick="toggleFaq(this)">
+                What is the refund policy if I cancel?
+                <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+              </button>
+              <div class="faq-answer"><div class="faq-answer-inner">Full refund if cancelled more than 48 hours before the Seva date. 50% refund if cancelled between 24–48 hours. No refund within 24 hours of the booked date, as preparations will have begun.</div></div>
+            </div>
+            <div class="faq-item">
+              <button class="faq-question" onclick="toggleFaq(this)">
+                When will I receive the photos and video?
+                <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+              </button>
+              <div class="faq-answer"><div class="faq-answer-inner">Photos and video are typically delivered within 2–6 hours of Seva completion via WhatsApp. All media is also available in your account dashboard for permanent download. You will receive at least 30 photos and a 5–10 minute video.</div></div>
+            </div>
+            <div class="faq-item">
+              <button class="faq-question" onclick="toggleFaq(this)">
+                Can I include multiple family names in the sankalp?
+                <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+              </button>
+              <div class="faq-answer"><div class="faq-answer-inner">Yes, absolutely. During booking you can provide up to 10 family names (including departed souls' names for pitru seva) to be recited in the sankalp. Additional names beyond 10 can be added for a nominal fee.</div></div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /content-left -->
+
+      <!-- Sidebar -->
+      <div>
+        <!-- Reviews -->
+        <div class="sidebar-card">
+          <div class="sidebar-title">Customer Reviews</div>
+          <div class="review-card">
+            <div class="review-stars">★★★★★</div>
+            <div class="review-text">"My mother's last wish was to sponsor a Bhandara in Vrindavan. She left us in 2023. We fulfilled her wish through Vrindavan Bhandara and received 42 beautiful photos."</div>
+            <div class="review-author">Rajesh S. · Mumbai</div>
+          </div>
+          <div class="review-card">
+            <div class="review-stars">★★★★★</div>
+            <div class="review-text">"We've booked Bhandara twice for our son's birthday. The video arrived the same evening. You can see the devotees eating and smiling — pure joy."</div>
+            <div class="review-author">Kavita M. · Bangalore</div>
+          </div>
+          <div style="margin-top:1.25rem">
+            <div style="display:flex;align-items:center;gap:0.625rem;margin-bottom:0.5rem">
+              <span style="font-family:var(--font-display);font-size:2rem;font-weight:600;color:var(--fg);letter-spacing:-0.02em">4.9</span>
+              <div>
+                <div style="color:var(--accent);font-size:0.875rem;letter-spacing:0.04em">★★★★★</div>
+                <div style="font-size:0.8125rem;color:var(--muted)">from 847 reviews</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Related -->
+        <div class="sidebar-card">
+          <div class="sidebar-title">Related Services</div>
+          <a href="service-detail.html" class="related-item">
+            <div class="related-icon"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="9" ry="9"/><ellipse cx="12" cy="12" rx="5" ry="5"/></svg></div>
+            <div>
+              <div class="related-name">Brahmin Bhoj Seva</div>
+              <div class="related-price">From ₹2,100</div>
+            </div>
+          </a>
+          <a href="service-detail.html" class="related-item">
+            <div class="related-icon"><svg viewBox="0 0 24 24"><path d="M12 3v4M3 12h4M17 12h4M12 17v4"/></svg></div>
+            <div>
+              <div class="related-name">Annadan Seva</div>
+              <div class="related-price">From ₹2,001</div>
+            </div>
+          </a>
+          <a href="service-detail.html" class="related-item">
+            <div class="related-icon"><svg viewBox="0 0 24 24"><path d="M12 22V12M12 12l-5-5M12 12l5-5"/></svg></div>
+            <div>
+              <div class="related-name">Sadhu Bhojan Seva</div>
+              <div class="related-price">From ₹1,100</div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div><!-- /content-layout -->
+  </div>
+
+</div><!-- /page-wrap -->
+
+<script>
+  // Scroll reveals
+  const obs = new IntersectionObserver(e => e.forEach(x => { if (x.isIntersecting) { x.target.classList.add('visible'); obs.unobserve(x.target); } }), { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+  // Package selector
+  function selectPkg(el, price, people) {
+    document.querySelectorAll('.pkg-option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    document.querySelector('.booking-price').innerHTML = '<sup>₹</sup>' + price;
+    document.querySelector('.booking-price-note').textContent = people + ' · all-inclusive';
+    document.getElementById('bookBtn').textContent = 'Book Bhandara — ₹' + price;
+    document.getElementById('bookBtn').innerHTML = 'Book Bhandara — ₹' + price + ' <svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+  }
+
+  // Tab switching
+  function switchTab(btn, id) {
+    document.querySelectorAll('.content-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + id).classList.add('active');
+  }
+
+  // FAQ accordion
+  function toggleFaq(btn) {
+    const item = btn.closest('.faq-item');
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+    if (!isOpen) item.classList.add('open');
+  }
+</script>
+</body>
+</html>

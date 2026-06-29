@@ -308,21 +308,35 @@ export type SessionUser = {
 
 // Flat booking wizard form data
 export type BookingFormData = {
+  // Step 1 — Service
   serviceCategoryId: string;
+  serviceSlug: string;
   serviceType: string;
   serviceName: string;
+  // Step 2 — Package
   packageId: string;
   packageName: string;
   packagePrice: number;
-  sevaDate: string;
-  sevaLocation: 'VRINDAVAN' | 'MATHURA';
+  packageOriginalPrice: number | null;
+  packageMaxGuests: number | null;
+  packageBadge: string | null;
+  // Step 3 — Date
+  sevaDate: string;       // ISO datetime string
+  sevaLocation: "Vrindavan" | "Mathura";
   guestCount: number;
-  dedicatedTo: string;
-  gotra: string;
+  // Step 4 — Devotee Details
+  userFirstName: string;
+  userLastName: string;
+  userPhone: string;
+  userEmail: string;
+  userCity: string;
   occasion: string;
   specialInstructions: string;
+  // Step 5 — Sankalp
+  gotra: string;
+  sankalpNames: string[];  // dynamic list of names, joined into dedicatedTo on submit
+  intention: string;       // prayer intention
+  // Misc
   couponCode: string;
-  userName: string;
-  userEmail: string;
-  userPhone: string;
+  dedicatedTo: string;    // computed: sankalpNames.join(", ")
 };

@@ -1,31 +1,51 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
+import {
+  Cormorant_Garamond,
+  DM_Sans,
+  JetBrains_Mono,
+  Noto_Sans_Devanagari,
+} from "next/font/google";
 import "./globals.css";
-import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
+import { SiteChrome } from "@/components/layout/SiteChrome";
+import { Providers } from "./providers";
 
 // =============================================================================
-// Google Fonts
-// Source: 05-ui-design-system.md — Playfair Display + Inter
+// Fonts — Design System: Sacred Precision
+// Display: Cormorant Garamond · Body: DM Sans · Mono: JetBrains Mono
 // =============================================================================
 
-const inter = Inter({
+const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-display",
   display: "swap",
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
 });
 
-const playfair = Playfair_Display({
+const dmSans = DM_Sans({
   subsets: ["latin"],
-  variable: "--font-playfair",
+  variable: "--font-body",
   display: "swap",
-  weight: ["400", "500", "600", "700", "800", "900"],
-  style: ["normal", "italic"],
+  weight: "variable",
+  axes: ["opsz"],
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  display: "swap",
+  weight: ["400", "500"],
+});
+
+const notoDevanagari = Noto_Sans_Devanagari({
+  subsets: ["devanagari"],
+  variable: "--font-devanagari",
+  display: "swap",
+  weight: ["400", "500"],
 });
 
 // =============================================================================
 // Root Metadata
-// Source: 08-seo-strategy.md
 // =============================================================================
 
 export const metadata: Metadata = {
@@ -105,15 +125,14 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#8B1E1E",
+  themeColor: "#1a4d2e",
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
 };
 
 // =============================================================================
-// Organization JSON-LD Schema
-// Source: 08-seo-strategy.md — Organization structured data
+// Organization + WebSite JSON-LD
 // =============================================================================
 
 const organizationSchema = {
@@ -164,11 +183,12 @@ const websiteSchema = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
+    <html
+      lang="en"
+      className={`${cormorant.variable} ${dmSans.variable} ${jetbrainsMono.variable} ${notoDevanagari.variable}`}
+    >
       <head>
         <script
           type="application/ld+json"
@@ -179,10 +199,10 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
         />
       </head>
-      <body style={{ background: "#F5EEDB", color: "#2A2825" }}>
-        <Navbar />
-        <main>{children}</main>
-        <Footer />
+      <body>
+        <Providers>
+          <SiteChrome>{children}</SiteChrome>
+        </Providers>
       </body>
     </html>
   );

@@ -1,0 +1,677 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Book a Seva — Vrindavan Bhandara</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: oklch(99.2% 0.002 85); --surface: oklch(100% 0 0); --surface-2: oklch(97.5% 0.005 85);
+      --surface-brand: oklch(96.5% 0.035 148); --fg: oklch(14% 0.016 250); --muted: oklch(46% 0.014 250);
+      --subtle: oklch(68% 0.009 250); --brand: oklch(30% 0.12 148); --brand-mid: oklch(42% 0.14 148);
+      --brand-light: oklch(58% 0.13 148); --brand-fg: oklch(98% 0.004 148);
+      --accent: oklch(67% 0.155 58); --accent-deep: oklch(52% 0.145 55); --accent-fg: oklch(16% 0.02 58);
+      --success: oklch(50% 0.14 145); --success-surface: oklch(95.5% 0.045 145);
+      --warning: oklch(68% 0.15 68); --danger: oklch(55% 0.19 25);
+      --border: oklch(91% 0.008 250); --border-strong: oklch(78% 0.012 250);
+      --n-50: oklch(98.5% 0.003 250); --n-100: oklch(96% 0.006 250); --n-200: oklch(91% 0.008 250);
+      --font-display: 'Cormorant Garamond', Georgia, serif; --font-body: 'DM Sans', system-ui, sans-serif;
+      --sh-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.05);
+      --sh-brand: 0 4px 20px oklch(30% 0.12 148 / 0.24);
+      --r-sm: 0.375rem; --r-md: 0.75rem; --r-lg: 1rem; --r-xl: 1.5rem; --r-full: 9999px;
+      --dur-base: 250ms; --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+    body { font-family: var(--font-body); background: var(--bg); color: var(--fg); line-height: 1.6; -webkit-font-smoothing: antialiased; min-height: 100vh; }
+
+    /* Nav */
+    .nav { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 clamp(1rem, 5vw, 3rem); height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; }
+    .nav-logo { display: flex; align-items: center; gap: 0.625rem; text-decoration: none; }
+    .nav-logo-mark { width: 32px; height: 32px; background: var(--brand); border-radius: 8px; display: grid; place-items: center; }
+    .nav-logo-mark svg { width: 18px; height: 18px; stroke: var(--brand-fg); fill: none; stroke-width: 1.5; }
+    .nav-logo-name { font-family: var(--font-display); font-size: 1.125rem; font-weight: 600; color: var(--fg); letter-spacing: -0.01em; }
+    .nav-right { display: flex; align-items: center; gap: 0.75rem; }
+
+    /* Layout */
+    .booking-layout { display: grid; grid-template-columns: 1fr 340px; min-height: calc(100vh - 64px); }
+    @media (max-width: 900px) { .booking-layout { grid-template-columns: 1fr; } }
+
+    .booking-main { padding: 2rem clamp(1.25rem, 5vw, 3rem); border-right: 1px solid var(--border); }
+    @media (max-width: 900px) { .booking-main { border-right: none; border-bottom: 1px solid var(--border); } }
+
+    /* Progress bar */
+    .progress-header { margin-bottom: 2.5rem; }
+    .progress-title { font-family: var(--font-display); font-size: 1.875rem; font-weight: 600; letter-spacing: -0.02em; line-height: 1.15; color: var(--fg); margin-bottom: 1.5rem; }
+    .progress-title em { font-style: italic; color: var(--brand); }
+    .progress-steps { display: flex; gap: 0; align-items: center; }
+    .p-step { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+    .p-step-num { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-size: 0.75rem; font-weight: 600; flex-shrink: 0; transition: all var(--dur-base) var(--ease-out); }
+    .p-step-num.done { background: var(--success); color: #fff; }
+    .p-step-num.active { background: var(--brand); color: var(--brand-fg); box-shadow: var(--sh-brand); }
+    .p-step-num.pending { background: var(--n-100); color: var(--subtle); border: 1.5px solid var(--border); }
+    .p-step-label { font-size: 0.75rem; font-weight: 500; color: var(--muted); white-space: nowrap; }
+    .p-step-label.active { color: var(--brand); }
+    .p-line { flex: 1; height: 1.5px; background: var(--border); margin: 0 0.25rem; min-width: 16px; transition: background 0.4s; }
+    .p-line.done { background: var(--success); }
+    @media (max-width: 600px) { .p-step-label { display: none; } }
+
+    /* Step panels */
+    .step-panel { display: none; animation: stepIn 0.35s var(--ease-out) both; }
+    .step-panel.active { display: block; }
+    @keyframes stepIn { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: translateX(0); } }
+
+    .step-heading { font-family: var(--font-display); font-size: 1.5rem; font-weight: 600; letter-spacing: -0.015em; color: var(--fg); margin-bottom: 0.5rem; }
+    .step-sub { font-size: 0.9rem; color: var(--muted); margin-bottom: 1.75rem; line-height: 1.55; }
+
+    /* Service selector cards */
+    .service-selector { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+    @media (max-width: 500px) { .service-selector { grid-template-columns: 1fr; } }
+    .service-opt {
+      border: 1.5px solid var(--border); border-radius: var(--r-lg); padding: 1.25rem;
+      cursor: pointer; transition: all var(--dur-base);
+      display: flex; flex-direction: column; gap: 0.625rem;
+    }
+    .service-opt:hover { border-color: var(--brand-light); background: var(--surface-brand); }
+    .service-opt.selected { border-color: var(--brand); background: var(--surface-brand); }
+    .service-opt-icon { width: 40px; height: 40px; background: var(--n-100); border-radius: var(--r-sm); display: grid; place-items: center; }
+    .service-opt.selected .service-opt-icon { background: oklch(92% 0.05 148); }
+    .service-opt-icon svg { width: 20px; height: 20px; stroke: var(--brand); fill: none; stroke-width: 1.5; }
+    .service-opt-name { font-size: 0.9375rem; font-weight: 600; color: var(--fg); }
+    .service-opt-price { font-size: 0.8125rem; color: var(--muted); }
+    .service-opt-check { width: 20px; height: 20px; border: 1.5px solid var(--border); border-radius: 50%; transition: all var(--dur-base); align-self: flex-start; margin-left: auto; }
+    .service-opt.selected .service-opt-check { background: var(--brand); border-color: var(--brand); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5'%3E%3Cpath d='M20 6L9 17l-5-5'/%3E%3C/svg%3E"); background-size: 12px; background-repeat: no-repeat; background-position: center; }
+
+    /* Package cards */
+    .pkg-cards { display: flex; flex-direction: column; gap: 0.875rem; }
+    .pkg-card {
+      border: 1.5px solid var(--border); border-radius: var(--r-lg); padding: 1.25rem;
+      cursor: pointer; transition: all var(--dur-base); display: flex; gap: 1rem; align-items: flex-start;
+    }
+    .pkg-card:hover { border-color: var(--brand-light); background: var(--surface-brand); }
+    .pkg-card.selected { border-color: var(--brand); background: var(--surface-brand); }
+    .pkg-radio { width: 20px; height: 20px; border: 1.5px solid var(--border-strong); border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; margin-top: 2px; transition: all var(--dur-base); }
+    .pkg-card.selected .pkg-radio { border-color: var(--brand); }
+    .pkg-card.selected .pkg-radio::after { content: ''; width: 9px; height: 9px; background: var(--brand); border-radius: 50%; display: block; }
+    .pkg-info { flex: 1; }
+    .pkg-name { font-size: 0.9375rem; font-weight: 600; color: var(--fg); margin-bottom: 0.25rem; }
+    .pkg-detail { font-size: 0.8125rem; color: var(--muted); line-height: 1.5; }
+    .pkg-tag { display: inline-flex; font-size: 0.6875rem; font-weight: 500; letter-spacing: 0.03em; padding: 0.1875rem 0.5rem; border-radius: var(--r-full); background: var(--accent); color: var(--accent-fg); margin-top: 0.375rem; }
+    .pkg-price-col { text-align: right; flex-shrink: 0; }
+    .pkg-price { font-size: 1.0625rem; font-weight: 600; color: var(--accent-deep); font-variant-numeric: tabular-nums; }
+
+    /* Calendar */
+    .calendar-wrap { max-width: 360px; }
+    .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+    .cal-title { font-family: var(--font-display); font-size: 1.125rem; font-weight: 600; letter-spacing: -0.01em; }
+    .cal-nav-btn { width: 32px; height: 32px; background: none; border: 1.5px solid var(--border); border-radius: var(--r-sm); cursor: pointer; display: grid; place-items: center; transition: all 150ms; }
+    .cal-nav-btn:hover { border-color: var(--brand-light); background: var(--surface-brand); }
+    .cal-nav-btn svg { width: 16px; height: 16px; stroke: var(--muted); fill: none; stroke-width: 1.75; }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+    .cal-day-name { font-size: 0.6875rem; font-weight: 500; text-align: center; color: var(--subtle); letter-spacing: 0.04em; text-transform: uppercase; padding: 0.375rem 0; }
+    .cal-day {
+      aspect-ratio: 1; display: grid; place-items: center; font-size: 0.875rem; font-weight: 400;
+      border-radius: var(--r-sm); cursor: pointer; transition: all 150ms; color: var(--fg);
+    }
+    .cal-day:hover { background: var(--surface-brand); color: var(--brand); }
+    .cal-day.selected { background: var(--brand); color: var(--brand-fg); font-weight: 600; }
+    .cal-day.today { font-weight: 600; color: var(--accent-deep); }
+    .cal-day.disabled { color: var(--subtle); cursor: not-allowed; pointer-events: none; }
+    .cal-day.empty { pointer-events: none; }
+
+    /* Form fields */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+    @media (max-width: 500px) { .form-grid { grid-template-columns: 1fr; } }
+    .form-group { display: flex; flex-direction: column; gap: 0.375rem; }
+    .form-group.full { grid-column: 1 / -1; }
+    .form-label { font-size: 0.875rem; font-weight: 500; color: var(--fg); letter-spacing: 0.01em; }
+    .form-hint { font-size: 0.8125rem; color: var(--muted); }
+    .input {
+      font-family: var(--font-body); font-size: 0.9375rem; color: var(--fg); background: var(--surface);
+      border: 1.5px solid var(--border); border-radius: var(--r-sm);
+      padding: 0.6875rem 1rem; outline: none; width: 100%; line-height: 1.4;
+      transition: border-color var(--dur-base), box-shadow var(--dur-base);
+    }
+    .input::placeholder { color: var(--subtle); }
+    .input:hover { border-color: var(--n-200); }
+    .input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px oklch(30% 0.12 148 / 0.11); }
+    select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='1.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.75rem center; padding-right: 2.5rem; }
+    textarea.input { min-height: 90px; resize: vertical; }
+
+    /* Sankalp names */
+    .sankalp-names { display: flex; flex-direction: column; gap: 0.75rem; }
+    .sankalp-name-row { display: flex; gap: 0.5rem; align-items: center; }
+    .sankalp-name-row .input { flex: 1; }
+    .btn-remove-name { width: 36px; height: 36px; background: none; border: 1.5px solid var(--border); border-radius: var(--r-sm); cursor: pointer; display: grid; place-items: center; transition: all 150ms; flex-shrink: 0; }
+    .btn-remove-name:hover { border-color: var(--danger); color: var(--danger); background: oklch(96.5% 0.045 25); }
+    .btn-remove-name svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.75; }
+    .btn-add-name { display: flex; align-items: center; gap: 0.375rem; font-size: 0.875rem; font-weight: 500; color: var(--brand); background: var(--surface-brand); border: 1.5px dashed oklch(30% 0.12 148 / 0.3); border-radius: var(--r-sm); padding: 0.625rem 1rem; cursor: pointer; width: 100%; transition: all 150ms; justify-content: center; }
+    .btn-add-name:hover { background: oklch(93% 0.05 148); border-color: var(--brand-light); }
+    .btn-add-name svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+    /* Review summary */
+    .review-section { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--r-lg); overflow: hidden; margin-bottom: 1.5rem; }
+    .review-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.875rem 1.25rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+    .review-row:last-child { border-bottom: none; }
+    .review-row-label { color: var(--muted); }
+    .review-row-value { font-weight: 500; color: var(--fg); text-align: right; }
+    .review-total { background: var(--surface-brand); font-size: 1rem; font-weight: 600; }
+    .review-total .review-row-value { color: var(--brand); font-size: 1.25rem; }
+
+    /* Payment options */
+    .payment-opts { display: flex; flex-direction: column; gap: 0.75rem; }
+    .payment-opt { display: flex; align-items: center; gap: 1rem; border: 1.5px solid var(--border); border-radius: var(--r-md); padding: 1rem 1.25rem; cursor: pointer; transition: all var(--dur-base); }
+    .payment-opt:hover { border-color: var(--brand-light); background: var(--surface-brand); }
+    .payment-opt.selected { border-color: var(--brand); background: var(--surface-brand); }
+    .payment-opt-radio { width: 20px; height: 20px; border: 1.5px solid var(--border-strong); border-radius: 50%; display: grid; place-items: center; transition: all var(--dur-base); flex-shrink: 0; }
+    .payment-opt.selected .payment-opt-radio { border-color: var(--brand); }
+    .payment-opt.selected .payment-opt-radio::after { content: ''; width: 9px; height: 9px; background: var(--brand); border-radius: 50%; display: block; }
+    .payment-opt-label { font-size: 0.9375rem; font-weight: 500; }
+    .payment-opt-desc { font-size: 0.8125rem; color: var(--muted); margin-top: 0.125rem; }
+
+    /* Nav buttons */
+    .step-nav { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
+    .btn-back { font-size: 0.9rem; font-weight: 500; color: var(--muted); background: none; border: 1.5px solid var(--border); padding: 0.75rem 1.5rem; border-radius: var(--r-sm); cursor: pointer; transition: all 150ms; display: flex; align-items: center; gap: 0.375rem; }
+    .btn-back:hover { color: var(--fg); border-color: var(--border-strong); }
+    .btn-back svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; }
+    .btn-next { font-size: 0.9375rem; font-weight: 500; color: var(--brand-fg); background: var(--brand); border: none; padding: 0.75rem 2rem; border-radius: var(--r-sm); cursor: pointer; transition: all var(--dur-base) var(--ease-out); display: flex; align-items: center; gap: 0.5rem; letter-spacing: 0.01em; }
+    .btn-next:hover { background: var(--brand-mid); transform: translateY(-1px); box-shadow: var(--sh-brand); }
+    .btn-next svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
+    .btn-pay { background: var(--accent); color: var(--accent-fg); }
+    .btn-pay:hover { background: oklch(60% 0.155 58); }
+
+    /* Summary sidebar */
+    .booking-sidebar { padding: 2rem clamp(1rem, 3vw, 1.75rem); background: var(--surface-2); position: sticky; top: 64px; height: fit-content; }
+    @media (max-width: 900px) { .booking-sidebar { position: static; } }
+    .sidebar-title { font-family: var(--font-display); font-size: 1.125rem; font-weight: 600; letter-spacing: -0.01em; color: var(--fg); margin-bottom: 1.5rem; }
+    .summary-line { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; font-size: 0.9rem; padding: 0.625rem 0; border-bottom: 1px solid var(--border); }
+    .summary-line:last-of-type { border-bottom: none; }
+    .summary-line-label { color: var(--muted); }
+    .summary-line-value { font-weight: 500; color: var(--fg); text-align: right; }
+    .summary-total { margin-top: 1.25rem; padding-top: 1.25rem; border-top: 2px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .summary-total-label { font-size: 1rem; font-weight: 600; color: var(--fg); }
+    .summary-total-value { font-family: var(--font-display); font-size: 1.75rem; font-weight: 600; color: var(--accent-deep); letter-spacing: -0.02em; }
+    .summary-trust { margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.625rem; }
+    .summary-trust-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: var(--muted); }
+    .summary-trust-item svg { width: 14px; height: 14px; stroke: var(--success); fill: none; stroke-width: 2.5; flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav class="nav">
+  <a href="home.html" class="nav-logo">
+    <div class="nav-logo-mark"><svg viewBox="0 0 24 24"><path d="M12 3L3 9v12h6v-7h6v7h6V9L12 3z"/></svg></div>
+    <span class="nav-logo-name">Vrindavan Bhandara</span>
+  </a>
+  <div class="nav-right" style="font-size:0.875rem;color:var(--muted)">
+    <span id="stepIndicator">Step 1 of 7</span>
+  </div>
+</nav>
+
+<div class="booking-layout">
+
+  <!-- ── Main ──────────────────────────────────────────────────────── -->
+  <div class="booking-main">
+    <!-- Progress -->
+    <div class="progress-header">
+      <h1 class="progress-title">Book your <em>Sacred Seva</em></h1>
+      <div class="progress-steps" id="progressSteps">
+        <div class="p-step"><div class="p-step-num active" id="ps1">1</div><div class="p-step-label active" id="pl1">Service</div></div>
+        <div class="p-line" id="line1"></div>
+        <div class="p-step"><div class="p-step-num pending" id="ps2">2</div><div class="p-step-label" id="pl2">Package</div></div>
+        <div class="p-line" id="line2"></div>
+        <div class="p-step"><div class="p-step-num pending" id="ps3">3</div><div class="p-step-label" id="pl3">Date</div></div>
+        <div class="p-line" id="line3"></div>
+        <div class="p-step"><div class="p-step-num pending" id="ps4">4</div><div class="p-step-label" id="pl4">Details</div></div>
+        <div class="p-line" id="line4"></div>
+        <div class="p-step"><div class="p-step-num pending" id="ps5">5</div><div class="p-step-label" id="pl5">Sankalp</div></div>
+        <div class="p-line" id="line5"></div>
+        <div class="p-step"><div class="p-step-num pending" id="ps6">6</div><div class="p-step-label" id="pl6">Review</div></div>
+        <div class="p-line" id="line6"></div>
+        <div class="p-step"><div class="p-step-num pending" id="ps7">7</div><div class="p-step-label" id="pl7">Payment</div></div>
+      </div>
+    </div>
+
+    <!-- ── STEP 1: Service ───────────────────────────────────────── -->
+    <div class="step-panel active" id="step1">
+      <div class="step-heading">Choose your Seva</div>
+      <div class="step-sub">Select the sacred service you'd like to sponsor in Vrindavan or Mathura.</div>
+      <div class="service-selector" id="serviceSelector">
+        <div class="service-opt selected" data-service="Bhandara Seva" data-price="5000" onclick="selectService(this)">
+          <div class="service-opt-icon"><svg viewBox="0 0 24 24"><path d="M5 8h14M7 8c0-2.5 2-5 5-5s5 2.5 5 5M6.5 8l1.5 11h8l1.5-11"/></svg></div>
+          <div class="service-opt-name">Bhandara Seva</div>
+          <div class="service-opt-price">From ₹5,000</div>
+          <div class="service-opt-check"></div>
+        </div>
+        <div class="service-opt" data-service="Brahmin Bhoj Seva" data-price="2100" onclick="selectService(this)">
+          <div class="service-opt-icon"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="9" ry="9"/><ellipse cx="12" cy="12" rx="5" ry="5"/></svg></div>
+          <div class="service-opt-name">Brahmin Bhoj Seva</div>
+          <div class="service-opt-price">From ₹2,100</div>
+          <div class="service-opt-check"></div>
+        </div>
+        <div class="service-opt" data-service="Gau Seva" data-price="501" onclick="selectService(this)">
+          <div class="service-opt-icon"><svg viewBox="0 0 24 24"><path d="M8 3c0 0-5 3-5 8 0 3 2 5 4 6l1-3M16 3c0 0 5 3 5 8 0 3-2 5-4 6l-1-3M12 3v18M9 21h6"/></svg></div>
+          <div class="service-opt-name">Gau Seva</div>
+          <div class="service-opt-price">From ₹501/month</div>
+          <div class="service-opt-check"></div>
+        </div>
+        <div class="service-opt" data-service="Vidhwa Seva" data-price="1100" onclick="selectService(this)">
+          <div class="service-opt-icon"><svg viewBox="0 0 24 24"><path d="M12 2L8 6H4v4l-2 2 2 2v4h4l4 4 4-4h4v-4l2-2-2-2V6h-4L12 2z"/></svg></div>
+          <div class="service-opt-name">Vidhwa Seva</div>
+          <div class="service-opt-price">From ₹1,100</div>
+          <div class="service-opt-check"></div>
+        </div>
+        <div class="service-opt" data-service="Annadan Seva" data-price="2001" onclick="selectService(this)">
+          <div class="service-opt-icon"><svg viewBox="0 0 24 24"><path d="M12 3v4M3 12h4M17 12h4M12 17v4"/></svg></div>
+          <div class="service-opt-name">Annadan Seva</div>
+          <div class="service-opt-price">From ₹2,001</div>
+          <div class="service-opt-check"></div>
+        </div>
+        <div class="service-opt" data-service="Sadhu Bhojan" data-price="1100" onclick="selectService(this)">
+          <div class="service-opt-icon"><svg viewBox="0 0 24 24"><path d="M12 22V12M12 12l-5-5M12 12l5-5"/><circle cx="12" cy="5" r="2"/></svg></div>
+          <div class="service-opt-name">Sadhu Bhojan</div>
+          <div class="service-opt-price">From ₹1,100</div>
+          <div class="service-opt-check"></div>
+        </div>
+      </div>
+      <div class="step-nav">
+        <div></div>
+        <button class="btn-next" onclick="nextStep()">
+          Continue
+          <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- ── STEP 2: Package ───────────────────────────────────────── -->
+    <div class="step-panel" id="step2">
+      <div class="step-heading">Select a package</div>
+      <div class="step-sub">Choose the size that matches your intention. All packages include full documentation.</div>
+      <div class="pkg-cards">
+        <div class="pkg-card selected" onclick="selectPkg(this)">
+          <div class="pkg-radio"></div>
+          <div class="pkg-info">
+            <div class="pkg-name">Laghu Bhandara — 100–150 People</div>
+            <div class="pkg-detail">Full sattvic meal, venue at Vrindavan location, sankalp, 30+ photos, full video</div>
+          </div>
+          <div class="pkg-price-col"><div class="pkg-price">₹5,000</div></div>
+        </div>
+        <div class="pkg-card" onclick="selectPkg(this)">
+          <div class="pkg-radio"></div>
+          <div class="pkg-info">
+            <div class="pkg-name">Madhyam Bhandara — 200–300 People</div>
+            <div class="pkg-detail">Extended menu, prime Vrindavan location, sankalp, 50+ photos, HD video</div>
+            <span class="pkg-tag">Most Popular</span>
+          </div>
+          <div class="pkg-price-col"><div class="pkg-price">₹8,500</div></div>
+        </div>
+        <div class="pkg-card" onclick="selectPkg(this)">
+          <div class="pkg-radio"></div>
+          <div class="pkg-info">
+            <div class="pkg-name">Maha Bhandara — 500–1,000+ People</div>
+            <div class="pkg-detail">Grand scale, multiple pandits, Ganga Jal distribution, 80+ photos, 2 videographers</div>
+          </div>
+          <div class="pkg-price-col"><div class="pkg-price">₹15,000</div></div>
+        </div>
+      </div>
+      <div class="step-nav">
+        <button class="btn-back" onclick="prevStep()"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Back</button>
+        <button class="btn-next" onclick="nextStep()">Continue<svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
+      </div>
+    </div>
+
+    <!-- ── STEP 3: Date ──────────────────────────────────────────── -->
+    <div class="step-panel" id="step3">
+      <div class="step-heading">Choose your Seva date</div>
+      <div class="step-sub">Dates must be booked at least 3 days in advance. Dates in grey are unavailable.</div>
+      <div class="calendar-wrap">
+        <div class="cal-header">
+          <button class="cal-nav-btn" onclick="changeMonth(-1)"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <div class="cal-title" id="calTitle">January 2025</div>
+          <button class="cal-nav-btn" onclick="changeMonth(1)"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></button>
+        </div>
+        <div class="cal-grid">
+          <div class="cal-day-name">Su</div><div class="cal-day-name">Mo</div><div class="cal-day-name">Tu</div>
+          <div class="cal-day-name">We</div><div class="cal-day-name">Th</div><div class="cal-day-name">Fr</div>
+          <div class="cal-day-name">Sa</div>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
+      <div style="margin-top:1.5rem;padding:0.875rem 1rem;background:var(--surface-brand);border-radius:var(--r-md);border:1.5px solid oklch(30% 0.12 148 / 0.18);font-size:0.875rem;color:var(--brand)">
+        <strong>Selected:</strong> <span id="selectedDateDisplay">No date selected</span>
+      </div>
+      <div class="step-nav">
+        <button class="btn-back" onclick="prevStep()"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Back</button>
+        <button class="btn-next" onclick="nextStep()">Continue<svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
+      </div>
+    </div>
+
+    <!-- ── STEP 4: Personal Details ──────────────────────────────── -->
+    <div class="step-panel" id="step4">
+      <div class="step-heading">Your details</div>
+      <div class="step-sub">These details will appear on your booking confirmation and invoice.</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">First Name *</label>
+          <input class="input" type="text" placeholder="Ramesh" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Last Name *</label>
+          <input class="input" type="text" placeholder="Sharma" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mobile Number *</label>
+          <input class="input" type="tel" placeholder="+91 98765 43210" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input class="input" type="email" placeholder="ramesh@example.com" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">City / State *</label>
+          <input class="input" type="text" placeholder="Mumbai, Maharashtra" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Occasion</label>
+          <select class="input">
+            <option value="">Select occasion (optional)</option>
+            <option>Shraddha / Pitru Paksha</option>
+            <option>Birthday / Anniversary</option>
+            <option>Festival Celebration</option>
+            <option>Gratitude / Fulfilment of vow</option>
+            <option>Regular devotional offering</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Special Instructions</label>
+          <textarea class="input" placeholder="Any specific requests — preferred temple location, timing, dietary restrictions, etc."></textarea>
+          <div class="form-hint">Optional. Our team will do their best to accommodate your preferences.</div>
+        </div>
+      </div>
+      <div class="step-nav">
+        <button class="btn-back" onclick="prevStep()"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Back</button>
+        <button class="btn-next" onclick="nextStep()">Continue<svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
+      </div>
+    </div>
+
+    <!-- ── STEP 5: Sankalp ───────────────────────────────────────── -->
+    <div class="step-panel" id="step5">
+      <div class="step-heading">Sankalp — the sacred intention</div>
+      <div class="step-sub">The Sankalp is the formal dedication of the Seva. These names will be recited by the Brahmin pandit during the ceremony.</div>
+      <div class="form-grid" style="margin-bottom:1.5rem">
+        <div class="form-group full">
+          <label class="form-label">Gotra (family lineage name)</label>
+          <input class="input" type="text" placeholder="e.g. Kashyap, Bharadwaj, Vasishtha…" />
+          <div class="form-hint">If unknown, leave blank. The pandit will recite a universal gotra.</div>
+        </div>
+      </div>
+      <div style="margin-bottom:1.25rem">
+        <div class="form-label" style="margin-bottom:0.75rem">Names to include in the Sankalp <span style="font-weight:400;color:var(--muted)">(up to 10)</span></div>
+        <div class="sankalp-names" id="sankalpNames">
+          <div class="sankalp-name-row">
+            <input class="input" type="text" placeholder="Full name (e.g. Ramesh Kumar Sharma)" />
+            <button class="btn-remove-name" onclick="removeName(this)" disabled><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+          </div>
+          <div class="sankalp-name-row">
+            <input class="input" type="text" placeholder="Full name" />
+            <button class="btn-remove-name" onclick="removeName(this)"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+          </div>
+        </div>
+        <button class="btn-add-name" onclick="addName()" style="margin-top:0.75rem">
+          <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          Add another name
+        </button>
+      </div>
+      <div class="form-group" style="margin-bottom:1.5rem">
+        <label class="form-label">Specific intention or prayer (optional)</label>
+        <textarea class="input" placeholder="e.g. May the departed soul of my father find peace and liberation. May our family be blessed with good health and prosperity."></textarea>
+      </div>
+      <div style="padding:1rem 1.25rem;background:var(--surface-brand);border-radius:var(--r-md);border:1.5px solid oklch(30% 0.12 148 / 0.18);font-size:0.875rem;color:var(--muted);line-height:1.6">
+        <strong style="color:var(--brand)">Note:</strong> The Pandit will recite these names in Sanskrit during the sankalp. For departed souls, please prefix the name with "Swargiya" or "Late."
+      </div>
+      <div class="step-nav">
+        <button class="btn-back" onclick="prevStep()"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Back</button>
+        <button class="btn-next" onclick="nextStep()">Continue<svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
+      </div>
+    </div>
+
+    <!-- ── STEP 6: Review ────────────────────────────────────────── -->
+    <div class="step-panel" id="step6">
+      <div class="step-heading">Review your booking</div>
+      <div class="step-sub">Please confirm all details before proceeding to payment.</div>
+      <div class="review-section">
+        <div class="review-row">
+          <span class="review-row-label">Service</span>
+          <span class="review-row-value">Bhandara Seva</span>
+        </div>
+        <div class="review-row">
+          <span class="review-row-label">Package</span>
+          <span class="review-row-value">Laghu Bhandara (100–150 People)</span>
+        </div>
+        <div class="review-row">
+          <span class="review-row-label">Date</span>
+          <span class="review-row-value" id="reviewDate">—</span>
+        </div>
+        <div class="review-row">
+          <span class="review-row-label">Location</span>
+          <span class="review-row-value">Vrindavan (standard venue)</span>
+        </div>
+        <div class="review-row">
+          <span class="review-row-label">Booking for</span>
+          <span class="review-row-value">Ramesh Kumar Sharma</span>
+        </div>
+        <div class="review-row">
+          <span class="review-row-label">Sankalp names</span>
+          <span class="review-row-value">Ramesh K. Sharma<br />Sunita R. Sharma</span>
+        </div>
+        <div class="review-row review-total">
+          <span class="review-row-label" style="font-weight:600;color:var(--fg)">Total Amount</span>
+          <span class="review-row-value">₹5,000</span>
+        </div>
+      </div>
+      <div style="padding:1rem 1.25rem;background:var(--success-surface);border-radius:var(--r-md);font-size:0.875rem;color:var(--success);line-height:1.6;margin-bottom:1.5rem">
+        <strong>Your booking is protected.</strong> Full refund if cancelled 48+ hours before the Seva date.
+      </div>
+      <div class="step-nav">
+        <button class="btn-back" onclick="prevStep()"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Back</button>
+        <button class="btn-next" onclick="nextStep()">Proceed to Payment<svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
+      </div>
+    </div>
+
+    <!-- ── STEP 7: Payment ───────────────────────────────────────── -->
+    <div class="step-panel" id="step7">
+      <div class="step-heading">Complete your payment</div>
+      <div class="step-sub">Your Seva will be confirmed immediately after successful payment.</div>
+      <div class="payment-opts">
+        <div class="payment-opt selected" onclick="selectPayment(this)">
+          <div class="payment-opt-radio"></div>
+          <div>
+            <div class="payment-opt-label">UPI / Net Banking</div>
+            <div class="payment-opt-desc">Google Pay, PhonePe, BHIM, or any UPI app</div>
+          </div>
+        </div>
+        <div class="payment-opt" onclick="selectPayment(this)">
+          <div class="payment-opt-radio"></div>
+          <div>
+            <div class="payment-opt-label">Credit / Debit Card</div>
+            <div class="payment-opt-desc">Visa, Mastercard, RuPay — all cards accepted</div>
+          </div>
+        </div>
+        <div class="payment-opt" onclick="selectPayment(this)">
+          <div class="payment-opt-radio"></div>
+          <div>
+            <div class="payment-opt-label">Net Banking</div>
+            <div class="payment-opt-desc">HDFC, SBI, ICICI, Axis, Kotak and 50+ banks</div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:1.5rem;padding:1.25rem;border:1.5px solid var(--border);border-radius:var(--r-lg);display:flex;flex-direction:column;gap:0.75rem">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:0.9rem;color:var(--muted)">Seva amount</span>
+          <span style="font-size:0.9rem;font-weight:500">₹5,000</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:0.9rem;color:var(--muted)">Platform fee</span>
+          <span style="font-size:0.9rem;font-weight:500">₹0</span>
+        </div>
+        <div style="border-top:1px solid var(--border);padding-top:0.75rem;display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:1rem;font-weight:600">Total</span>
+          <span style="font-family:var(--font-display);font-size:1.5rem;font-weight:600;color:var(--accent-deep);letter-spacing:-0.02em">₹5,000</span>
+        </div>
+      </div>
+      <div class="step-nav">
+        <button class="btn-back" onclick="prevStep()"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Back</button>
+        <a href="payment-success.html" class="btn-next btn-pay" style="text-decoration:none">
+          Pay ₹5,000 Securely
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </a>
+      </div>
+    </div>
+  </div><!-- /main -->
+
+  <!-- ── Sidebar ────────────────────────────────────────────────── -->
+  <div class="booking-sidebar">
+    <div class="sidebar-title">Booking Summary</div>
+    <div class="summary-line"><span class="summary-line-label">Service</span><span class="summary-line-value" id="s-service">Bhandara Seva</span></div>
+    <div class="summary-line"><span class="summary-line-label">Package</span><span class="summary-line-value" id="s-pkg">Laghu Bhandara</span></div>
+    <div class="summary-line"><span class="summary-line-label">Date</span><span class="summary-line-value" id="s-date">Not selected</span></div>
+    <div class="summary-line"><span class="summary-line-label">People</span><span class="summary-line-value" id="s-people">100–150</span></div>
+    <div class="summary-total">
+      <div class="summary-total-label">Amount</div>
+      <div class="summary-total-value" id="s-price">₹5,000</div>
+    </div>
+    <div class="summary-trust">
+      <div class="summary-trust-item"><svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>100% secure payment via Razorpay</div>
+      <div class="summary-trust-item"><svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>Photo & video proof within 24hrs</div>
+      <div class="summary-trust-item"><svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>Full refund if cancelled 48hrs before</div>
+    </div>
+  </div>
+</div><!-- /layout -->
+
+<script>
+  let currentStep = 1;
+  const totalSteps = 7;
+  let selectedDate = null;
+
+  // Step navigation
+  function nextStep() {
+    if (currentStep < totalSteps) {
+      goToStep(currentStep + 1);
+    }
+  }
+  function prevStep() {
+    if (currentStep > 1) {
+      goToStep(currentStep - 1);
+    }
+  }
+  function goToStep(n) {
+    document.getElementById('step' + currentStep).classList.remove('active');
+    // Update progress indicators
+    for (let i = 1; i <= totalSteps; i++) {
+      const num = document.getElementById('ps' + i);
+      const lbl = document.getElementById('pl' + i);
+      num.className = 'p-step-num ' + (i < n ? 'done' : i === n ? 'active' : 'pending');
+      if (i < n) { num.innerHTML = '✓'; } else { num.innerHTML = i; }
+      lbl.className = 'p-step-label' + (i === n ? ' active' : '');
+      if (i < totalSteps) {
+        const line = document.getElementById('line' + i);
+        line.className = 'p-line' + (i < n ? ' done' : '');
+      }
+    }
+    currentStep = n;
+    document.getElementById('step' + n).classList.add('active');
+    document.getElementById('stepIndicator').textContent = 'Step ' + n + ' of ' + totalSteps;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Service select
+  function selectService(el) {
+    document.querySelectorAll('.service-opt').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('s-service').textContent = el.dataset.service;
+  }
+
+  // Package select
+  function selectPkg(el) {
+    document.querySelectorAll('.pkg-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    const price = el.querySelector('.pkg-price').textContent;
+    const name = el.querySelector('.pkg-name').textContent.split('—')[0].trim();
+    const people = el.querySelector('.pkg-name').textContent.split('—')[1]?.trim() || '';
+    document.getElementById('s-pkg').textContent = name;
+    document.getElementById('s-people').textContent = people;
+    document.getElementById('s-price').textContent = price;
+  }
+
+  // Payment select
+  function selectPayment(el) {
+    document.querySelectorAll('.payment-opt').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  // Sankalp names
+  function addName() {
+    const list = document.getElementById('sankalpNames');
+    if (list.children.length >= 10) return;
+    const row = document.createElement('div');
+    row.className = 'sankalp-name-row';
+    row.innerHTML = '<input class="input" type="text" placeholder="Full name"><button class="btn-remove-name" onclick="removeName(this)"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.75"><path d="M18 6L6 18M6 6l12 12"/></svg></button>';
+    list.appendChild(row);
+  }
+  function removeName(btn) {
+    btn.closest('.sankalp-name-row').remove();
+  }
+
+  // Calendar
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  let calYear = 2025, calMonth = 0;
+
+  function renderCalendar() {
+    document.getElementById('calTitle').textContent = months[calMonth] + ' ' + calYear;
+    const grid = document.getElementById('calGrid');
+    grid.innerHTML = '';
+    const firstDay = new Date(calYear, calMonth, 1).getDay();
+    const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+    const today = new Date();
+    const minDate = new Date(); minDate.setDate(minDate.getDate() + 3);
+
+    for (let i = 0; i < firstDay; i++) {
+      const e = document.createElement('div'); e.className = 'cal-day empty'; grid.appendChild(e);
+    }
+    for (let d = 1; d <= daysInMonth; d++) {
+      const date = new Date(calYear, calMonth, d);
+      const el = document.createElement('div');
+      let cls = 'cal-day';
+      if (date < minDate) cls += ' disabled';
+      if (date.toDateString() === today.toDateString()) cls += ' today';
+      if (selectedDate && date.toDateString() === selectedDate.toDateString()) cls += ' selected';
+      el.className = cls;
+      el.textContent = d;
+      el.onclick = () => pickDate(date, el);
+      grid.appendChild(el);
+    }
+  }
+  function changeMonth(dir) {
+    calMonth += dir;
+    if (calMonth < 0) { calMonth = 11; calYear--; }
+    if (calMonth > 11) { calMonth = 0; calYear++; }
+    renderCalendar();
+  }
+  function pickDate(date, el) {
+    if (el.classList.contains('disabled')) return;
+    selectedDate = date;
+    const fmt = date.toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+    document.getElementById('selectedDateDisplay').textContent = fmt;
+    document.getElementById('s-date').textContent = date.toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+    document.getElementById('reviewDate').textContent = fmt;
+    renderCalendar();
+  }
+  renderCalendar();
+</script>
+</body>
+</html>

@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { authRateLimit } from "@/lib/rate-limit";
 
 // Routes that require authentication
-const PROTECTED_CUSTOMER_ROUTES = ["/dashboard", "/bookings", "/profile"];
+const PROTECTED_CUSTOMER_ROUTES = ["/dashboard", "/bookings"];
 const PROTECTED_ADMIN_ROUTES = ["/admin"];
 
 // Routes with strict rate limiting
@@ -48,6 +48,20 @@ export async function proxy(request: NextRequest) {
   // =========================================================================
   const isProtectedCustomer = PROTECTED_CUSTOMER_ROUTES.some((r) => pathname.startsWith(r));
   const isProtectedAdmin = PROTECTED_ADMIN_ROUTES.some((r) => pathname.startsWith(r));
+
+  // Legacy /profile → dashboard profile
+  if (pathname === "/profile" || pathname.startsWith("/profile/")) {
+    return NextResponse.redirect(new URL("/dashboard/profile", request.url));
+  }
+
+  // Redirect authenticated users away from auth pages
+  if (pathname === "/login" || pathname === "/register") {
+    const session = await auth();
+    if (session?.user?.id) {
+      const dest = session.user.role === "ADMIN" ? "/admin" : "/dashboard";
+      return NextResponse.redirect(new URL(dest, request.url));
+    }
+  }
 
   if (isProtectedCustomer || isProtectedAdmin) {
     const session = await auth();

@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vrindavan Bhandara — Design Prototype</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: oklch(99.2% 0.002 85); --surface: oklch(100% 0 0); --surface-brand: oklch(96.5% 0.035 148);
+      --fg: oklch(14% 0.016 250); --muted: oklch(46% 0.014 250); --subtle: oklch(68% 0.009 250);
+      --brand: oklch(30% 0.12 148); --brand-mid: oklch(42% 0.14 148); --brand-fg: oklch(98% 0.004 148);
+      --accent: oklch(67% 0.155 58); --accent-deep: oklch(52% 0.145 55); --accent-fg: oklch(16% 0.02 58);
+      --success: oklch(50% 0.14 145); --border: oklch(91% 0.008 250);
+      --n-50: oklch(98.5% 0.003 250); --n-100: oklch(96% 0.006 250);
+      --font-display: 'Cormorant Garamond', Georgia, serif; --font-body: 'DM Sans', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+      --sh-sm: 0 1px 4px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --sh-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.05);
+      --sh-brand: 0 4px 20px oklch(30% 0.12 148 / 0.24);
+      --r-sm: 0.375rem; --r-md: 0.75rem; --r-lg: 1rem; --r-xl: 1.5rem; --r-full: 9999px;
+    }
+    html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+    body { font-family: var(--font-body); background: var(--bg); color: var(--fg); line-height: 1.6; -webkit-font-smoothing: antialiased; min-height: 100vh; }
+
+    /* Header */
+    .header {
+      background: var(--brand);
+      padding: clamp(2.5rem, 5vw, 4rem) clamp(1.25rem, 6vw, 5rem);
+      position: relative; overflow: hidden;
+    }
+    .header::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(circle at 85% 50%, oklch(42% 0.14 148 / 0.5), transparent 55%);
+    }
+    .header::after {
+      content: ''; position: absolute; inset: 0;
+      background-image: radial-gradient(circle, oklch(98% 0.004 148 / 0.06) 1.5px, transparent 1.5px);
+      background-size: 28px 28px;
+    }
+    .header-inner { max-width: 1200px; margin: 0 auto; position: relative; z-index: 1; }
+    .header-badge {
+      display: inline-flex; align-items: center; gap: 0.375rem; margin-bottom: 1.25rem;
+      font-size: 0.75rem; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase;
+      color: oklch(98% 0.004 148 / 0.7); font-family: var(--font-mono);
+      background: oklch(98% 0.004 148 / 0.1); padding: 0.3rem 0.875rem; border-radius: var(--r-full);
+      border: 1px solid oklch(98% 0.004 148 / 0.15);
+    }
+    .header-title { font-family: var(--font-display); font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 600; letter-spacing: -0.025em; line-height: 1.05; color: var(--brand-fg); margin-bottom: 0.875rem; }
+    .header-title em { font-style: italic; opacity: 0.8; }
+    .header-desc { font-size: 1rem; color: oklch(98% 0.004 148 / 0.7); max-width: 56ch; line-height: 1.65; margin-bottom: 2rem; }
+    .header-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .header-tag { font-size: 0.75rem; font-weight: 500; color: oklch(98% 0.004 148 / 0.65); background: oklch(98% 0.004 148 / 0.08); padding: 0.25rem 0.75rem; border-radius: var(--r-full); border: 1px solid oklch(98% 0.004 148 / 0.12); font-family: var(--font-mono); letter-spacing: 0.04em; }
+
+    /* Content */
+    .content { max-width: 1200px; margin: 0 auto; padding: 3rem clamp(1.25rem, 6vw, 5rem); }
+
+    /* Screen group */
+    .group { margin-bottom: 3.5rem; }
+    .group-title {
+      font-size: 0.6875rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--subtle); font-family: var(--font-mono); margin-bottom: 1.25rem;
+      display: flex; align-items: center; gap: 0.75rem;
+    }
+    .group-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* Screen cards grid */
+    .screens-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+
+    .screen-card {
+      background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--r-lg);
+      text-decoration: none; color: inherit; overflow: hidden; display: flex; flex-direction: column;
+      transition: border-color 200ms, box-shadow 200ms, transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .screen-card:hover { border-color: var(--brand-light); box-shadow: var(--sh-md); transform: translateY(-3px); }
+
+    .screen-thumb {
+      height: 160px; background: var(--surface-brand);
+      display: flex; align-items: center; justify-content: center;
+      border-bottom: 1px solid var(--border); position: relative; overflow: hidden;
+    }
+    .screen-thumb.brand-dark { background: var(--brand); }
+    .screen-thumb.dark { background: oklch(14% 0.016 250); }
+    .screen-thumb.accent { background: oklch(97.5% 0.045 75); }
+    .screen-thumb.neutral { background: var(--n-100); }
+    .screen-thumb-icon { width: 48px; height: 48px; border-radius: var(--r-md); display: grid; place-items: center; }
+    .screen-thumb-icon svg { width: 24px; height: 24px; fill: none; stroke-width: 1.4; }
+    .screen-badge {
+      position: absolute; top: 0.625rem; right: 0.625rem;
+      font-size: 0.625rem; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase;
+      padding: 0.1875rem 0.5rem; border-radius: var(--r-full); font-family: var(--font-mono);
+    }
+    .badge-primary { background: var(--brand); color: var(--brand-fg); }
+    .badge-accent  { background: var(--accent); color: var(--accent-fg); }
+    .badge-neutral { background: var(--n-100); color: var(--muted); border: 1px solid var(--border); }
+    .badge-dark    { background: oklch(14% 0.016 250); color: rgba(255,255,255,0.8); }
+
+    .screen-info { padding: 1.125rem; flex: 1; display: flex; flex-direction: column; gap: 0.375rem; }
+    .screen-name { font-size: 0.9375rem; font-weight: 600; color: var(--fg); }
+    .screen-desc { font-size: 0.8125rem; color: var(--muted); line-height: 1.5; flex: 1; }
+    .screen-arrow {
+      display: flex; align-items: center; gap: 0.375rem;
+      font-size: 0.8125rem; font-weight: 500; color: var(--brand);
+      margin-top: 0.625rem; transition: gap 150ms;
+    }
+    .screen-card:hover .screen-arrow { gap: 0.625rem; }
+    .screen-arrow svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+    /* Design system card — special */
+    .ds-card {
+      background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--r-lg);
+      padding: 1.75rem; margin-bottom: 3rem;
+      display: flex; align-items: center; justify-content: space-between; gap: 2rem; flex-wrap: wrap;
+    }
+    .ds-card-left {}
+    .ds-card-eyebrow { font-size: 0.75rem; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; color: var(--accent-deep); font-family: var(--font-mono); margin-bottom: 0.5rem; }
+    .ds-card-title { font-family: var(--font-display); font-size: 1.5rem; font-weight: 600; letter-spacing: -0.015em; color: var(--fg); margin-bottom: 0.5rem; }
+    .ds-card-desc { font-size: 0.9rem; color: var(--muted); max-width: 44ch; line-height: 1.55; }
+    .btn-ds { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.9375rem; font-weight: 500; color: var(--brand-fg); background: var(--brand); padding: 0.75rem 1.5rem; border-radius: var(--r-md); text-decoration: none; transition: background 200ms, transform 200ms cubic-bezier(0.22, 1, 0.36, 1); }
+    .btn-ds:hover { background: var(--brand-mid); transform: translateY(-1px); box-shadow: var(--sh-brand); }
+    .btn-ds svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+    /* Footer */
+    .footer { border-top: 1px solid var(--border); padding: 2rem clamp(1.25rem, 6vw, 5rem); max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+    .footer-meta { font-size: 0.8125rem; color: var(--subtle); font-family: var(--font-mono); }
+    .footer-links { display: flex; gap: 1.5rem; }
+    .footer-links a { font-size: 0.875rem; color: var(--muted); text-decoration: none; transition: color 150ms; }
+    .footer-links a:hover { color: var(--fg); }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-inner">
+    <div class="header-badge">Phase 1 Design Prototype</div>
+    <h1 class="header-title">Vrindavan Bhandara<br/><em>Sacred Precision Design System</em></h1>
+    <p class="header-desc">Complete Phase 1 prototype — all 11 screens, the full design system, component library, and developer tokens. Built mobile-first with responsive layouts, real interactions, and premium typography.</p>
+    <div class="header-tags">
+      <span class="header-tag">Deep Forest Green + Sacred Amber</span>
+      <span class="header-tag">Cormorant Garamond + DM Sans</span>
+      <span class="header-tag">Mobile-First</span>
+      <span class="header-tag">WCAG AA</span>
+      <span class="header-tag">11 Screens</span>
+      <span class="header-tag">Full Design System</span>
+    </div>
+  </div>
+</header>
+
+<div class="content">
+
+  <!-- Design System Link -->
+  <div class="ds-card">
+    <div class="ds-card-left">
+      <div class="ds-card-eyebrow">Start here</div>
+      <div class="ds-card-title">Sacred Precision Design System v2</div>
+      <div class="ds-card-desc">Complete color palette rationale, typography scale, spacing system, motion tokens, all 30+ components, and accessibility guidelines. The foundation for every screen.</div>
+    </div>
+    <a href="design-system.html" class="btn-ds">
+      View Design System
+      <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+
+  <!-- Public screens -->
+  <div class="group">
+    <div class="group-title">Consumer — Public Screens</div>
+    <div class="screens-grid">
+
+      <a href="home.html" class="screen-card">
+        <div class="screen-thumb brand-dark">
+          <div class="screen-thumb-icon" style="background:oklch(98% 0.004 148 / 0.12)">
+            <svg style="stroke:var(--brand-fg)" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          </div>
+          <span class="screen-badge badge-accent">Hero Screen</span>
+        </div>
+        <div class="screen-info">
+          <div class="screen-name">Home</div>
+          <div class="screen-desc">Full-page hero with dot-grid background, animated stat counters, services grid, testimonials, and sticky nav with scroll behavior.</div>
+          <div class="screen-arrow">Open screen <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        </div>
+      </a>
+
+      <a href="services.html" class="screen-card">
+        <div class="screen-thumb">
+          <div class="screen-thumb-icon" style="background:oklch(92% 0.06 148)">
+            <svg style="stroke:var(--brand)" viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/></svg>
+          </div>
+        </div>
+        <div class="screen-info">
+          <div class="screen-name">Services Listing</div>
+          <div class="screen-desc">6 service cards with filter tabs (All / Feast / Care / Donation), category badges, price display, and animated reveal on scroll.</div>
+          <div class="screen-arrow">Open screen <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        </div>
+      </a>
+
+      <a href="service-detail.html" class="screen-card">
+        <div class="screen-thumb">
+          <div class="screen-thumb-icon" style="background:oklch(92% 0.06 148)">
+            <svg style="stroke:var(--brand)" viewBox="0 0 24 24"><path d="M5 8h14M7 8c0-2.5 2-5 5-5s5 2.5 5 5M6.5 8l1.5 11h8l1.5-11"/></svg>
+          </div>
+          <span class="screen-badge badge-primary">Template</span>
+        </div>
+        <div class="screen-info">
+          <div class="screen-name">Service Detail</div>
+          <div class="screen-desc">Dynamic service template with package selector, inline booking card (sticky), tabbed content (Overview / Includes / Gallery / FAQ), and review sidebar.</div>
+          <div class="screen-arrow">Open screen <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- Booking flow -->
+  <div class="group">
+    <div class="group-title">Consumer — Booking Flow</div>
+    <div class="screens-grid">
+
+      <a href="booking.html" class="screen-card">
+        <div class="screen-thumb accent">
+          <div class="screen-thumb-icon" style="background:oklch(92% 0.08 75)">
+            <svg style="stroke:var(--accent-deep)" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 000 4h6a2 2 0 000-4"/></svg>
+          </div>
+          <span class="screen-badge badge-accent">7-Step Wizard</span>
+        </div>
+        <div class="screen-info">
+          <div class="screen-name">Booking Wizard</div>
+          <div class="screen-desc">Full 7-step booking wizard: Service → Package → Date picker with live calendar → Personal details → Sankalp names → Review → Payment. Fully interactive with step persistence.</div>
+          <div class="screen-arrow">Open screen <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        </div>
+      </a>
+
+      <a href="payment-success.html" class="screen-card">
+        <div class="screen-thumb" style="background:var(--success-surface)">
+          <div class="screen-thumb-icon" style="background:oklch(90% 0.07 145)">
+            <svg style="stroke:var(--success)" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+          </div>
+        </div>
+        <div class="screen-info">
+          <div class="screen-name">Payment Success</div>
+          <div class="screen-desc">Seva confirmation screen with animated confetti, booking details, "What happens next" timeline, and actions to dashboard or book again.</div>
+          <div class="screen-arrow">Open screen <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- Auth -->
+  <div class="group">
+    <div class="group-title">Consumer — Authentication</div>
+    <div class="screens-grid">
+
+      <a href="login.html" class="screen-card">
+        <div class="screen-thumb brand-dark">
+          <div class="screen-thumb-icon" style="background:oklch(98% 0.004 148 / 0.12)">
+            <svg style="stroke:var(--brand-fg)" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          </div>
+        </div>
+        <div class="screen-info">
+          <div class="screen-name">Sign In</div>
+          <div class="screen-desc">Split-panel login with brand storytelling on left, email/password form with show-password toggle, OTP option, and Remember Me checkbox.</div>
+          <div class="screen-arrow">Open screen <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        </div>
+      </a>
+
+      <a href="register.html" class="screen-card">
+        <div class="screen-thumb brand-dark">
+          <div class="screen-thumb-icon" style="background:oklch(98% 0.004 148 / 0.12)">
+            <svg style="stroke:var(--brand-fg)" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8zM20 8v6M23 11h-6"/></svg>
+          </div>
+        </div>
+        <div class="screen-info">
+          <div class="screen-name">Register</div>
+          <div class="screen-desc">Account creation with split panel, full registration form, real-time password strength indicator, and benefits display.</div>
+          <div class="screen-arrow">Open screen <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- Customer dashboard -->
+  <div class="group">
+    <div class="group-title">Consumer — Dashboard</div>
+    <div class="screens-grid">
+
+      <a href="dashboard.html" class="screen-card">
+        <div class="screen-thumb neutral">
+          <div class="screen-thumb-icon" style="background:var(--surface-brand)">
+            <svg style="stroke:var(--brand)" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          </div>
+          <span class="screen-badge badge-primary">Full App Shell</span>
+        </div>
+        <div class="screen-info">
+          <div class="screen-name">Customer Dashboard</div>
+          <div class="screen-desc">Sidebar navigation, stat widgets, booking history with status chips, Seva media gallery with photo/video thumbnails, upcoming Seva calendar, and profile quick-view. Mobile responsive with hamburger sidebar.</div>
+          <div class="screen-arrow">Open screen <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- Admin -->
+  <div class="group">
+    <div class="group-title">Admin Panel</div>
+    <div class="screens-grid">
+
+      <a href="admin-login.html" class="screen-card">
+        <div class="screen-thumb neutral">
+          <div class="screen-thumb-icon" style="background:var(--n-50)">
+            <svg style="stroke:var(--muted)" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+        </div>
+        <div class="screen-info">
+          <div class="screen-name">Admin Login</div>
+          <div class="screen-desc">Restricted admin access portal with security notice, centered card design, and audit warning.</div>
+          <div class="screen-arrow">Open screen <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        </div>
+      </a>
+
+      <a href="admin-dashboard.html" class="screen-card">
+        <div class="screen-thumb dark">
+          <div class="screen-thumb-icon" style="background:rgba(255,255,255,0.08)">
+            <svg style="stroke:rgba(255,255,255,0.7)" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
+          <span class="screen-badge badge-dark">Dark Sidebar</span>
+        </div>
+        <div class="screen-info">
+          <div class="screen-name">Admin Dashboard</div>
+          <div class="screen-desc">Dark sidebar with full nav, 5-metric stats row, bookings table with status filters, revenue mini bar chart, service popularity bars, and real-time activity feed.</div>
+          <div class="screen-arrow">Open screen <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+</div><!-- /content -->
+
+<footer class="footer">
+  <div class="footer-meta">Vrindavan Bhandara · Phase 1 Prototype · Sacred Precision Design System v2.0</div>
+  <div class="footer-links">
+    <a href="design-system.html">Design System</a>
+    <a href="home.html">Live Preview</a>
+    <a href="booking.html">Booking Flow</a>
+  </div>
+</footer>
+
+</body>
+</html>
