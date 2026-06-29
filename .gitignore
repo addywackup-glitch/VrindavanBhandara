@@ -22,6 +22,7 @@
 
 # misc
 .DS_Store
+Thumbs.db
 *.pem
 
 # debug
@@ -30,13 +31,29 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files — never commit secrets
 .env*
 !.env.example
 
 # vercel
 .vercel
 
-# typescript
+# typescript / tooling
 *.tsbuildinfo
 next-env.d.ts
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# cursor (local agent state — not for GitHub)
+.cursor/
+
+# turbo
+.turbo/
+
+# local databases
+*.db
+*.db-journal
