@@ -4,7 +4,7 @@
 // ORM: Prisma v6
 // Schema covers: ALL 4 roadmap phases
 // Phase 1: Core booking, payments, admin, auth
-// Phase 2: Certificates, proof uploads, notifications, WhatsApp
+// Phase 2: Proof uploads, notifications, WhatsApp
 // Phase 3: Coupons, referrals, subscriptions, blog CMS, gallery
 // Phase 4: Mobile, multi-language, donations
 // =============================================================================
@@ -42,6 +42,7 @@ enum ServiceType {
   SADHU_BHOJAN
   FESTIVAL_SEVA
   ANNADAN_SEVA
+  VIDHWA_SEVA
 }
 
 enum BookingStatus {
@@ -77,7 +78,6 @@ enum NotificationType {
   BOOKING_COMPLETED
   PAYMENT_RECEIVED
   PAYMENT_FAILED
-  CERTIFICATE_READY
   PROOF_UPLOADED
   GENERAL
   FESTIVAL_CAMPAIGN
@@ -98,7 +98,6 @@ enum ProofTimelineEventType {
   PHOTOS_UPLOADED
   VIDEOS_UPLOADED
   SEVA_COMPLETED
-  CERTIFICATE_GENERATED
   PROOF_DELIVERED
   BOOKING_CANCELLED
   REFUND_PROCESSED
@@ -296,8 +295,14 @@ model ServiceCategory {
   sortOrder   Int         @default(0)
   metaTitle   String?
   metaDesc    String?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+
+  // Presentation-oriented, content-driven page blocks (hero extras, benefits,
+  // highlights, how-it-works, trust badges, included items). Shape is validated
+  // by ServicePageSectionsSchema in lib/validations. Null = use UI defaults.
+  pageSections Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   packages Package[]
 
@@ -402,7 +407,6 @@ model Booking {
   coupon           Coupon?              @relation(fields: [couponId], references: [id])
   festivalCampaign FestivalCampaign?    @relation(fields: [festivalCampaignId], references: [id])
   payment          Payment?
-  certificate      Certificate?
   mediaProofs      MediaProof[]
   proofTimeline    ProofTimelineEvent[]
   testimonial      Testimonial?
@@ -464,23 +468,6 @@ model Payment {
 }
 
 // =============================================================================
-// CERTIFICATES
-// =============================================================================
-
-model Certificate {
-  id            String   @id @default(cuid())
-  bookingId     String   @unique
-  url           String // R2 URL to PDF
-  verifyCode    String   @unique // Short code for public verification
-  generatedAt   DateTime @default(now())
-  downloadCount Int      @default(0)
-
-  booking Booking @relation(fields: [bookingId], references: [id])
-
-  @@map("certificates")
-}
-
-// =============================================================================
 // MEDIA PROOFS & PROOF TIMELINE
 // =============================================================================
 
@@ -534,6 +521,7 @@ model GalleryImage {
   url         String
   thumbnail   String?
   category    GalleryCategory
+  serviceType ServiceType? // null = general gallery image (not service-scoped)
   tags        String[]
   location    String? // "Vrindavan" | "Mathura"
   width       Int?
@@ -548,6 +536,7 @@ model GalleryImage {
 
   @@index([category])
   @@index([isActive])
+  @@index([serviceType, isActive])
   @@map("gallery_images")
 }
 
@@ -660,18 +649,20 @@ model Testimonial {
 // =============================================================================
 
 model FAQ {
-  id        String          @id @default(cuid())
-  question  String
-  answer    String          @db.Text
-  category  String          @default("General")
-  sortOrder Int             @default(0)
-  isActive  Boolean         @default(true)
-  location  LocationRegion?
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
+  id          String          @id @default(cuid())
+  question    String
+  answer      String          @db.Text
+  category    String          @default("General")
+  serviceType ServiceType? // null = global FAQ (shown on every service page)
+  sortOrder   Int             @default(0)
+  isActive    Boolean         @default(true)
+  location    LocationRegion?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
 
   @@index([category])
   @@index([isActive])
+  @@index([serviceType, isActive])
   @@map("faqs")
 }
 

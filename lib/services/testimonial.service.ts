@@ -8,6 +8,7 @@ import { testimonialRepository } from "@/lib/repositories";
 import { execute, validate } from "@/lib/api/service";
 import { NotFoundError } from "@/lib/errors";
 import { createAuditLog } from "@/lib/audit";
+import { toServiceType } from "@/lib/services/content.service";
 import type { Actor } from "@/lib/services/actor";
 
 export const ModerateTestimonialSchema = z.object({
@@ -17,11 +18,14 @@ export const ModerateTestimonialSchema = z.object({
 export function listPublicTestimonials(query: {
   featured?: boolean;
   limit?: number;
+  serviceType?: string | null;
 }) {
   return execute(async () => {
+    const serviceType = toServiceType(query.serviceType ?? null);
     const where: Prisma.TestimonialWhereInput = {
       isApproved: true,
       ...(query.featured ? { isFeatured: true } : {}),
+      ...(serviceType ? { serviceType } : {}),
     };
     const take = Math.min(50, Math.max(1, query.limit ?? 12));
     return testimonialRepository.listPublic({ where, take });

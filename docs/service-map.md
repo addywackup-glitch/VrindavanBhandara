@@ -18,7 +18,6 @@ Every business operation lives in exactly one service. Services are framework-ag
 | Analytics | `lib/services/analytics.service.ts` | `getDashboardStats` | admin stats |
 | Admin | `lib/services/admin.service.ts` | `adminListBookings` | admin bookings |
 | Content | `lib/services/content.service.ts` | `listServices`, `listPublicPackages`, `listFaqs`, `listSevaStats` | public routes |
-| Certificate | `lib/services/certificate.service.ts` | `verifyCertificate` | (ready for `/api/certificates/:code`) |
 | Notification | `lib/services/notification.service.ts` | `listNotifications`, `unreadCount`, `markNotificationRead` | (ready for `/api/notifications`) |
 
 ## Shared helpers

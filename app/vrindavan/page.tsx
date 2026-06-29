@@ -11,7 +11,7 @@ import { MapPin, CheckCircle, ArrowRight } from "lucide-react";
 export const metadata: Metadata = {
   title: "Bhandara Booking in Vrindavan — Online Seva Booking | Vrindavan Bhandara",
   description:
-    "Book Bhandara, Brahmin Bhoj Seva, Gau Seva & Festival Seva in Vrindavan online. Transparent proof with photos, videos & digital certificates. Trusted by 10,000+ devotees.",
+    "Book Bhandara, Brahmin Bhoj Seva, Gau Seva & Festival Seva in Vrindavan online. Transparent proof with photos and videos. Trusted by 10,000+ devotees.",
   keywords: [
     "Bhandara Booking Vrindavan",
     "Vrindavan Bhandara",
@@ -136,7 +136,7 @@ export default function VrindavanPage() {
           </div>
           {/* Trust */}
           <div className="flex flex-wrap gap-6 mt-10">
-            {["10,000+ Sevas Done", "Photo & Video Proof", "Digital Certificate", "Transparent Service"].map((t) => (
+            {["10,000+ Sevas Done", "Photo & Video Proof", "Transparent Service", "Secure Payment"].map((t) => (
               <div key={t} className="flex items-center gap-2 text-white/60 text-sm">
                 <CheckCircle className="w-4 h-4 text-gold-400" />
                 {t}
@@ -204,8 +204,7 @@ export default function VrindavanPage() {
                 </p>
                 <p>
                   Our platform enables devotees from India and across the world to sponsor
-                  these sacred sevas remotely, with full transparency through photos,
-                  videos, and digital certificates.
+                  these sacred sevas remotely, with full transparency through photos and videos as proof.
                 </p>
               </div>
               <div className="flex items-center gap-3 mt-6">
@@ -254,7 +253,7 @@ export default function VrindavanPage() {
                 name: "Do I receive proof that the seva was performed in Vrindavan?",
                 acceptedAnswer: {
                   "@type": "Answer",
-                  text: "Yes. After every seva, you receive photos, videos, and a digital completion certificate as proof. Transparency is our guarantee.",
+                  text: "Yes. After every seva, you receive photos and videos as proof. Transparency is our guarantee.",
                 },
               },
             ],

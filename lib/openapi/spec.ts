@@ -91,7 +91,7 @@ export const openApiDocument: OpenApiDocument = {
   openapi: "3.1.0",
   info: {
     title: "Vrindavan Bhandara API",
-    version: "1.1.0",
+    version: "1.2.0",
     description:
       "Backend API for the Vrindavan Bhandara seva platform. Every response uses " +
       "a discriminated envelope: `{ success: true, data, message? }` on success or " +
@@ -248,6 +248,23 @@ export const openApiDocument: OpenApiDocument = {
         responses: { "200": { description: "Service categories", content: json(success({ type: "array", items: ref("ServiceCategory") })) }, "429": E[429] },
       },
     },
+    "/api/services/{slug}": {
+      get: {
+        tags: ["Public"],
+        summary: "Aggregate content for a single service page",
+        description:
+          "Returns everything a service page needs in one round-trip: the service " +
+          "(with validated pageSections), its active packages, service-scoped FAQs " +
+          "(plus global), gallery images, testimonials, and computed related services.",
+        operationId: "getServicePage",
+        parameters: [{ name: "slug", in: "path", required: true, schema: { type: "string" } }],
+        responses: {
+          "200": { description: "Service page payload", content: json(success(ref("ServicePage"))) },
+          "404": E[404],
+          "429": E[429],
+        },
+      },
+    },
     "/api/packages": {
       get: {
         tags: ["Public"],
@@ -260,6 +277,18 @@ export const openApiDocument: OpenApiDocument = {
         responses: { "200": { description: "Packages", content: json(success({ type: "array", items: ref("Package") })) }, "429": E[429] },
       },
     },
+    "/api/gallery": {
+      get: {
+        tags: ["Public"],
+        summary: "List public gallery images (optionally scoped to a service)",
+        operationId: "listGallery",
+        parameters: [
+          { name: "serviceType", in: "query", schema: ref("ServiceType") },
+          { name: "limit", in: "query", schema: { type: "integer", minimum: 1, maximum: 60 } },
+        ],
+        responses: { "200": { description: "Gallery images", content: json(success({ type: "array", items: ref("PublicGalleryImage") })) }, "429": E[429] },
+      },
+    },
     "/api/testimonials": {
       get: {
         tags: ["Public"],
@@ -267,6 +296,7 @@ export const openApiDocument: OpenApiDocument = {
         operationId: "listPublicTestimonials",
         parameters: [
           { name: "featured", in: "query", schema: { type: "boolean" } },
+          { name: "serviceType", in: "query", schema: ref("ServiceType") },
           { name: "limit", in: "query", schema: { type: "integer", minimum: 1, maximum: 50 } },
         ],
         responses: { "200": { description: "Testimonials", content: json(success({ type: "array", items: ref("Testimonial") })) }, "429": E[429] },
@@ -275,8 +305,9 @@ export const openApiDocument: OpenApiDocument = {
     "/api/faqs": {
       get: {
         tags: ["Public"],
-        summary: "List active FAQs",
+        summary: "List active FAQs (optionally scoped to a service)",
         operationId: "listFaqs",
+        parameters: [{ name: "serviceType", in: "query", schema: ref("ServiceType") }],
         responses: { "200": { description: "FAQs", content: json(success({ type: "array", items: ref("Faq") })) }, "429": E[429] },
       },
     },
@@ -423,7 +454,7 @@ export const openApiDocument: OpenApiDocument = {
       },
       BookingStatus: { type: "string", enum: ["PENDING", "CONFIRMED", "IN_PROGRESS", "COMPLETED", "CANCELLED", "REFUNDED"] },
       BlogStatus: { type: "string", enum: ["DRAFT", "PUBLISHED", "ARCHIVED"] },
-      ServiceType: { type: "string", enum: ["BHANDARA", "BRAHMIN_BHOJ", "GAU_SEVA", "SADHU_BHOJAN", "FESTIVAL_SEVA", "ANNADAN_SEVA"] },
+      ServiceType: { type: "string", enum: ["BHANDARA", "BRAHMIN_BHOJ", "GAU_SEVA", "SADHU_BHOJAN", "FESTIVAL_SEVA", "ANNADAN_SEVA", "VIDHWA_SEVA"] },
 
       RegisterRequest: {
         type: "object",
@@ -514,7 +545,49 @@ export const openApiDocument: OpenApiDocument = {
 
       ServiceCategory: {
         type: "object",
-        properties: { id: { type: "string" }, type: ref("ServiceType"), name: { type: "string" }, slug: { type: "string" }, shortDesc: { type: "string" }, icon: { type: "string", nullable: true } },
+        properties: { id: { type: "string" }, type: ref("ServiceType"), name: { type: "string" }, slug: { type: "string" }, shortDesc: { type: "string" }, icon: { type: "string", nullable: true }, image: { type: "string", nullable: true } },
+      },
+      ServicePageSections: {
+        type: "object",
+        description: "Presentation-oriented, content-driven page blocks (nullable). Validated by ServicePageSectionsSchema.",
+        nullable: true,
+        properties: {
+          hero: { type: "object", properties: { tagline: { type: "string" }, badges: { type: "array", items: { type: "string" } }, backgroundImage: { type: "string", format: "uri" } } },
+          benefits: { type: "array", items: { type: "object", properties: { icon: { type: "string" }, title: { type: "string" }, description: { type: "string" } } } },
+          highlights: { type: "array", items: { type: "object", properties: { icon: { type: "string" }, title: { type: "string" }, description: { type: "string" } } } },
+          howItWorks: { type: "array", items: { type: "object", properties: { step: { type: "integer" }, title: { type: "string" }, description: { type: "string" }, icon: { type: "string" } } } },
+          trustBadges: { type: "array", items: { type: "object", properties: { icon: { type: "string" }, text: { type: "string" } } } },
+          includedItems: { type: "array", items: { type: "string" } },
+        },
+      },
+      ServiceDetail: {
+        type: "object",
+        description: "Full service record with validated pageSections.",
+        properties: {
+          id: { type: "string" },
+          type: ref("ServiceType"),
+          name: { type: "string" },
+          slug: { type: "string" },
+          shortDesc: { type: "string" },
+          description: { type: "string" },
+          icon: { type: "string", nullable: true },
+          image: { type: "string", nullable: true },
+          metaTitle: { type: "string", nullable: true },
+          metaDesc: { type: "string", nullable: true },
+          pageSections: ref("ServicePageSections"),
+        },
+      },
+      ServicePage: {
+        type: "object",
+        description: "Aggregate payload for GET /api/services/{slug}.",
+        properties: {
+          service: ref("ServiceDetail"),
+          packages: { type: "array", items: ref("Package") },
+          faqs: { type: "array", items: ref("Faq") },
+          gallery: { type: "array", items: ref("PublicGalleryImage") },
+          testimonials: { type: "array", items: ref("Testimonial") },
+          relatedServices: { type: "array", items: ref("ServiceCategory") },
+        },
       },
       Package: {
         type: "object",
@@ -579,7 +652,7 @@ export const openApiDocument: OpenApiDocument = {
 
       Testimonial: {
         type: "object",
-        properties: { id: { type: "string" }, name: { type: "string" }, rating: { type: "integer", minimum: 1, maximum: 5 }, comment: { type: "string" }, isApproved: { type: "boolean" }, isFeatured: { type: "boolean" } },
+        properties: { id: { type: "string" }, name: { type: "string" }, city: { type: "string", nullable: true }, country: { type: "string", nullable: true }, rating: { type: "integer", minimum: 1, maximum: 5 }, comment: { type: "string" }, serviceType: { ...ref("ServiceType"), nullable: true }, isFeatured: { type: "boolean" }, createdAt: { type: "string", format: "date-time" } },
       },
       ModerateTestimonialRequest: { type: "object", required: ["action"], properties: { action: { type: "string", enum: ["approve", "reject", "feature", "unfeature"] } } },
 
@@ -602,7 +675,11 @@ export const openApiDocument: OpenApiDocument = {
         properties: { url: { type: "string", format: "uri" }, type: { type: "string", enum: ["IMAGE", "PHOTO", "VIDEO", "DOCUMENT"] }, caption: { type: "string" }, isPublic: { type: "boolean" } },
       },
 
-      Faq: { type: "object", properties: { id: { type: "string" }, question: { type: "string" }, answer: { type: "string" }, category: { type: "string" } } },
+      Faq: { type: "object", properties: { id: { type: "string" }, question: { type: "string" }, answer: { type: "string" }, category: { type: "string" }, serviceType: { ...ref("ServiceType"), nullable: true }, sortOrder: { type: "integer" } } },
+      PublicGalleryImage: {
+        type: "object",
+        properties: { id: { type: "string" }, url: { type: "string", format: "uri" }, thumbnail: { type: "string", format: "uri", nullable: true }, title: { type: "string", nullable: true }, description: { type: "string", nullable: true }, category: { type: "string" }, serviceType: { ...ref("ServiceType"), nullable: true }, width: { type: "integer", nullable: true }, height: { type: "integer", nullable: true } },
+      },
       SevaStat: { type: "object", properties: { key: { type: "string" }, label: { type: "string" }, value: { type: "number" }, unit: { type: "string", nullable: true } } },
       DashboardStats: {
         type: "object",

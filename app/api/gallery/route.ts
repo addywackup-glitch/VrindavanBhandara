@@ -1,9 +1,10 @@
 // =============================================================================
-// GET /api/faqs — public active FAQs. Thin adapter.
+// GET /api/gallery — public active gallery images, optionally scoped to a
+// service via ?serviceType=. Thin adapter.
 // =============================================================================
 
 import { type NextRequest } from "next/server";
-import { listFaqs } from "@/lib/services/content.service";
+import { listGallery } from "@/lib/services/content.service";
 import { getClientIp, handle } from "@/lib/api/http";
 import { apiRateLimit } from "@/lib/rate-limit";
 import { RateLimitError } from "@/lib/errors";
@@ -13,6 +14,10 @@ export async function GET(request: NextRequest) {
     const rl = await apiRateLimit(getClientIp(request));
     if (!rl.success) throw new RateLimitError();
     const { searchParams } = new URL(request.url);
-    return listFaqs({ serviceType: searchParams.get("serviceType") });
+    const limitParam = searchParams.get("limit");
+    return listGallery({
+      serviceType: searchParams.get("serviceType"),
+      limit: limitParam ? parseInt(limitParam, 10) : undefined,
+    });
   });
 }

@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     template: "%s | Vrindavan Bhandara",
   },
   description:
-    "India's most trusted platform to book Bhandara, Brahmin Bhoj Seva, Gau Seva, Sadhu Bhojan & Festival Seva in Vrindavan and Mathura. Transparent proof delivery with photos, videos & certificates.",
+    "India's most trusted platform to book Bhandara, Brahmin Bhoj Seva, Gau Seva, Sadhu Bhojan & Festival Seva in Vrindavan and Mathura. Transparent proof delivery with photos and videos.",
   keywords: [
     "Bhandara booking Vrindavan",
     "online Bhandara booking",
@@ -69,7 +69,7 @@ export const metadata: Metadata = {
     siteName: "Vrindavan Bhandara",
     title: "Vrindavan Bhandara — Book Bhandara & Seva Online",
     description:
-      "Book Bhandara, Brahmin Bhoj Seva, Gau Seva and Festival Seva in Vrindavan & Mathura. Transparent proof delivery with photos, videos & certificates.",
+      "Book Bhandara, Brahmin Bhoj Seva, Gau Seva and Festival Seva in Vrindavan & Mathura. Transparent proof delivery with photos and videos.",
     images: [
       {
         url: "/og-image.jpg",

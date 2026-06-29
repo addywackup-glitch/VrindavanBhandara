@@ -24,10 +24,6 @@ Webhook
 
 POST /api/payment/webhook
 
-Certificates
-
-GET /api/certificates/:id
-
 Media
 
 POST /api/upload

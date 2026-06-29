@@ -11,7 +11,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Vrindavan Bhandara",
     short_name: "VB Seva",
     description:
-      "Book Bhandara, Brahmin Bhoj, Gau Seva & Festival Seva in Vrindavan and Mathura. Transparent proof delivery with photos, videos & certificates.",
+      "Book Bhandara, Brahmin Bhoj, Gau Seva & Festival Seva in Vrindavan and Mathura. Transparent proof delivery with photos and videos.",
     start_url: "/",
     display: "standalone",
     background_color: "#FFFCF8",

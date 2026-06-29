@@ -8,7 +8,6 @@ import type {
   Booking,
   Package,
   Payment,
-  Certificate,
   MediaProof,
   ProofTimelineEvent,
   ServiceCategory,
@@ -31,7 +30,6 @@ export type {
   Booking,
   Package,
   Payment,
-  Certificate,
   MediaProof,
   ProofTimelineEvent,
   ServiceCategory,
@@ -62,7 +60,6 @@ export type BookingWithDetails = Booking & {
   user: Pick<User, "id" | "name" | "email" | "phone">;
   package: PackageWithItems;
   payment: Payment | null;
-  certificate: Certificate | null;
   mediaProofs: MediaProof[];
   proofTimeline: ProofTimelineEvent[];
 };
@@ -286,7 +283,6 @@ export type WhatsAppTemplate =
   | "payment_received"
   | "seva_in_progress"
   | "seva_completed"
-  | "certificate_ready"
   | "proof_uploaded";
 
 export type WhatsAppNotificationPayload = {

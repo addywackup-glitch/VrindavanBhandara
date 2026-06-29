@@ -16,7 +16,7 @@ const TEAM_PILLARS = [
   {
     icon: "📸",
     title: "Radical Transparency",
-    desc: "We believe in 100% transparency. Every booking comes with photo/video proof and a digital certificate so you can trust your seva was completed.",
+    desc: "We believe in 100% transparency. Every booking comes with photo/video proof so you can trust your seva was completed.",
   },
   {
     icon: "🔒",
@@ -34,7 +34,7 @@ const STATS = [
   { value: "2,50,000+", label: "Meals Served" },
   { value: "1,200+", label: "Bhandaras Completed" },
   { value: "52+", label: "Countries Served" },
-  { value: "8,500+", label: "Certificates Issued" },
+  { value: "8,500+", label: "Proofs Delivered" },
 ];
 
 export default function AboutPage() {

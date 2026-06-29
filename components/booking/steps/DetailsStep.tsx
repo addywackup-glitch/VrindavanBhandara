@@ -94,7 +94,7 @@ export function DetailsStep({ form, updateForm, onNext }: Props) {
     <div>
       <h2 className="font-heading text-2xl text-charcoal mb-2">Seva Details</h2>
       <p className="text-gray-500 text-sm mb-8">
-        Personalize your seva. These details will appear on your certificate.
+        Personalize your seva. These details are included in your booking record.
       </p>
 
       {/* Booker Info (read-only from session) */}

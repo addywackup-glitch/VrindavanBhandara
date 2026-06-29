@@ -13,11 +13,11 @@ import { prisma } from "@/lib/prisma";
 export const metadata: Metadata = {
   title: "Vrindavan Bhandara — Book Bhandara, Brahmin Bhoj & Gau Seva Online",
   description:
-    "India's most trusted platform to book Bhandara, Brahmin Bhoj Seva, Gau Seva, Sadhu Bhojan & Festival Seva in Vrindavan and Mathura. Transparent proof with photos, videos & certificates.",
+    "India's most trusted platform to book Bhandara, Brahmin Bhoj Seva, Gau Seva, Sadhu Bhojan & Festival Seva in Vrindavan and Mathura. Transparent proof with photos and videos.",
   openGraph: {
     title: "Vrindavan Bhandara — Book Sacred Seva Online",
     description:
-      "Sponsor Bhandara, Brahmin Bhoj, Gau Seva & Festival Seva in Vrindavan & Mathura. Receive photo, video proof and digital certificate.",
+      "Sponsor Bhandara, Brahmin Bhoj, Gau Seva & Festival Seva in Vrindavan & Mathura. Receive photo and video proof.",
     url: "https://vrindavanbhandara.com",
     images: [
       {

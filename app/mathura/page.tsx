@@ -5,7 +5,7 @@ import { MapPin, ArrowRight, CheckCircle } from "lucide-react";
 export const metadata: Metadata = {
   title: "Bhandara Booking in Mathura — Online Seva Booking | Vrindavan Bhandara",
   description:
-    "Book Bhandara, Brahmin Bhoj Seva, Gau Seva & Festival Seva in Mathura — the birthplace of Lord Krishna. Transparent proof with photos, videos & digital certificates.",
+    "Book Bhandara, Brahmin Bhoj Seva, Gau Seva & Festival Seva in Mathura — the birthplace of Lord Krishna. Transparent proof with photos and videos.",
   keywords: [
     "Bhandara Booking Mathura",
     "Mathura Bhandara",
@@ -123,7 +123,7 @@ export default function MathuraPage() {
             </Link>
           </div>
           <div className="flex flex-wrap gap-6 mt-10">
-            {["Birthplace of Lord Krishna", "Transparent Proof", "Digital Certificate", "Secure Payment"].map((t) => (
+            {["Birthplace of Lord Krishna", "Transparent Proof", "Photo & Video Proof", "Secure Payment"].map((t) => (
               <div key={t} className="flex items-center gap-2 text-white/60 text-sm">
                 <CheckCircle className="w-4 h-4 text-gold-400" />
                 {t}

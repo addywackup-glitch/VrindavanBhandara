@@ -2,7 +2,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, MapPin, Download, CheckCircle } from "lucide-react";
+import { ArrowLeft, MapPin, CheckCircle } from "lucide-react";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -13,7 +13,6 @@ async function getBooking(id: string, userId: string) {
       include: {
         package: { include: { serviceCategory: true, items: true } },
         payment: true,
-        certificate: true,
         mediaProofs: { orderBy: { createdAt: "desc" } },
         proofTimeline: { orderBy: { occurredAt: "asc" } },
       },
@@ -185,25 +184,6 @@ export default async function BookingDetailPage({ params }: Params) {
               </div>
             )}
           </div>
-
-          {/* Certificate */}
-          {booking.certificate && (
-            <div className="card-luxury p-5">
-              <h3 className="font-heading text-sm font-bold text-charcoal mb-3">Your Certificate</h3>
-              <p className="text-xs text-gray-500 mb-4 leading-relaxed">
-                Your digital Seva Completion Certificate is ready to download.
-              </p>
-              <a
-                href={booking.certificate.url ?? "#"}
-                download
-                className="btn-gold w-full justify-center py-3 text-sm"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Download Certificate
-              </a>
-            </div>
-          )}
-
           {/* Location */}
           <div
             className="p-4 rounded-xl text-sm"

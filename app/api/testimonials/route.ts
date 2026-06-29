@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
     return listPublicTestimonials({
       featured: searchParams.get("featured") === "true",
       limit: parseInt(searchParams.get("limit") ?? "12", 10),
+      serviceType: searchParams.get("serviceType"),
     });
   });
 }

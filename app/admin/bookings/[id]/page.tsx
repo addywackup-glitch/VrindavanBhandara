@@ -17,7 +17,6 @@ async function getBooking(id: string) {
       user: true,
       package: { include: { serviceCategory: true, items: true } },
       payment: true,
-      certificate: true,
       mediaProofs: { orderBy: { createdAt: "desc" } },
       proofTimeline: { orderBy: { occurredAt: "asc" } },
     },

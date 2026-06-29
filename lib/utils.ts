@@ -90,13 +90,6 @@ export function formatPhone(phone: string): string {
 }
 
 // =============================================================================
-// Certificate verify URL
-// =============================================================================
-export function getCertificateVerifyUrl(verifyCode: string): string {
-  return `${process.env.NEXT_PUBLIC_SITE_URL}/verify/${verifyCode}`;
-}
-
-// =============================================================================
 // R2 Public URL
 // =============================================================================
 export function getMediaUrl(key: string): string {

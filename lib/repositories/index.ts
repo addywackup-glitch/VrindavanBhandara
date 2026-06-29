@@ -16,5 +16,4 @@ export * from "./blog.repository";
 export * from "./gallery.repository";
 export * from "./testimonial.repository";
 export * from "./settings.repository";
-export * from "./certificate.repository";
 export * from "./audit.repository";

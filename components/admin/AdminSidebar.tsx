@@ -9,7 +9,6 @@ import {
   Package,
   FileText,
   Image,
-  Award,
   MessageSquare,
   Star,
   BarChart3,
@@ -31,7 +30,6 @@ const NAV_GROUPS = [
     items: [
       { href: "/admin/bookings", icon: BookOpen, label: "Bookings" },
       { href: "/admin/proofs", icon: Image, label: "Proof Management" },
-      { href: "/admin/certificates", icon: Award, label: "Certificates" },
     ],
   },
   {

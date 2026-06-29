@@ -7,9 +7,13 @@ import {
   packageRepository,
   serviceCategoryRepository,
   faqRepository,
+  galleryRepository,
+  testimonialRepository,
   sevaStatRepository,
 } from "@/lib/repositories";
 import { execute } from "@/lib/api/service";
+import { NotFoundError } from "@/lib/errors";
+import { parseServicePageSections } from "@/lib/validations";
 
 const SERVICE_TYPES: readonly ServiceType[] = [
   "BHANDARA",
@@ -18,9 +22,10 @@ const SERVICE_TYPES: readonly ServiceType[] = [
   "SADHU_BHOJAN",
   "FESTIVAL_SEVA",
   "ANNADAN_SEVA",
+  "VIDHWA_SEVA",
 ];
 
-function toServiceType(value: string | null): ServiceType | undefined {
+export function toServiceType(value: string | null): ServiceType | undefined {
   return value && SERVICE_TYPES.includes(value as ServiceType)
     ? (value as ServiceType)
     : undefined;
@@ -52,8 +57,53 @@ export function listPublicPackages(query: {
   });
 }
 
-export function listFaqs() {
-  return execute(async () => faqRepository.listActivePublic());
+export function listFaqs(query: { serviceType?: string | null } = {}) {
+  return execute(async () =>
+    faqRepository.listActivePublic({
+      serviceType: toServiceType(query.serviceType ?? null),
+    })
+  );
+}
+
+export function listGallery(query: { serviceType?: string | null; limit?: number } = {}) {
+  return execute(async () =>
+    galleryRepository.listPublic({
+      serviceType: toServiceType(query.serviceType ?? null),
+      limit: query.limit,
+    })
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Aggregate: everything a single service page needs in one round-trip.
+// service + packages + service-scoped FAQs + gallery + testimonials + related.
+// ---------------------------------------------------------------------------
+export function getServicePage(slug: string) {
+  return execute(async () => {
+    const service = await serviceCategoryRepository.findPublicBySlug(slug);
+    if (!service) throw new NotFoundError("Service");
+
+    const [faqs, gallery, testimonials, relatedServices] = await Promise.all([
+      faqRepository.listActivePublic({ serviceType: service.type }),
+      galleryRepository.listPublic({ serviceType: service.type, limit: 12 }),
+      testimonialRepository.listPublic({
+        where: { isApproved: true, serviceType: service.type },
+        take: 12,
+      }),
+      serviceCategoryRepository.listRelated(service.id, 4),
+    ]);
+
+    const { pageSections, packages, ...rest } = service;
+
+    return {
+      service: { ...rest, pageSections: parseServicePageSections(pageSections) },
+      packages,
+      faqs,
+      gallery,
+      testimonials,
+      relatedServices,
+    };
+  });
 }
 
 export function listSevaStats() {

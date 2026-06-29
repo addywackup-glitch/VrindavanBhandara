@@ -8,7 +8,7 @@ import { ArrowRight, Star, CheckCircle, Play } from "lucide-react";
 const TRUST_BADGES = [
   { icon: "🔒", text: "100% Secure" },
   { icon: "📸", text: "Photo & Video Proof" },
-  { icon: "📜", text: "Digital Certificate" },
+  { icon: "📸", text: "Photo & Video Proof" },
   { icon: "🏛️", text: "5,000+ Sevas Done" },
 ];
 
@@ -192,7 +192,7 @@ export function HeroSection() {
             Sponsor Bhandara, Brahmin Bhoj, Gau Seva & Festival Seva online —
             and receive transparent{" "}
             <strong className="text-[#8B1E1E] font-semibold">
-              photo, video proof & a digital certificate
+              photo and video proof
             </strong>{" "}
             delivered to you.
           </motion.p>

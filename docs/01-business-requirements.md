@@ -59,8 +59,6 @@ Booking Tracking
 
 Proof Uploads
 
-Certificates
-
 Invoices
 
 Customer Dashboard

@@ -33,7 +33,3 @@ Dashboard
 ↓
 
 Proof Delivery
-
-↓
-
-Certificate Download

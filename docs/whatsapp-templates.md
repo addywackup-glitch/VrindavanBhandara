@@ -122,7 +122,7 @@ Dear {{1}},
 
 Your *{{2}}* seva has been completed successfully in Vrindavan. The blessings of Shri Radha-Krishna are with you and your family.
 
-Proof photos and videos have been uploaded to your account. Your seva certificate is also ready for download.
+Proof photos and videos have been uploaded to your account. View them anytime from your dashboard.
 ```
 
 **Button**: View My Dashboard → `{{3}}`
@@ -160,32 +160,7 @@ Vrindavan Bhandara Team
 
 ---
 
-## Template 6: `certificate_ready`
-
-**Trigger**: Admin generates certificate for completed booking  
-**Category**: UTILITY | **Language**: en | **Button**: Download Certificate (URL)
-
-### Variables
-| Placeholder | Value | Example |
-|---|---|---|
-| `{{1}}` | Customer name | Ramesh Kumar |
-| `{{2}}` | Service name | Bhandara Seva |
-| `{{3}}` | Verify URL | https://vrindavanbhandara.com/certificate/ABC123 |
-
-### Template Body
-```
-Your Seva Certificate is Ready 📜
-
-Jai Shri Krishna, {{1}}!
-
-Your *{{2}}* Seva Completion Certificate has been generated. This certificate verifies the seva was performed in your name in the holy dhams of Vrindavan.
-```
-
-**Button**: Download Certificate → `{{3}}`
-
----
-
-## Template 7: `festival_reminder`
+## Template 6: `festival_reminder`
 
 **Trigger**: Admin broadcasts festival campaign  
 **Category**: MARKETING | **Language**: en | **Button**: Book Now (URL)
