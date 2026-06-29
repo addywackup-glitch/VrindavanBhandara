@@ -1,6 +1,6 @@
 // =============================================================================
 // Prisma Client Singleton with pg adapter (Prisma 7 requirement)
-// Source: 02-system-architecture.md — Neon PostgreSQL
+// Source: 02-system-architecture.md — Supabase PostgreSQL
 // =============================================================================
 
 import { PrismaClient } from "@prisma/client";

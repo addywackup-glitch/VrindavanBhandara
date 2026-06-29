@@ -4,6 +4,8 @@ Drop production-ready files in this folder (`public/`). They are served at the s
 
 **Note:** `app/favicon.ico` lives in `app/` (Next.js App Router) and is already tracked separately.
 
+**Placeholders:** Branded placeholder PNG/JPG files are committed for dev and Vercel preview. Replace every file below with final artwork before production launch. Regenerate placeholders: `node scripts/generate-placeholder-assets.mjs`.
+
 ---
 
 ## Required before production launch

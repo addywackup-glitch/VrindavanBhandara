@@ -5,7 +5,7 @@
 - [ ] `npx prisma generate`
 
 ## 1. Environment (see `.env.example`)
-- [ ] `DATABASE_URL` (+ `DATABASE_URL_UNPOOLED` for migrations) — Neon Postgres
+- [ ] `DATABASE_URL` (Supabase pooler, port 6543) + `DATABASE_URL_UNPOOLED` (direct, port 5432) for `db push` / migrations
 - [ ] `NEXTAUTH_URL`, `NEXTAUTH_SECRET`
 - [ ] `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`, `NEXT_PUBLIC_RAZORPAY_KEY_ID`
 - [ ] `RESEND_API_KEY` (+ from address)
@@ -13,9 +13,10 @@
 - [ ] WhatsApp Cloud API tokens (optional; dev-logs without them)
 - [ ] `UPSTASH_REDIS_REST_URL` / `_TOKEN` (production rate limiting)
 
-## 2. Database
+## 2. Database (Supabase)
 - [ ] `npx prisma validate`
-- [ ] `npx prisma migrate deploy` (review the Phase 2 index/enum migration)
+- [ ] First deploy (no migrations folder): `DATABASE_URL="$DATABASE_URL_UNPOOLED" npm run db:push`
+- [ ] Or with migrations: `DATABASE_URL="$DATABASE_URL_UNPOOLED" npx prisma migrate deploy`
 - [ ] Seed if first deploy: `npm run db:seed`
 
 ## 3. Quality gates (CI)
