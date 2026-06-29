@@ -5,6 +5,16 @@
 - [ ] `npx prisma generate`
 
 ## 1. Environment (see `.env.example`)
+
+### Vercel bulk import
+1. Copy `vercel.env.import` → `vercel.env.local` (do not commit the filled copy).
+2. Replace every `REPLACE_*` value (Supabase URLs, `NEXTAUTH_*`, Vercel domain).
+3. Leave Razorpay dummy keys until your Razorpay account is ready (site deploys; checkout/payment APIs will fail until real keys are set).
+4. Vercel → Project → Settings → Environment Variables → **Import .env** → upload `vercel.env.local`.
+5. Set **Environments** to Production and Preview; keep **Sensitive** on.
+
+Generate `NEXTAUTH_SECRET` locally: `openssl rand -base64 32`
+
 - [ ] `DATABASE_URL` (Supabase pooler, port 6543) + `DATABASE_URL_UNPOOLED` (direct, port 5432) for `db push` / migrations
 - [ ] `NEXTAUTH_URL`, `NEXTAUTH_SECRET`
 - [ ] `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`, `NEXT_PUBLIC_RAZORPAY_KEY_ID`
@@ -26,6 +36,7 @@
 - [ ] `npm run build`
 
 ## 4. Payments
+- [ ] Replace dummy Razorpay keys in Vercel when account is ready (`rzp_test_*` for staging, `rzp_live_*` for production)
 - [ ] Razorpay webhook configured → `POST /api/payment/webhook`, secret matches `RAZORPAY_WEBHOOK_SECRET`
 - [ ] Webhook events enabled: `payment.captured`, `payment.failed`, `refund.processed`, `refund.created`
 - [ ] Verify a test payment end-to-end (order → checkout → verify → webhook)
