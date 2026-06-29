@@ -22,7 +22,6 @@ export type Permission =
   | "blogs:delete"
   | "proofs:upload"
   | "proofs:delete"
-  | "certificates:generate"
   | "testimonials:approve"
   | "campaigns:write"
   | "gallery:write"
@@ -47,7 +46,6 @@ const ROLE_PERMISSIONS: Record<AdminRole, Permission[]> = {
     "blogs:delete",
     "proofs:upload",
     "proofs:delete",
-    "certificates:generate",
     "testimonials:approve",
     "campaigns:write",
     "gallery:write",
@@ -63,7 +61,6 @@ const ROLE_PERMISSIONS: Record<AdminRole, Permission[]> = {
     "packages:write",
     "payments:read",
     "proofs:upload",
-    "certificates:generate",
     "campaigns:write",
     "gallery:write",
     "analytics:read",

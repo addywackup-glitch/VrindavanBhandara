@@ -10,8 +10,6 @@ PackageItems
 
 Payments
 
-Certificates
-
 MediaProofs
 
 Blogs

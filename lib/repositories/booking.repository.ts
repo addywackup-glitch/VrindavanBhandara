@@ -17,7 +17,6 @@ export const bookingDetailInclude = {
   user: { select: { id: true, name: true, email: true, phone: true } },
   package: { include: { serviceCategory: true, items: true } },
   payment: true,
-  certificate: true,
   mediaProofs: { orderBy: { createdAt: "desc" } },
   proofTimeline: { orderBy: { occurredAt: "asc" } },
 } satisfies Prisma.BookingInclude;
@@ -26,7 +25,6 @@ export const bookingNotifyInclude = {
   user: { select: { id: true, name: true, email: true, phone: true } },
   package: { include: { serviceCategory: true, items: true } },
   payment: true,
-  certificate: true,
   mediaProofs: true,
   proofTimeline: true,
 } satisfies Prisma.BookingInclude;

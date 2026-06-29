@@ -256,7 +256,7 @@ export function ServicesSection({ services }: ServicesSectionProps) {
           />
           <p className="max-w-xl mx-auto text-base leading-relaxed" style={{ color: "#4A453F" }}>
             Every seva is performed with full devotion in the holy land of Vrindavan and Mathura.
-            Receive transparent proof with photos, videos and certificates.
+            Receive transparent proof with photos and videos.
           </p>
         </motion.div>
 

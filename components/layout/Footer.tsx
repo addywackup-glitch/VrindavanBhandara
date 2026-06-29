@@ -127,7 +127,7 @@ export function Footer() {
             <p className="text-sm leading-relaxed mb-6 max-w-sm" style={{ color: "rgba(255,252,248,0.55)" }}>
               India&apos;s most trusted platform to book Bhandara, Brahmin Bhoj, Gau Seva
               &amp; Festival Seva in Vrindavan and Mathura. Transparent proof delivery with
-              photos, videos &amp; certificates.
+              photos and videos.
             </p>
 
             {/* Contact */}
@@ -285,7 +285,7 @@ export function Footer() {
                 { icon: "🔒", text: "SSL Secured Platform" },
                 { icon: "✅", text: "Razorpay Secured Payments" },
                 { icon: "📸", text: "Proof Guaranteed" },
-                { icon: "📜", text: "Digital Certificates Issued" },
+                { icon: "📸", text: "Photo & Video Proof Delivered" },
               ].map((b) => (
                 <div key={b.text} className="flex items-center gap-2 text-xs" style={{ color: "rgba(255,252,248,0.4)" }}>
                   <span className="text-base">{b.icon}</span>

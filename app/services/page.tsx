@@ -133,7 +133,7 @@ export default async function ServicesPage() {
               🔒 Every seva comes with transparent proof delivery
             </p>
             <div className="flex flex-wrap justify-center gap-6 text-xs text-gray-500">
-              {["Photo proof", "Video highlight", "Digital certificate", "WhatsApp updates", "24/7 support"].map((t) => (
+              {["Photo proof", "Video highlight", "WhatsApp updates", "24/7 support"].map((t) => (
                 <span key={t} className="flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-gold-400" />{t}
                 </span>

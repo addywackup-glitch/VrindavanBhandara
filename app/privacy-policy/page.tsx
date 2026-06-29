@@ -35,7 +35,7 @@ export default function PrivacyPolicyPage() {
               <h2 className="font-heading text-lg font-bold text-charcoal mb-3">2. How We Use Your Information</h2>
               <ul className="list-disc pl-5 space-y-1">
                 <li>Process and manage your seva bookings</li>
-                <li>Send booking confirmations, proof photos, videos, and certificates</li>
+                <li>Send booking confirmations, proof photos, and videos</li>
                 <li>Send WhatsApp notifications about your seva status</li>
                 <li>Communicate updates about our services</li>
                 <li>Improve our platform and user experience</li>

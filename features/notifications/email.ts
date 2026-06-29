@@ -86,30 +86,6 @@ export async function sendSevaCompletedEmail(
 }
 
 // =============================================================================
-// Email: Certificate Ready
-// =============================================================================
-
-export async function sendCertificateReadyEmail(params: {
-  email: string;
-  name: string;
-  bookingNumber: string;
-  certificateUrl: string;
-  bookingId: string;
-}): Promise<void> {
-  await getResend().emails.send({
-    from: FROM(),
-    to: params.email,
-    subject: `📜 Your Seva Certificate is Ready — ${params.bookingNumber}`,
-    html: buildCertificateReadyHtml({
-      name: params.name,
-      bookingNumber: params.bookingNumber,
-      certificateUrl: params.certificateUrl,
-      dashboardUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/bookings/${params.bookingId}`,
-    }),
-  });
-}
-
-// =============================================================================
 // HTML Templates (inline styled for email client compatibility)
 // =============================================================================
 
@@ -183,7 +159,7 @@ function buildBookingConfirmationHtml(params: {
     
     <a href="${params.dashboardUrl}" style="display:inline-block;background:linear-gradient(135deg,#D4AF37,#FF7722);color:#fff;text-decoration:none;padding:14px 28px;border-radius:8px;font-weight:600;font-size:15px;">Track Your Seva →</a>
     
-    <p style="color:#888;font-size:13px;margin:24px 0 0;line-height:1.6;">You will receive updates via email as your seva progresses. Photos, videos, and your completion certificate will be shared upon completion.</p>
+    <p style="color:#888;font-size:13px;margin:24px 0 0;line-height:1.6;">You will receive updates via email as your seva progresses. Photos and videos will be shared upon completion.</p>
   `);
 }
 
@@ -209,23 +185,8 @@ function buildSevaCompletedHtml(params: {
   return emailWrapper(`
     <h2 style="color:#1A1A2E;font-family:Georgia,serif;margin:0 0 8px;">🌸 Your Seva is Complete!</h2>
     <p style="color:#555;margin:0 0 24px;line-height:1.6;">Jai Shri Krishna, ${params.name}! Your <strong>${params.serviceName}</strong> (Booking: ${params.bookingNumber}) has been completed with full devotion.</p>
-    <p style="color:#555;margin:0 0 24px;line-height:1.6;">Please visit your dashboard to view proof photos, videos, and download your completion certificate.</p>
-    <a href="${params.dashboardUrl}" style="display:inline-block;background:linear-gradient(135deg,#D4AF37,#FF7722);color:#fff;text-decoration:none;padding:14px 28px;border-radius:8px;font-weight:600;font-size:15px;">View Proof & Certificate →</a>
-  `);
-}
-
-function buildCertificateReadyHtml(params: {
-  name: string;
-  bookingNumber: string;
-  certificateUrl: string;
-  dashboardUrl: string;
-}): string {
-  return emailWrapper(`
-    <h2 style="color:#1A1A2E;font-family:Georgia,serif;margin:0 0 8px;">📜 Your Certificate is Ready</h2>
-    <p style="color:#555;margin:0 0 24px;line-height:1.6;">Dear ${params.name}, your Seva Completion Certificate for booking <strong>${params.bookingNumber}</strong> is now available for download.</p>
-    <div style="text-align:center;margin:0 0 24px;">
-      <a href="${params.certificateUrl}" style="display:inline-block;background:linear-gradient(135deg,#D4AF37,#FF7722);color:#fff;text-decoration:none;padding:14px 28px;border-radius:8px;font-weight:600;font-size:15px;">Download Certificate →</a>
-    </div>
+    <p style="color:#555;margin:0 0 24px;line-height:1.6;">Please visit your dashboard to view proof photos and videos from your seva.</p>
+    <a href="${params.dashboardUrl}" style="display:inline-block;background:linear-gradient(135deg,#D4AF37,#FF7722);color:#fff;text-decoration:none;padding:14px 28px;border-radius:8px;font-weight:600;font-size:15px;">View Proof →</a>
   `);
 }
 

@@ -265,7 +265,6 @@ export const AddTimelineEventSchema = z.object({
     "PHOTOS_UPLOADED",
     "VIDEOS_UPLOADED",
     "SEVA_COMPLETED",
-    "CERTIFICATE_GENERATED",
     "PROOF_DELIVERED",
   ]),
   title: z.string().min(2).max(200),
@@ -275,3 +274,62 @@ export const AddTimelineEventSchema = z.object({
 });
 
 export type AddTimelineEventInput = z.infer<typeof AddTimelineEventSchema>;
+
+// =============================================================================
+// Service Page Sections — presentation-oriented, content-driven page blocks
+// stored on ServiceCategory.pageSections (Json). Validated on read & write so
+// the frontend can render fully dynamic service pages with no hardcoding.
+// =============================================================================
+
+const ContentBlockSchema = z.object({
+  icon: z.string().max(40).optional(),
+  title: z.string().max(160),
+  description: z.string().max(600).optional(),
+});
+
+export const ServicePageSectionsSchema = z.object({
+  hero: z
+    .object({
+      tagline: z.string().max(300).optional(),
+      badges: z.array(z.string().max(60)).max(8).optional(),
+      backgroundImage: z.string().url().optional(),
+    })
+    .optional(),
+  benefits: z.array(ContentBlockSchema).max(12).optional(),
+  highlights: z.array(ContentBlockSchema).max(12).optional(),
+  howItWorks: z
+    .array(
+      z.object({
+        step: z.number().int().min(1).max(20),
+        title: z.string().max(160),
+        description: z.string().max(600),
+        icon: z.string().max(40).optional(),
+      })
+    )
+    .max(12)
+    .optional(),
+  trustBadges: z
+    .array(
+      z.object({
+        icon: z.string().max(40).optional(),
+        text: z.string().max(160),
+      })
+    )
+    .max(12)
+    .optional(),
+  includedItems: z.array(z.string().max(240)).max(40).optional(),
+});
+
+export type ServicePageSections = z.infer<typeof ServicePageSectionsSchema>;
+
+/**
+ * Best-effort parse of the stored JSON. Returns `null` for empty/invalid data
+ * so a malformed row never breaks page rendering.
+ */
+export function parseServicePageSections(
+  value: unknown
+): ServicePageSections | null {
+  if (value == null) return null;
+  const result = ServicePageSectionsSchema.safeParse(value);
+  return result.success ? result.data : null;
+}

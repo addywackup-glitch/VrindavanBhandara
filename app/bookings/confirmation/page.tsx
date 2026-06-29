@@ -61,7 +61,7 @@ function ConfirmationContent() {
               {[
                 { icon: "📧", text: "Booking confirmation email sent to your inbox" },
                 { icon: "📸", text: "We'll send photos & video proof on seva day" },
-                { icon: "📜", text: "Digital certificate issued within 24 hrs of completion" },
+                { icon: "📸", text: "Photo & video proof shared after seva completion" },
                 { icon: "💬", text: "WhatsApp updates on your seva progress" },
               ].map((item) => (
                 <div key={item.text} className="flex items-start gap-3">

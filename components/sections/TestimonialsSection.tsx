@@ -21,7 +21,7 @@ const FALLBACK_TESTIMONIALS: Testimonial[] = [
     country: "India",
     rating: 5,
     comment:
-      "Absolutely divine experience. I booked a Bhandara for my mother's anniversary and received photos within hours. The certificate is beautiful. Highly recommended!",
+      "Absolutely divine experience. I booked a Bhandara for my mother's anniversary and received photos within hours. The proof was detailed and beautiful. Highly recommended!",
     serviceType: "Bhandara Booking",
   },
   {
@@ -61,7 +61,7 @@ const FALLBACK_TESTIMONIALS: Testimonial[] = [
     country: "India",
     rating: 5,
     comment:
-      "The platform is beautiful and easy to use. Payment was secure, and I received my certificate within 2 hours of completion. Outstanding service!",
+      "The platform is beautiful and easy to use. Payment was secure, and I received photo proof within 2 hours of completion. Outstanding service!",
     serviceType: "Bhandara Booking",
   },
 ];

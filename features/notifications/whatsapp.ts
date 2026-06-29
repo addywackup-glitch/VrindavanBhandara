@@ -255,44 +255,6 @@ export async function sendWhatsAppRefundProcessed(params: {
 }
 
 // =============================================================================
-// Template: certificate_ready
-// Sent when: Certificate is generated for a completed booking
-// Variables: {{1}} customer_name, {{2}} service_name, {{3}} verify_url
-// =============================================================================
-export async function sendWhatsAppCertificateReady(params: {
-  phone: string | null | undefined;
-  name: string;
-  serviceName: string;
-  verifyCode: string;
-}): Promise<void> {
-  const to = normalizePhone(params.phone);
-  if (!to) return;
-
-  const verifyUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/certificate/${params.verifyCode}`;
-
-  await sendWhatsAppTemplate({
-    to,
-    templateName: "certificate_ready",
-    components: [
-      {
-        type: "body",
-        parameters: [
-          { type: "text", text: params.name },
-          { type: "text", text: params.serviceName },
-          { type: "text", text: verifyUrl },
-        ],
-      },
-      {
-        type: "button",
-        sub_type: "url",
-        index: "0",
-        parameters: [{ type: "text", text: verifyUrl }],
-      },
-    ],
-  });
-}
-
-// =============================================================================
 // Template: festival_reminder
 // Sent when: Admin broadcasts a festival campaign reminder
 // Variables: {{1}} customer_name, {{2}} festival_name, {{3}} festival_date, {{4}} booking_url

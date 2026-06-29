@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import type { Session } from "next-auth";
 import {
-  LayoutDashboard, BookOpen, Award, User,
+  LayoutDashboard, BookOpen, User,
   LogOut, Bell, Menu, X, ChevronRight, Flame,
 } from "lucide-react";
 
@@ -17,7 +17,6 @@ const NAV_H_SM = "4rem";
 const NAV_LINKS = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard, exact: true },
   { href: "/dashboard/bookings", label: "My Bookings", icon: BookOpen },
-  { href: "/dashboard/certificates", label: "Certificates", icon: Award },
   { href: "/dashboard/profile", label: "Profile", icon: User },
 ];
 

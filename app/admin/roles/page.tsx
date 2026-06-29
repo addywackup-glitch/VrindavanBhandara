@@ -14,7 +14,6 @@ const PERMISSION_GROUPS: Record<string, Permission[]> = {
   Payments: ["payments:read", "payments:refund"],
   Content: ["blogs:read", "blogs:write", "blogs:delete", "testimonials:approve", "campaigns:write"],
   Media: ["proofs:upload", "proofs:delete", "gallery:write"],
-  Certificates: ["certificates:generate"],
   Analytics: ["analytics:read"],
   Administration: ["admins:manage", "config:write"],
 };

@@ -7,8 +7,8 @@ import { ChevronDown, Search, Loader2 } from "lucide-react";
 type FAQ = { id: string; question: string; answer: string; category: string };
 
 const FALLBACK_FAQS: FAQ[] = [
-  { id: "1", category: "General", question: "How does the booking process work?", answer: "Choose a seva, select a package and date, fill in your details, and pay securely via Razorpay. After the seva is performed, you receive photos, videos, and a digital certificate." },
-  { id: "2", category: "General", question: "Do I receive proof that the seva was performed?", answer: "Yes. Every seva comes with photo proof, most include video proof. You receive a digital Seva Completion Certificate downloadable from your dashboard." },
+  { id: "1", category: "General", question: "How does the booking process work?", answer: "Choose a seva, select a package and date, fill in your details, and pay securely via Razorpay. After the seva is performed, you receive photos and videos as proof." },
+  { id: "2", category: "General", question: "Do I receive proof that the seva was performed?", answer: "Yes. Every seva comes with photo proof, and most include video proof. You can view and download them from your dashboard." },
   { id: "3", category: "Payments", question: "Is my payment secure?", answer: "Yes. All payments are processed through Razorpay — a PCI-DSS compliant payment gateway. Your card or UPI details are never stored on our servers." },
   { id: "4", category: "Payments", question: "What is the refund policy?", answer: "If the seva cannot be performed on your selected date, we will reschedule or issue a full refund within 5-7 working days." },
   { id: "5", category: "Booking", question: "How far in advance should I book?", answer: "We recommend booking at least 2-3 days in advance. For festival sevas (Janmashtami, Holi, Radhashtami), book 1-2 weeks early as slots fill quickly." },

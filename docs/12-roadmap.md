@@ -12,8 +12,6 @@ Admin Dashboard
 
 Phase 2
 
-Certificates
-
 Proof Uploads
 
 Notifications

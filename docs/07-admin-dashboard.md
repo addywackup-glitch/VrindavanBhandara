@@ -14,8 +14,6 @@ Blogs
 
 Proofs
 
-Certificates
-
 Testimonials
 
 Festival Campaigns

@@ -39,13 +39,6 @@ const STEPS = [
     description:
       "After completion, you receive photos and videos of your seva being performed. Full transparency guaranteed.",
   },
-  {
-    number: "06",
-    icon: "📜",
-    title: "Get Certificate",
-    description:
-      "Download your official digital Seva Completion Certificate — a permanent record of your devotion.",
-  },
 ];
 
 export function HowItWorksSection() {
@@ -152,7 +145,6 @@ export function HowItWorksSection() {
               "No hidden charges",
               "Seva on exact date",
               "Photos & video proof",
-              "Digital certificate",
               "24/7 support",
             ].map((item) => (
               <div key={item} className="flex items-center gap-2">

@@ -104,7 +104,7 @@ export function ReviewStep({ form }: Props) {
         >
           <p className="text-xs text-gray-500">
             🔒 Payment is 100% secured by <strong>Razorpay</strong>. You will receive photo/video proof
-            and a digital certificate after your seva is completed.
+            and photo/video proof after your seva is completed.
           </p>
         </motion.div>
       </div>

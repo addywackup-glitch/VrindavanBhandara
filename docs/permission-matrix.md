@@ -25,7 +25,6 @@ A user must have `role = ADMIN` **and** an active `Admin` record carrying an `Ad
 | blogs:read/write/delete | ✓ | | ✓ | |
 | proofs:upload | ✓ | ✓ | | |
 | proofs:delete | ✓ | | | |
-| certificates:generate | ✓ | ✓ | | |
 | testimonials:approve | ✓ | | ✓ | |
 | campaigns:write | ✓ | ✓ | ✓ | |
 | gallery:write | ✓ | ✓ | ✓ | |

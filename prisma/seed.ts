@@ -4,8 +4,149 @@
 // Run: npx prisma db seed
 // =============================================================================
 
+import { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 import bcrypt from "bcryptjs";
+import type { ServicePageSections } from "../lib/validations";
+
+// ===========================================================================
+// Presentation-oriented page content per service (ServiceCategory.pageSections)
+// Keyed by service slug. Drives fully dynamic service pages — no UI hardcoding.
+// ===========================================================================
+const SERVICE_PAGE_SECTIONS: Record<string, ServicePageSections> = {
+  bhandara: {
+    hero: {
+      tagline:
+        "Feed hundreds of devotees, sadhus, and the needy in the sacred land of Vrindavan.",
+      badges: ["100–5,000+ devotees", "Sattvic meals", "Photo & video proof"],
+    },
+    benefits: [
+      { icon: "🍱", title: "Feed the Multitudes", description: "Sponsor a full sattvic feast for hundreds to thousands of devotees and the needy." },
+      { icon: "🙏", title: "Immense Spiritual Merit", description: "Annadaan in Vrindavan is regarded as one of the highest acts of devotion." },
+      { icon: "📸", title: "Complete Transparency", description: "Receive dated photos and a video highlight of your Bhandara being served." },
+    ],
+    highlights: [
+      { icon: "🪔", title: "Performed on Your Date", description: "Your Bhandara is conducted precisely on the date you choose." },
+      { icon: "📿", title: "Sankalp in Your Name", description: "A pujari takes sankalp with your name and gotra before the seva." },
+    ],
+    howItWorks: [
+      { step: 1, title: "Choose a Package", description: "Select a Bhandara size from 100 to 5,000+ devotees.", icon: "📦" },
+      { step: 2, title: "Pick Your Date", description: "Choose an auspicious date for the feast.", icon: "📅" },
+      { step: 3, title: "Secure Payment", description: "Pay safely online via Razorpay.", icon: "💳" },
+      { step: 4, title: "Receive Proof", description: "Get photos and a video of your Bhandara.", icon: "📸" },
+    ],
+    trustBadges: [
+      { icon: "📸", text: "Photo proof of every seva" },
+      { icon: "🎥", text: "Video highlight (select packages)" },
+      { icon: "🔒", text: "100% secure Razorpay payments" },
+    ],
+    includedItems: [
+      "Freshly cooked sattvic meal",
+      "Distribution to devotees, sadhus & the needy",
+      "Dated photo documentation",
+      "Pujari sankalp with your name & gotra",
+    ],
+  },
+  "brahmin-bhoj": {
+    hero: {
+      tagline:
+        "Honour learned Brahmin priests with a sacred feast and earn blessings for your family and ancestors.",
+      badges: ["5–51+ Brahmins", "Full rituals", "Photo & video proof"],
+    },
+    benefits: [
+      { icon: "🪔", title: "Honour the Vedic Tradition", description: "Serve Brahmin priests who preserve the sacred scriptures and rituals." },
+      { icon: "🌸", title: "Blessings for Ancestors", description: "Brahmin Bhoj is traditionally performed for the peace of departed souls." },
+      { icon: "📸", title: "Verified Seva", description: "Photo and video proof of the bhoj performed in your name." },
+    ],
+    highlights: [
+      { icon: "📿", title: "Complete Rituals", description: "Performed with traditional Vaishnav rites and mantras." },
+      { icon: "🙏", title: "Personalised Sankalp", description: "Your name and gotra are recited during the ceremony." },
+    ],
+    howItWorks: [
+      { step: 1, title: "Choose Brahmins", description: "Select from 5 to 51+ Brahmin priests.", icon: "📦" },
+      { step: 2, title: "Pick Your Date", description: "Choose the date for the bhoj.", icon: "📅" },
+      { step: 3, title: "Secure Payment", description: "Pay safely online via Razorpay.", icon: "💳" },
+      { step: 4, title: "Receive Proof", description: "Get photos and video of the seva.", icon: "📸" },
+    ],
+    trustBadges: [
+      { icon: "📸", text: "Photo proof of every seva" },
+      { icon: "📿", text: "Authentic Vaishnav rituals" },
+      { icon: "🔒", text: "100% secure Razorpay payments" },
+    ],
+    includedItems: [
+      "Full Vaishnav meal for each Brahmin",
+      "Traditional rituals & mantras",
+      "Dakshina to the priests",
+      "Photo & video proof",
+    ],
+  },
+  "gau-seva": {
+    hero: {
+      tagline:
+        "Serve the sacred cows of Vrindavan — beloved of Lord Krishna — with daily, weekly, or monthly care.",
+      badges: ["Daily / Weekly / Monthly", "Feed & medical care", "Photo proof"],
+    },
+    benefits: [
+      { icon: "🐄", title: "Care for Sacred Cows", description: "Sponsor feeding, grooming, and medical support for cows in a Vrindavan goshala." },
+      { icon: "💚", title: "Krishna's Beloved", description: "Gau Seva is among the dearest forms of devotion to Lord Krishna." },
+      { icon: "📸", title: "See Your Impact", description: "Receive photo proof of the cows you have helped care for." },
+    ],
+    highlights: [
+      { icon: "🌾", title: "Wholesome Feed", description: "Green fodder, grains, and jaggery for healthy cows." },
+      { icon: "🩺", title: "Medical Support", description: "Veterinary care included for ill and elderly cows." },
+    ],
+    howItWorks: [
+      { step: 1, title: "Choose Duration", description: "Select daily, weekly, or monthly care.", icon: "📦" },
+      { step: 2, title: "Confirm Seva", description: "Pick the start date for the care.", icon: "📅" },
+      { step: 3, title: "Secure Payment", description: "Pay safely online via Razorpay.", icon: "💳" },
+      { step: 4, title: "Receive Proof", description: "Get photos of the cows being cared for.", icon: "📸" },
+    ],
+    trustBadges: [
+      { icon: "📸", text: "Dated photo proof" },
+      { icon: "🩺", text: "Veterinary care included" },
+      { icon: "🔒", text: "100% secure Razorpay payments" },
+    ],
+    includedItems: [
+      "Daily feed (fodder, grains, jaggery)",
+      "Grooming & shelter",
+      "Veterinary & medical support",
+      "Photo proof of the seva",
+    ],
+  },
+  "vidhwa-seva": {
+    hero: {
+      tagline:
+        "Restore dignity to the widowed mothers of Vrindavan with meals, clothing, and medical care.",
+      badges: ["Meals & clothing", "Medical care", "Photo & video proof"],
+    },
+    benefits: [
+      { icon: "🤍", title: "Compassion in Action", description: "Provide nutritious meals and essentials to widowed mothers who have devoted their lives to bhajan." },
+      { icon: "🧣", title: "Warmth & Dignity", description: "Sponsor warm clothing and blankets, especially through the harsh winter." },
+      { icon: "🩺", title: "Health & Care", description: "Support medicines and basic healthcare for elderly mothers." },
+    ],
+    highlights: [
+      { icon: "🍲", title: "Daily Nourishment", description: "Freshly cooked sattvic meals served with respect." },
+      { icon: "🙏", title: "A Life of Devotion", description: "Your seva supports mothers dedicated to Radha-Krishna bhajan." },
+    ],
+    howItWorks: [
+      { step: 1, title: "Choose a Package", description: "Select a one-time or monthly care package.", icon: "📦" },
+      { step: 2, title: "Confirm Seva", description: "Pick the date to begin the care.", icon: "📅" },
+      { step: 3, title: "Secure Payment", description: "Pay safely online via Razorpay.", icon: "💳" },
+      { step: 4, title: "Receive Proof", description: "Get photos and video of the seva.", icon: "📸" },
+    ],
+    trustBadges: [
+      { icon: "📸", text: "Photo & video proof" },
+      { icon: "🤍", text: "Direct support to mothers" },
+      { icon: "🔒", text: "100% secure Razorpay payments" },
+    ],
+    includedItems: [
+      "Nutritious sattvic meals",
+      "Warm clothing & blankets",
+      "Medicines & basic healthcare",
+      "Photo & video proof",
+    ],
+  },
+};
 
 async function main() {
   console.log("🌱 Starting database seed...");
@@ -57,7 +198,7 @@ async function main() {
       sortOrder: 1,
       metaTitle: "Bhandara Booking Vrindavan — Book Online | Vrindavan Bhandara",
       metaDesc:
-        "Book a Bhandara in Vrindavan or Mathura online. Feed hundreds of devotees. Transparent proof with photos, videos & digital certificate.",
+        "Book a Bhandara in Vrindavan or Mathura online. Feed hundreds of devotees. Transparent proof with photos and videos.",
     },
     {
       type: "BRAHMIN_BHOJ" as const,
@@ -70,7 +211,7 @@ async function main() {
       sortOrder: 2,
       metaTitle: "Brahmin Bhoj Seva — Book Online | Vrindavan Bhandara",
       metaDesc:
-        "Book Brahmin Bhoj Seva in Vrindavan or Mathura. Honour learned priests and earn divine blessings. Digital certificate provided.",
+        "Book Brahmin Bhoj Seva in Vrindavan or Mathura. Honour learned priests and earn divine blessings. Photo and video proof provided.",
     },
     {
       type: "GAU_SEVA" as const,
@@ -96,7 +237,7 @@ async function main() {
       sortOrder: 4,
       metaTitle: "Sadhu Bhojan Seva — Book Online | Vrindavan Bhandara",
       metaDesc:
-        "Sponsor Sadhu Bhojan Seva in Vrindavan. Provide meals for saints and ascetics. Proof photos and certificate provided.",
+        "Sponsor Sadhu Bhojan Seva in Vrindavan. Provide meals for saints and ascetics. Proof photos and videos provided.",
     },
     {
       type: "FESTIVAL_SEVA" as const,
@@ -124,13 +265,30 @@ async function main() {
       metaDesc:
         "Book Annadan Seva in Vrindavan. Donate food to the needy in the holy dham. Photo proof provided.",
     },
+    {
+      type: "VIDHWA_SEVA" as const,
+      name: "Vidhwa Seva",
+      slug: "vidhwa-seva",
+      description:
+        "Vrindavan is home to thousands of widowed mothers who have devoted their lives to bhajan and seva. Vidhwa Seva provides them with nutritious meals, warm clothing, medicines, and dignity. Your contribution becomes a direct act of compassion for the mothers of the holy dham.",
+      shortDesc: "Meals, clothing & care for the widowed mothers of Vrindavan",
+      icon: "🤍",
+      sortOrder: 7,
+      metaTitle: "Vidhwa Seva Vrindavan — Support Widowed Mothers | Vrindavan Bhandara",
+      metaDesc:
+        "Sponsor Vidhwa Seva in Vrindavan. Provide meals, clothing, and medical care to widowed mothers with transparent photo and video proof.",
+    },
   ];
 
   for (const cat of serviceCategories) {
+    const sections = SERVICE_PAGE_SECTIONS[cat.slug];
+    const sectionsData = sections
+      ? { pageSections: sections as unknown as Prisma.InputJsonValue }
+      : {};
     await prisma.serviceCategory.upsert({
       where: { slug: cat.slug },
-      update: cat,
-      create: { ...cat, isActive: true },
+      update: { ...cat, ...sectionsData },
+      create: { ...cat, isActive: true, ...sectionsData },
     });
   }
   console.log("✅ Seeded service categories");
@@ -152,7 +310,7 @@ async function main() {
         items: [
           { description: "Sattvic meal (dal, sabzi, puri, halwa, chawal)", quantity: 100, unit: "plates" },
           { description: "Photo proof of seva", quantity: 5, unit: "photos" },
-          { description: "Digital completion certificate", quantity: 1, unit: "certificate" },
+          { description: "Photo & video proof", quantity: 1, unit: "delivery" },
         ],
       },
       {
@@ -170,7 +328,7 @@ async function main() {
           { description: "Full sattvic feast (5+ dishes, mithai)", quantity: 300, unit: "plates" },
           { description: "Photo proof of seva", quantity: 10, unit: "photos" },
           { description: "Video highlight (30 sec)", quantity: 1, unit: "video" },
-          { description: "Digital completion certificate", quantity: 1, unit: "certificate" },
+          { description: "Photo & video proof", quantity: 1, unit: "delivery" },
         ],
       },
       {
@@ -185,7 +343,7 @@ async function main() {
           { description: "Full Vaishnav feast (7 dishes + sweets)", quantity: 1000, unit: "plates" },
           { description: "Photo proof of seva", quantity: 20, unit: "photos" },
           { description: "Video highlight (2 min)", quantity: 1, unit: "video" },
-          { description: "Digital completion certificate", quantity: 1, unit: "certificate" },
+          { description: "Photo & video proof", quantity: 1, unit: "delivery" },
           { description: "Pujari blessings with your name & gotra", quantity: 1, unit: "blessings" },
         ],
       },
@@ -202,7 +360,7 @@ async function main() {
           { description: "Royal Vaishnav feast (10+ dishes + sweets)", quantity: 5000, unit: "plates" },
           { description: "Professional photo documentation", quantity: 50, unit: "photos" },
           { description: "Professional video (5 min)", quantity: 1, unit: "video" },
-          { description: "Digital completion certificate", quantity: 1, unit: "certificate" },
+          { description: "Photo & video proof", quantity: 1, unit: "delivery" },
           { description: "Special puja with your name, gotra & sankalp", quantity: 1, unit: "puja" },
           { description: "Kirtan performance during Bhandara", quantity: 1, unit: "session" },
         ],
@@ -261,7 +419,7 @@ async function main() {
         items: [
           { description: "Feed 10 sacred cows for 7 days", quantity: 10, unit: "cows" },
           { description: "Weekly photo proof album", quantity: 7, unit: "photos" },
-          { description: "Digital certificate", quantity: 1, unit: "certificate" },
+          { description: "Photo & video proof", quantity: 1, unit: "delivery" },
         ],
       },
       {
@@ -277,7 +435,7 @@ async function main() {
           { description: "Feed 10 sacred cows for 30 days", quantity: 10, unit: "cows" },
           { description: "Monthly photo album (30 photos)", quantity: 30, unit: "photos" },
           { description: "Monthly progress video", quantity: 1, unit: "video" },
-          { description: "Digital certificate", quantity: 1, unit: "certificate" },
+          { description: "Photo & video proof", quantity: 1, unit: "delivery" },
         ],
       },
     ];
@@ -332,12 +490,79 @@ async function main() {
           data: [
             { packageId: created.id, description: `Full Vaishnav meal for ${pkg.guests} Brahmins`, quantity: pkg.guests, unit: "plates", sortOrder: 0 },
             { packageId: created.id, description: "Photo proof of seva", quantity: 5, unit: "photos", sortOrder: 1 },
-            { packageId: created.id, description: "Digital certificate", quantity: 1, unit: "certificate", sortOrder: 2 },
+            { packageId: created.id, description: "Photo & video proof", quantity: 1, unit: "delivery", sortOrder: 2 },
           ],
         });
       }
     }
     console.log("✅ Seeded Brahmin Bhoj packages");
+  }
+
+  // ===========================================================================
+  // 5b. Vidhwa Seva Packages
+  // ===========================================================================
+  const vidhwaSeva = await prisma.serviceCategory.findUnique({ where: { slug: "vidhwa-seva" } });
+  if (vidhwaSeva) {
+    const vidhwaPackages = [
+      {
+        name: "Meal Seva — One Day",
+        slug: "vidhwa-meal-day",
+        description: "Provide a full day of nutritious sattvic meals to widowed mothers in a Vrindavan ashram.",
+        shortDesc: "One day of meals for the mothers",
+        price: 1100,
+        sortOrder: 1,
+        items: [
+          { description: "Sattvic meals for widowed mothers (one day)", quantity: 50, unit: "meals" },
+          { description: "Dated photo proof", quantity: 5, unit: "photos" },
+        ],
+      },
+      {
+        name: "Care Package — Monthly",
+        slug: "vidhwa-care-monthly",
+        description: "Sponsor a month of meals plus essentials — clothing, toiletries, and basic medicines — for widowed mothers.",
+        shortDesc: "A month of meals & essentials",
+        price: 5100,
+        originalPrice: 6500,
+        badge: "Most Popular",
+        isFeatured: true,
+        sortOrder: 2,
+        items: [
+          { description: "Daily sattvic meals for one month", quantity: 30, unit: "days" },
+          { description: "Clothing & toiletries kit", quantity: 1, unit: "kit" },
+          { description: "Basic medicines", quantity: 1, unit: "set" },
+          { description: "Photo & video proof", quantity: 1, unit: "delivery" },
+        ],
+      },
+      {
+        name: "Winter Relief Seva",
+        slug: "vidhwa-winter-relief",
+        description: "Provide warm blankets, woollens, and nourishing meals to widowed mothers through the harsh Vrindavan winter.",
+        shortDesc: "Warm clothing & meals for winter",
+        price: 11000,
+        sortOrder: 3,
+        items: [
+          { description: "Warm blankets & woollens", quantity: 25, unit: "kits" },
+          { description: "Nourishing winter meals", quantity: 25, unit: "mothers" },
+          { description: "Photo & video proof", quantity: 1, unit: "delivery" },
+        ],
+      },
+    ];
+
+    for (const pkg of vidhwaPackages) {
+      const { items, ...pkgData } = pkg;
+      const existing = await prisma.package.findUnique({ where: { slug: pkg.slug } });
+      if (!existing) {
+        const created = await prisma.package.create({
+          data: { ...pkgData, serviceCategoryId: vidhwaSeva.id, isActive: true },
+        });
+        for (let i = 0; i < items.length; i++) {
+          await prisma.packageItem.create({
+            data: { ...items[i], packageId: created.id, sortOrder: i },
+          });
+        }
+      }
+    }
+    console.log("✅ Seeded Vidhwa Seva packages");
   }
 
   // ===========================================================================
@@ -349,7 +574,7 @@ async function main() {
     { key: "devotees_served", label: "Devotees Served", value: BigInt(10000), unit: "", icon: "🙏", sortOrder: 3 },
     { key: "countries_reached", label: "Countries Reached", value: BigInt(52), unit: "", icon: "🌍", sortOrder: 4 },
     { key: "gau_sevas", label: "Gau Sevas Performed", value: BigInt(3600), unit: "", icon: "🐄", sortOrder: 5 },
-    { key: "certificates_issued", label: "Certificates Issued", value: BigInt(8500), unit: "", icon: "📜", sortOrder: 6 },
+    { key: "proofs_delivered", label: "Proofs Delivered", value: BigInt(8500), unit: "", icon: "📸", sortOrder: 6 },
   ];
 
 
@@ -369,14 +594,14 @@ async function main() {
     {
       question: "How does the booking process work?",
       answer:
-        "Choose a seva, select a package and date, fill in your details, pay securely online via Razorpay, and receive confirmation. After the seva is performed, you receive photos, videos, and a digital certificate.",
+        "Choose a seva, select a package and date, fill in your details, pay securely online via Razorpay, and receive confirmation. After the seva is performed, you receive photos and videos as proof.",
       category: "General",
       sortOrder: 1,
     },
     {
       question: "Do I receive proof that the seva was performed?",
       answer:
-        "Yes. Every seva comes with photo proof, and most include video proof. You also receive a digital Seva Completion Certificate that you can download and share.",
+        "Yes. Every seva comes with photo proof, and most include video proof. You can view and download them from your dashboard.",
       category: "General",
       sortOrder: 2,
     },
@@ -414,6 +639,71 @@ async function main() {
         "Absolutely! We serve devotees from over 50 countries. International cards and PayPal are accepted. Proof is delivered digitally so you receive it instantly wherever you are.",
       category: "General",
       sortOrder: 7,
+    },
+    // --- Service-scoped FAQs (shown on the matching service page) ------------
+    {
+      question: "How many devotees can a Bhandara feed?",
+      answer:
+        "Our Bhandara packages range from 100 devotees (Basic) to 5,000+ devotees (Maharaj). You can also request a custom size for very large feasts.",
+      category: "Bhandara",
+      serviceType: "BHANDARA" as const,
+      sortOrder: 1,
+    },
+    {
+      question: "What food is served at a Bhandara?",
+      answer:
+        "A freshly cooked sattvic meal — typically dal, sabzi, puri, rice, and halwa. Premium packages include multiple dishes and mithai prepared in the Vaishnav tradition.",
+      category: "Bhandara",
+      serviceType: "BHANDARA" as const,
+      sortOrder: 2,
+    },
+    {
+      question: "Are the Brahmins genuine Vedic priests?",
+      answer:
+        "Yes. Brahmin Bhoj is performed for learned Brahmin priests of Vrindavan who conduct the rituals with authentic Vaishnav rites and recite your sankalp.",
+      category: "Brahmin Bhoj",
+      serviceType: "BRAHMIN_BHOJ" as const,
+      sortOrder: 1,
+    },
+    {
+      question: "Can I perform Brahmin Bhoj for my ancestors?",
+      answer:
+        "Yes. Many devotees sponsor Brahmin Bhoj for the peace of departed family members. Your name and gotra are recited during the ceremony.",
+      category: "Brahmin Bhoj",
+      serviceType: "BRAHMIN_BHOJ" as const,
+      sortOrder: 2,
+    },
+    {
+      question: "How are the cows cared for in Gau Seva?",
+      answer:
+        "Sponsored cows receive green fodder, grains, and jaggery, along with grooming, shelter, and veterinary care in a Vrindavan goshala.",
+      category: "Gau Seva",
+      serviceType: "GAU_SEVA" as const,
+      sortOrder: 1,
+    },
+    {
+      question: "Can I sponsor Gau Seva every month?",
+      answer:
+        "Yes. Choose the Monthly Gau Seva package for ongoing care. We are also adding recurring subscriptions for effortless monthly seva.",
+      category: "Gau Seva",
+      serviceType: "GAU_SEVA" as const,
+      sortOrder: 2,
+    },
+    {
+      question: "Who benefits from Vidhwa Seva?",
+      answer:
+        "Vidhwa Seva supports the widowed mothers of Vrindavan — many of whom have devoted their lives to Radha-Krishna bhajan — with meals, clothing, and medical care.",
+      category: "Vidhwa Seva",
+      serviceType: "VIDHWA_SEVA" as const,
+      sortOrder: 1,
+    },
+    {
+      question: "What does the Vidhwa Seva care package include?",
+      answer:
+        "The monthly care package provides daily sattvic meals, a clothing and toiletries kit, and basic medicines, with photo and video proof of the seva.",
+      category: "Vidhwa Seva",
+      serviceType: "VIDHWA_SEVA" as const,
+      sortOrder: 2,
     },
   ];
 
@@ -470,6 +760,125 @@ async function main() {
     },
   });
   console.log("✅ Seeded location pages");
+
+  // ===========================================================================
+  // 9. Testimonials (service-scoped, approved & featured)
+  // ===========================================================================
+  const testimonials = [
+    {
+      name: "Ramesh Kumar",
+      city: "Delhi",
+      country: "India",
+      rating: 5,
+      comment:
+        "I sponsored a Bhandara for my mother's anniversary. Within hours I received photos of hundreds of devotees being served. Deeply moving and completely transparent.",
+      serviceType: "BHANDARA" as const,
+      isFeatured: true,
+    },
+    {
+      name: "Anita Sharma",
+      city: "Mumbai",
+      country: "India",
+      rating: 5,
+      comment:
+        "The Brahmin Bhoj was performed for my late father with full rituals and our gotra. The video brought our whole family to tears. Thank you.",
+      serviceType: "BRAHMIN_BHOJ" as const,
+      isFeatured: true,
+    },
+    {
+      name: "Vikram Patel",
+      city: "London",
+      country: "United Kingdom",
+      rating: 5,
+      comment:
+        "Being abroad, I always wanted to do Gau Seva in Vrindavan. The monthly photos of the cows I help feed are the highlight of my month.",
+      serviceType: "GAU_SEVA" as const,
+      isFeatured: true,
+    },
+    {
+      name: "Sunita Devi",
+      city: "Jaipur",
+      country: "India",
+      rating: 5,
+      comment:
+        "The Vidhwa Seva care package touched my heart. Knowing the widowed mothers received warm meals and clothing in my parents' name means everything.",
+      serviceType: "VIDHWA_SEVA" as const,
+      isFeatured: true,
+    },
+  ];
+
+  for (const t of testimonials) {
+    const existing = await prisma.testimonial.findFirst({
+      where: { name: t.name, serviceType: t.serviceType },
+    });
+    if (!existing) {
+      await prisma.testimonial.create({ data: { ...t, isApproved: true } });
+    }
+  }
+  console.log("✅ Seeded testimonials");
+
+  // ===========================================================================
+  // 10. Gallery Images (service-scoped, public) — requires an admin uploader
+  // ===========================================================================
+  const uploader = await prisma.user.findUnique({ where: { email: adminEmail } });
+  if (uploader) {
+    const galleryImages = [
+      {
+        title: "Bhandara feast in progress",
+        url: "https://images.vrindavanbhandara.com/seed/bhandara-1.jpg",
+        category: "BHANDARA" as const,
+        serviceType: "BHANDARA" as const,
+        location: "Vrindavan",
+        isFeatured: true,
+        sortOrder: 1,
+      },
+      {
+        title: "Devotees served at Bhandara",
+        url: "https://images.vrindavanbhandara.com/seed/bhandara-2.jpg",
+        category: "BHANDARA" as const,
+        serviceType: "BHANDARA" as const,
+        location: "Vrindavan",
+        sortOrder: 2,
+      },
+      {
+        title: "Brahmin Bhoj ceremony",
+        url: "https://images.vrindavanbhandara.com/seed/brahmin-bhoj-1.jpg",
+        category: "BRAHMIN_BHOJ" as const,
+        serviceType: "BRAHMIN_BHOJ" as const,
+        location: "Vrindavan",
+        isFeatured: true,
+        sortOrder: 1,
+      },
+      {
+        title: "Sacred cows at the goshala",
+        url: "https://images.vrindavanbhandara.com/seed/gau-seva-1.jpg",
+        category: "GAU_SEVA" as const,
+        serviceType: "GAU_SEVA" as const,
+        location: "Vrindavan",
+        isFeatured: true,
+        sortOrder: 1,
+      },
+      {
+        title: "Vidhwa mothers receiving meals",
+        url: "https://images.vrindavanbhandara.com/seed/vidhwa-seva-1.jpg",
+        category: "GENERAL" as const,
+        serviceType: "VIDHWA_SEVA" as const,
+        location: "Vrindavan",
+        isFeatured: true,
+        sortOrder: 1,
+      },
+    ];
+
+    for (const img of galleryImages) {
+      const existing = await prisma.galleryImage.findFirst({ where: { url: img.url } });
+      if (!existing) {
+        await prisma.galleryImage.create({
+          data: { ...img, isActive: true, uploadedBy: uploader.id, tags: [] },
+        });
+      }
+    }
+    console.log("✅ Seeded gallery images");
+  }
 
   console.log("🎉 Database seed complete!");
 }

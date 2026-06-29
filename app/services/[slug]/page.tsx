@@ -9,12 +9,12 @@ type Params = { params: Promise<{ slug: string }> };
 const SERVICE_META: Record<string, { title: string; desc: string; schema: string }> = {
   bhandara: {
     title: "Bhandara Booking in Vrindavan & Mathura — Online | Vrindavan Bhandara",
-    desc: "Book Bhandara online in Vrindavan or Mathura. Feed 100 to 5,000+ devotees with photo proof, video, and digital certificate. Starting ₹5,000.",
+    desc: "Book Bhandara online in Vrindavan or Mathura. Feed 100 to 5,000+ devotees with photo and video proof. Starting ₹5,000.",
     schema: "Bhandara",
   },
   "brahmin-bhoj": {
     title: "Brahmin Bhoj Seva Online — Vrindavan & Mathura | Vrindavan Bhandara",
-    desc: "Perform Brahmin Bhoj for 5 to 51+ Brahmins online. Book in Vrindavan or Mathura with full rituals, photo proof, and digital certificate.",
+    desc: "Perform Brahmin Bhoj for 5 to 51+ Brahmins online. Book in Vrindavan or Mathura with full rituals and photo/video proof.",
     schema: "Brahmin Bhoj",
   },
   "gau-seva": {
@@ -24,7 +24,7 @@ const SERVICE_META: Record<string, { title: string; desc: string; schema: string
   },
   "sadhu-bhojan": {
     title: "Sadhu Bhojan Seva — Book Online in Vrindavan | Vrindavan Bhandara",
-    desc: "Sponsor Sadhu Bhojan Seva in Vrindavan. Provide meals to ascetic saints. Photo proof and digital certificate provided.",
+    desc: "Sponsor Sadhu Bhojan Seva in Vrindavan. Provide meals to ascetic saints. Photo and video proof provided.",
     schema: "Sadhu Bhojan",
   },
   "festival-seva": {
@@ -187,7 +187,7 @@ export default async function ServiceDetailPage({ params }: Params) {
             {[
               { icon: "📸", text: "Photo proof of your seva" },
               { icon: "🎥", text: "Video highlight (select packages)" },
-              { icon: "📜", text: "Digital completion certificate" },
+              { icon: "📸", text: "Photo & video proof" },
               { icon: "💬", text: "WhatsApp progress updates" },
               { icon: "🔒", text: "100% secure Razorpay payments" },
             ].map((item) => (

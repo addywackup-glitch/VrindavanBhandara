@@ -17,7 +17,6 @@ Repositories are the **only** modules that import Prisma. Every method accepts a
 | Gallery | `gallery.repository.ts` | `list`, `count`, `findById`, `create`, `update`, `delete` |
 | Testimonial | `testimonial.repository.ts` | `listPublic`, `findById`, `create`, `update`, `delete` |
 | Settings / Message / FAQ / SevaStat | `settings.repository.ts` | `settingsRepository`, `messageRepository`, `faqRepository`, `sevaStatRepository` |
-| Certificate | `certificate.repository.ts` | `findByBookingId`, `findByVerifyCode`, `create`, `incrementDownload` |
 | Audit | `audit.repository.ts` | `create`, `list`, `count` |
 
 ## Transaction helper

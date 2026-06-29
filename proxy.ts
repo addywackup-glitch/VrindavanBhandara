@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { authRateLimit } from "@/lib/rate-limit";
 
 // Routes that require authentication
-const PROTECTED_CUSTOMER_ROUTES = ["/dashboard", "/bookings", "/profile", "/certificates"];
+const PROTECTED_CUSTOMER_ROUTES = ["/dashboard", "/bookings", "/profile"];
 const PROTECTED_ADMIN_ROUTES = ["/admin"];
 
 // Routes with strict rate limiting

@@ -110,6 +110,30 @@ export const packageRepository = {
   },
 };
 
+export const serviceCardSelect = {
+  id: true,
+  type: true,
+  name: true,
+  slug: true,
+  shortDesc: true,
+  icon: true,
+  image: true,
+  sortOrder: true,
+  metaTitle: true,
+  metaDesc: true,
+} satisfies Prisma.ServiceCategorySelect;
+
+export const servicePageInclude = {
+  packages: {
+    where: { isActive: true },
+    include: { items: { orderBy: { sortOrder: "asc" } } },
+    orderBy: [{ sortOrder: "asc" }, { price: "asc" }],
+  },
+} satisfies Prisma.ServiceCategoryInclude;
+
+export type ServiceCard = Prisma.ServiceCategoryGetPayload<{ select: typeof serviceCardSelect }>;
+export type ServicePageData = Prisma.ServiceCategoryGetPayload<{ include: typeof servicePageInclude }>;
+
 export const serviceCategoryRepository = {
   listAll(db: DbClient = prisma) {
     return db.serviceCategory.findMany({ orderBy: { sortOrder: "asc" } });
@@ -119,16 +143,25 @@ export const serviceCategoryRepository = {
     return db.serviceCategory.findMany({
       where: { isActive: true },
       orderBy: { sortOrder: "asc" },
-      select: {
-        id: true,
-        type: true,
-        name: true,
-        slug: true,
-        shortDesc: true,
-        icon: true,
-        metaTitle: true,
-        metaDesc: true,
-      },
+      select: serviceCardSelect,
+    });
+  },
+
+  // Full content payload for a single service page (service + active packages).
+  findPublicBySlug(slug: string, db: DbClient = prisma) {
+    return db.serviceCategory.findFirst({
+      where: { slug, isActive: true },
+      include: servicePageInclude,
+    });
+  },
+
+  // Lightweight related-services lookup: other active services, nearest first.
+  listRelated(excludeId: string, take: number, db: DbClient = prisma) {
+    return db.serviceCategory.findMany({
+      where: { isActive: true, id: { not: excludeId } },
+      orderBy: { sortOrder: "asc" },
+      take,
+      select: serviceCardSelect,
     });
   },
 };

@@ -2,7 +2,7 @@
 // SettingsRepository + MessageRepository + Content repositories — pure Prisma
 // =============================================================================
 
-import { Prisma } from "@prisma/client";
+import { Prisma, type ServiceType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import type { DbClient } from "./types";
 
@@ -50,11 +50,27 @@ export const messageRepository = {
 };
 
 export const faqRepository = {
-  listActivePublic(db: DbClient = prisma) {
+  // serviceType filter returns service-scoped FAQs PLUS global ones (null type).
+  listActivePublic(
+    filter: { serviceType?: ServiceType } = {},
+    db: DbClient = prisma
+  ) {
     return db.fAQ.findMany({
-      where: { isActive: true },
+      where: {
+        isActive: true,
+        ...(filter.serviceType
+          ? { OR: [{ serviceType: filter.serviceType }, { serviceType: null }] }
+          : {}),
+      },
       orderBy: [{ category: "asc" }, { sortOrder: "asc" }],
-      select: { id: true, question: true, answer: true, category: true, sortOrder: true },
+      select: {
+        id: true,
+        question: true,
+        answer: true,
+        category: true,
+        serviceType: true,
+        sortOrder: true,
+      },
     });
   },
 };

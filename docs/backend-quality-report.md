@@ -44,13 +44,13 @@ Run order: `npm install` → `npx prisma generate` → the five commands above.
 ### 6. Environment variables
 - `.env.example` is **complete** — every variable read by code is present (verified by cross-referencing all `process.env.*` usages).
 - `WHATSAPP_API_VERSION` was previously unused (URL hardcoded `v19.0`). Now **wired** into `features/notifications/whatsapp.ts`, so it is no longer obsolete.
-- **Reserved-but-unconsumed** vars kept intentionally (needed by in-flight features; remove only if those features are cancelled): `CLOUDFLARE_R2_ACCOUNT_ID/ACCESS_KEY_ID/SECRET_ACCESS_KEY/BUCKET_NAME` (R2 upload — pairs with the removed `@aws-sdk`, re-add both together), `CERTIFICATE_SIGNING_SECRET` (certificate generation), `CRON_SECRET` (internal cron), `NEXT_PUBLIC_FEATURE_*` (UI flags).
+- **Reserved-but-unconsumed** vars kept intentionally (needed by in-flight features; remove only if those features are cancelled): `CLOUDFLARE_R2_ACCOUNT_ID/ACCESS_KEY_ID/SECRET_ACCESS_KEY/BUCKET_NAME` (R2 upload — pairs with the removed `@aws-sdk`, re-add both together), `CRON_SECRET` (internal cron), `NEXT_PUBLIC_FEATURE_*` (UI flags).
 
 ## Known technical debt
 1. **UI data layer** — `app/**/page.tsx` + `app/sitemap.ts` still query Prisma directly (frozen UI; migrate during the UI rebuild using the existing read services).
 2. **`lib/auth.ts`** keeps a Prisma import for the NextAuth `PrismaAdapter` (structural) and a JWT-callback admin lookup (could move to a repository).
 3. **DB-backed integration tests** not yet implemented (plan in `docs/testing-guide.md`); current tests cover pure logic only.
-4. **Certificate PDF + R2 upload** not implemented — deps were removed; re-add (`@aws-sdk/*`, a PDF lib) when building these.
+4. **R2 media upload** not fully implemented — re-add `@aws-sdk/*` when building uploads.
 5. **Coupon `usedCount`** increment is not guarded against `maxUses` under heavy concurrency (add a conditional `updateMany`).
 
 ## Remaining risks
