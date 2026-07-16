@@ -15,6 +15,7 @@ import {
 } from "@/lib/repositories";
 import {
   createRazorpayOrder,
+  fetchRazorpayOrder,
   RazorpayApiError,
   verifyRazorpaySignature,
 } from "@/features/payments/razorpay";
@@ -67,9 +68,15 @@ export function createPaymentOrder(
 ): Promise<ServiceResult<CreateOrderResult>> {
   return execute(async () => {
     const { bookingId } = validate(CreatePaymentOrderSchema, input);
-    const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ?? "";
-    if (!keyId) {
-      throw new PaymentError("Payment gateway is not configured. Please contact support.");
+    // Must be the same Key Id used to create the Razorpay order (public key).
+    const keyId =
+      process.env.RAZORPAY_KEY_ID ??
+      process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ??
+      "";
+    if (!keyId || !process.env.RAZORPAY_KEY_SECRET) {
+      throw new PaymentError(
+        "Payment gateway is not configured. Set RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET, and NEXT_PUBLIC_RAZORPAY_KEY_ID in Vercel."
+      );
     }
 
     const booking = await bookingRepository.findWithPayment(bookingId);
@@ -83,15 +90,22 @@ export function createPaymentOrder(
       );
     }
 
-    // Idempotent: reuse an existing open order.
-    if (booking.payment?.razorpayOrderId) {
-      return {
-        orderId: booking.payment.razorpayOrderId,
-        amount: booking.totalAmount.toNumber(),
-        currency: booking.currency,
-        bookingNumber: booking.bookingNumber,
-        keyId,
-      };
+    // Reuse an existing unpaid order only if it is still valid with the
+    // *current* Razorpay keys. After key rotation, old order_ids cause
+    // checkout `preferences` 401 / "api key expired" while create-order
+    // still returns 200 with a mismatched keyId.
+    if (booking.payment?.razorpayOrderId && booking.payment.status === "PENDING") {
+      const existing = await fetchRazorpayOrder(booking.payment.razorpayOrderId);
+      if (existing && existing.status !== "paid") {
+        return {
+          orderId: existing.id,
+          amount: booking.totalAmount.toNumber(),
+          currency: booking.currency,
+          bookingNumber: booking.bookingNumber,
+          keyId,
+        };
+      }
+      // Stale / wrong-key order — fall through and create a fresh one
     }
 
     let order;

@@ -1,21 +1,19 @@
 import "dotenv/config";
 import { defineConfig } from "@prisma/config";
+import { ensureDatabaseEnv } from "./lib/env/database";
 
-// Prisma's config no longer auto-loads `.env`, so DATABASE_URL may be undefined
-// at this point. Assert it explicitly (instead of `!` or `as string`) so the
-// type narrows to `string` without weakening type safety, and CLI commands fail
-// fast with a clear message when the variable is missing.
-const databaseUrl = process.env.DATABASE_URL;
-if (!databaseUrl) {
-  throw new Error(
-    "DATABASE_URL is not set. Define it in your environment (e.g. .env) before running Prisma commands."
-  );
-}
+// Map Vercel Supabase POSTGRES_* → DATABASE_* when present.
+const { databaseUrl } = ensureDatabaseEnv();
+
+// `prisma generate` (postinstall) does not need a live DB — only a syntactically
+// valid URL. Runtime / migrate / db push still require real credentials.
+const PLACEHOLDER =
+  "postgresql://postgres:postgres@127.0.0.1:5432/prisma_generate_placeholder";
 
 export default defineConfig({
   schema: "prisma/schema.prisma",
   datasource: {
-    url: databaseUrl,
+    url: databaseUrl ?? PLACEHOLDER,
   },
   migrations: {
     seed: "npx tsx prisma/seed.ts",

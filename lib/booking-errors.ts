@@ -156,11 +156,12 @@ export function getBookingError(
   return map[code ?? "INTERNAL_ERROR"] ?? map["INTERNAL_ERROR"]!;
 }
 
-export function getOrderCreationError(code: string | undefined): BookingErrorInfo {
-  const base = PAYMENT_ERRORS[code ?? "INTERNAL_ERROR"] ?? PAYMENT_ERRORS["INTERNAL_ERROR"]!;
+export function getOrderCreationError(
+  code: string | undefined,
+  serverMessage?: string
+): BookingErrorInfo {
   if (code === "CONFLICT") {
     return {
-      ...base,
       title: "Order already created",
       message:
         "A payment order already exists for this booking. Reopening the payment window.",
@@ -168,7 +169,40 @@ export function getOrderCreationError(code: string | undefined): BookingErrorInf
       retryable: true,
     };
   }
-  return base;
+  if (code === "UNAUTHORIZED") {
+    return {
+      title: "Sign in required",
+      message: "Please sign in again, then retry payment.",
+      recovery: "login",
+      retryable: false,
+    };
+  }
+  if (code === "PAYMENT_ERROR") {
+    return {
+      title: "Could not start payment",
+      message:
+        serverMessage ??
+        "Razorpay could not create an order. Check that RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET, and NEXT_PUBLIC_RAZORPAY_KEY_ID are set correctly in Vercel, then redeploy.",
+      recovery: "retry",
+      retryable: true,
+    };
+  }
+  if (code === "VALIDATION_ERROR") {
+    return {
+      title: "Invalid payment request",
+      message: serverMessage ?? "The payment request was rejected. Please try again.",
+      recovery: "retry",
+      retryable: true,
+    };
+  }
+  const base = PAYMENT_ERRORS[code ?? "INTERNAL_ERROR"] ?? PAYMENT_ERRORS["INTERNAL_ERROR"]!;
+  return {
+    ...base,
+    title: "Could not start payment",
+    message: serverMessage ?? base.message,
+    recovery: "retry",
+    retryable: true,
+  };
 }
 
 // Human-readable retry countdown string

@@ -13,6 +13,25 @@ Prisma still owns app tables (`users`, `bookings`, …).
 
 ---
 
+## Vercel “Connect Supabase”
+
+The integration injects `POSTGRES_*` and `SUPABASE_*` vars. This app auto-maps:
+
+| Vercel injects | Used as |
+|----------------|---------|
+| `POSTGRES_PRISMA_URL` or `POSTGRES_URL` | `DATABASE_URL` |
+| `POSTGRES_URL_NON_POOLING` | `DATABASE_URL_UNPOOLED` |
+| `NEXT_PUBLIC_SUPABASE_URL` / `SUPABASE_URL` | Supabase URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` / `SUPABASE_ANON_KEY` | Anon key |
+| `SUPABASE_SERVICE_ROLE_KEY` | Service role |
+
+`prisma generate` during `npm install` no longer requires these vars (uses a placeholder).  
+Runtime still needs the real Postgres URLs — confirm they appear under Vercel → Settings → Environment Variables for **Preview** and **Production**, then redeploy.
+
+No manual remapping of names needed after connecting. Still set Auth redirect URLs and run `db push` + seed once.
+
+---
+
 ## 1. API keys (Settings → API Keys)
 
 Add to Vercel / `.env`:

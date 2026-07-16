@@ -346,6 +346,14 @@ a {
 }
 .breadcrumb-link:hover { color: var(--fg); }
 
+.related-seva-link .related-name {
+  color: var(--fg);
+  transition: color 150ms;
+}
+.related-seva-link:hover .related-name {
+  color: var(--brand);
+}
+
 /* Amber CTA button (used on brand-bg banners) */
 .btn-amber-cta {
   display: inline-flex;

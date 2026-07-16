@@ -41,19 +41,22 @@ const nextConfig: NextConfig = {
             value: "camera=(), microphone=(), geolocation=(self), interest-cohort=()",
           },
           // Content Security Policy
+          // Razorpay card checkout loads 3DS/OTP inside iframes — frame-src must
+          // allow *.razorpay.com or "Continue" hangs on a loading spinner.
           {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://checkout.razorpay.com https://cdn.razorpay.com https://app.posthog.com",
-              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-              "font-src 'self' https://fonts.gstatic.com",
-              "img-src 'self' data: blob: https://*.supabase.co https://*.cloudflare.com https://*.r2.dev https://media.vrindavanbhandara.com https://lh3.googleusercontent.com",
-              "connect-src 'self' https://*.supabase.co https://api.razorpay.com https://lumberjack.razorpay.com https://app.posthog.com https://o0.ingest.sentry.io wss://*.supabase.co",
-              "frame-src https://api.razorpay.com",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://checkout.razorpay.com https://cdn.razorpay.com https://*.razorpay.com https://app.posthog.com",
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.razorpay.com",
+              "font-src 'self' https://fonts.gstatic.com https://*.razorpay.com",
+              "img-src 'self' data: blob: https://*.supabase.co https://*.razorpay.com https://*.cloudflare.com https://*.r2.dev https://media.vrindavanbhandara.com https://lh3.googleusercontent.com",
+              "connect-src 'self' https://*.supabase.co https://*.razorpay.com https://api.razorpay.com https://lumberjack.razorpay.com https://checkout.razorpay.com https://app.posthog.com https://o0.ingest.sentry.io wss://*.supabase.co",
+              "frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com https://*.razorpay.com https://cdn.razorpay.com",
+              "child-src 'self' https://api.razorpay.com https://checkout.razorpay.com https://*.razorpay.com",
               "object-src 'none'",
               "base-uri 'self'",
-              "form-action 'self'",
+              "form-action 'self' https://*.razorpay.com https://api.razorpay.com https://checkout.razorpay.com",
               "upgrade-insecure-requests",
             ].join("; "),
           },

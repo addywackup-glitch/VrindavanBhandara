@@ -224,7 +224,7 @@ export function PaymentStep({ bookingId, form, onSuccess, onBack }: Props) {
           if (orderData.code === "RATE_LIMITED") {
             setRateLimitCountdown(60);
           }
-          const errInfo = getOrderCreationError(orderData.code);
+          const errInfo = getOrderCreationError(orderData.code, orderData.error);
           setPayState({
             phase: "error",
             title: errInfo.title,
@@ -252,17 +252,19 @@ export function PaymentStep({ bookingId, form, onSuccess, onBack }: Props) {
       const fullName = [form.userFirstName, form.userLastName].filter(Boolean).join(" ");
       const options: RazorpayOptions = {
         key: order.keyId,
-        amount: order.amount * 100, // paise
-        currency: order.currency,
+        amount: Math.round(order.amount * 100), // paise — must match order
+        currency: order.currency || "INR",
         name: "Vrindavan Bhandara",
         description: order.bookingNumber,
         order_id: order.orderId,
         prefill: {
           name: fullName || undefined,
           email: form.userEmail || undefined,
-          contact: form.userPhone || undefined,
+          // Razorpay expects +91XXXXXXXXXX or 10-digit; avoid empty string
+          contact: form.userPhone?.replace(/\D/g, "").slice(-10) || undefined,
         },
-        theme: { color: "oklch(30% 0.12 148)" },
+        // Hex only — oklch/css colors crash Razorpay checkout
+        theme: { color: "#1E5032" },
         modal: {
           escape: true,
           ondismiss: () => {
