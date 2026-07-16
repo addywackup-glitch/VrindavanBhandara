@@ -32,17 +32,58 @@ export type CreateOrderParams = {
   notes?: Record<string, string>;
 };
 
+export class RazorpayApiError extends Error {
+  readonly statusCode: number;
+
+  constructor(message: string, statusCode = 500) {
+    super(message);
+    this.name = "RazorpayApiError";
+    this.statusCode = statusCode;
+  }
+}
+
+function parseRazorpayError(error: unknown): RazorpayApiError {
+  if (error && typeof error === "object") {
+    const err = error as {
+      statusCode?: number;
+      error?: { description?: string; code?: string };
+      message?: string;
+    };
+    const statusCode = err.statusCode ?? 500;
+    const message =
+      err.error?.description ??
+      err.message ??
+      "Razorpay order creation failed.";
+    return new RazorpayApiError(message, statusCode);
+  }
+  return new RazorpayApiError("Razorpay order creation failed.");
+}
+
 export async function createRazorpayOrder(
   params: CreateOrderParams
 ): Promise<RazorpayOrder> {
-  const order = await getRazorpay().orders.create({
-    amount: Math.round(params.amount * 100), // Convert INR to paise
-    currency: params.currency ?? "INR",
-    receipt: params.receipt,
-    notes: params.notes,
-  });
+  const amountPaise = Math.round(params.amount * 100);
+  if (amountPaise < 100) {
+    throw new RazorpayApiError("Minimum payment amount is ₹1 (100 paise).", 400);
+  }
 
-  return order as unknown as RazorpayOrder;
+  if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+    throw new RazorpayApiError("Razorpay credentials are not configured.", 401);
+  }
+
+  try {
+    const order = await getRazorpay().orders.create({
+      amount: amountPaise,
+      currency: params.currency ?? "INR",
+      receipt: params.receipt,
+      notes: params.notes,
+    });
+
+    return order as unknown as RazorpayOrder;
+  } catch (error) {
+    if (error instanceof RazorpayApiError) throw error;
+    throw parseRazorpayError(error);
+  }
 }
 
 // =============================================================================

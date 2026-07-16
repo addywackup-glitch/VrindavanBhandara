@@ -1,8 +1,22 @@
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, beforeEach, vi } from "vitest";
 import crypto from "node:crypto";
-import { verifyRazorpaySignature } from "@/features/payments/razorpay";
+import {
+  createRazorpayOrder,
+  RazorpayApiError,
+  verifyRazorpaySignature,
+} from "@/features/payments/razorpay";
 
 const SECRET = "test_secret_key";
+
+vi.mock("razorpay", () => {
+  return {
+    default: vi.fn().mockImplementation(() => ({
+      orders: {
+        create: vi.fn(),
+      },
+    })),
+  };
+});
 
 describe("verifyRazorpaySignature", () => {
   beforeAll(() => {
@@ -34,5 +48,28 @@ describe("verifyRazorpaySignature", () => {
       verifyRazorpaySignature({ orderId: "o", paymentId: "p", signature: "short" })
     ).not.toThrow();
     expect(verifyRazorpaySignature({ orderId: "o", paymentId: "p", signature: "short" })).toBe(false);
+  });
+});
+
+describe("createRazorpayOrder", () => {
+  beforeEach(() => {
+    process.env.RAZORPAY_KEY_ID = "rzp_test_key";
+    process.env.RAZORPAY_KEY_SECRET = SECRET;
+  });
+
+  it("rejects amounts below 100 paise", async () => {
+    await expect(
+      createRazorpayOrder({ amount: 0.5, receipt: "VB-TEST" })
+    ).rejects.toBeInstanceOf(RazorpayApiError);
+    await expect(
+      createRazorpayOrder({ amount: 0.5, receipt: "VB-TEST" })
+    ).rejects.toMatchObject({ statusCode: 400 });
+  });
+
+  it("rejects when credentials are missing", async () => {
+    delete process.env.RAZORPAY_KEY_ID;
+    await expect(
+      createRazorpayOrder({ amount: 100, receipt: "VB-TEST" })
+    ).rejects.toMatchObject({ statusCode: 401 });
   });
 });
