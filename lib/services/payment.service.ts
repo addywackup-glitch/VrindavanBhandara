@@ -67,9 +67,14 @@ export function createPaymentOrder(
 ): Promise<ServiceResult<CreateOrderResult>> {
   return execute(async () => {
     const { bookingId } = validate(CreatePaymentOrderSchema, input);
-    const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ?? "";
-    if (!keyId) {
-      throw new PaymentError("Payment gateway is not configured. Please contact support.");
+    const keyId =
+      process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ??
+      process.env.RAZORPAY_KEY_ID ??
+      "";
+    if (!keyId || !process.env.RAZORPAY_KEY_SECRET) {
+      throw new PaymentError(
+        "Payment gateway is not configured. Set RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET, and NEXT_PUBLIC_RAZORPAY_KEY_ID in Vercel."
+      );
     }
 
     const booking = await bookingRepository.findWithPayment(bookingId);

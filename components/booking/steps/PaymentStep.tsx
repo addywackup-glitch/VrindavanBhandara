@@ -224,7 +224,7 @@ export function PaymentStep({ bookingId, form, onSuccess, onBack }: Props) {
           if (orderData.code === "RATE_LIMITED") {
             setRateLimitCountdown(60);
           }
-          const errInfo = getOrderCreationError(orderData.code);
+          const errInfo = getOrderCreationError(orderData.code, orderData.error);
           setPayState({
             phase: "error",
             title: errInfo.title,
