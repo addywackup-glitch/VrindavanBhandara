@@ -15,6 +15,7 @@ import {
 } from "@/lib/repositories";
 import {
   createRazorpayOrder,
+  fetchRazorpayOrder,
   RazorpayApiError,
   verifyRazorpaySignature,
 } from "@/features/payments/razorpay";
@@ -89,15 +90,22 @@ export function createPaymentOrder(
       );
     }
 
-    // Idempotent: reuse an existing open order.
-    if (booking.payment?.razorpayOrderId) {
-      return {
-        orderId: booking.payment.razorpayOrderId,
-        amount: booking.totalAmount.toNumber(),
-        currency: booking.currency,
-        bookingNumber: booking.bookingNumber,
-        keyId,
-      };
+    // Reuse an existing unpaid order only if it is still valid with the
+    // *current* Razorpay keys. After key rotation, old order_ids cause
+    // checkout `preferences` 401 / "api key expired" while create-order
+    // still returns 200 with a mismatched keyId.
+    if (booking.payment?.razorpayOrderId && booking.payment.status === "PENDING") {
+      const existing = await fetchRazorpayOrder(booking.payment.razorpayOrderId);
+      if (existing && existing.status !== "paid") {
+        return {
+          orderId: existing.id,
+          amount: booking.totalAmount.toNumber(),
+          currency: booking.currency,
+          bookingNumber: booking.bookingNumber,
+          keyId,
+        };
+      }
+      // Stale / wrong-key order — fall through and create a fresh one
     }
 
     let order;

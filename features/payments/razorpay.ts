@@ -8,15 +8,19 @@ import Razorpay from "razorpay";
 import crypto from "crypto";
 import type { RazorpayOrder, RazorpayWebhookPayload } from "@/types";
 
-// Lazy singleton — initialized on first use at runtime, not at build time
+// Lazy singleton — re-created if Key Id changes (Vercel key rotation)
 let _razorpay: Razorpay | null = null;
+let _razorpayKeyId: string | null = null;
 
 function getRazorpay(): Razorpay {
-  if (!_razorpay) {
+  const keyId = process.env.RAZORPAY_KEY_ID ?? "";
+  const keySecret = process.env.RAZORPAY_KEY_SECRET ?? "";
+  if (!_razorpay || _razorpayKeyId !== keyId) {
     _razorpay = new Razorpay({
-      key_id: process.env.RAZORPAY_KEY_ID ?? "",
-      key_secret: process.env.RAZORPAY_KEY_SECRET ?? "",
+      key_id: keyId,
+      key_secret: keySecret,
     });
+    _razorpayKeyId = keyId;
   }
   return _razorpay;
 }
@@ -149,6 +153,19 @@ export function verifyRazorpayWebhook(
 
 export function parseWebhookPayload(rawBody: string): RazorpayWebhookPayload {
   return JSON.parse(rawBody) as RazorpayWebhookPayload;
+}
+
+// =============================================================================
+// Fetch Order — used to validate reused orders still belong to current keys
+// =============================================================================
+
+export async function fetchRazorpayOrder(orderId: string): Promise<RazorpayOrder | null> {
+  try {
+    const order = await getRazorpay().orders.fetch(orderId);
+    return order as unknown as RazorpayOrder;
+  } catch {
+    return null;
+  }
 }
 
 // =============================================================================
