@@ -1,14 +1,13 @@
 import "dotenv/config";
 import { defineConfig } from "@prisma/config";
+import { ensureDatabaseEnv } from "./lib/env/database";
 
-// Prisma's config no longer auto-loads `.env`, so DATABASE_URL may be undefined
-// at this point. Assert it explicitly (instead of `!` or `as string`) so the
-// type narrows to `string` without weakening type safety, and CLI commands fail
-// fast with a clear message when the variable is missing.
-const databaseUrl = process.env.DATABASE_URL;
+// Map Vercel Supabase POSTGRES_* → DATABASE_* before Prisma reads env.
+const { databaseUrl } = ensureDatabaseEnv();
+
 if (!databaseUrl) {
   throw new Error(
-    "DATABASE_URL is not set. Define it in your environment (e.g. .env) before running Prisma commands."
+    "DATABASE_URL is not set. Define DATABASE_URL, or connect Supabase on Vercel (POSTGRES_PRISMA_URL / POSTGRES_URL)."
   );
 }
 
