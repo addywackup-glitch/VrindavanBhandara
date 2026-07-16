@@ -1,0 +1,9 @@
+# Exclude from Vercel upload — not needed at build/runtime
+design_v1/
+docs/
+tests/
+coverage/
+vitest.config.ts
+PROJECT_RULES.md
+*.md
+!README.md

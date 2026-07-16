@@ -1,6 +1,6 @@
 // =============================================================================
 // VRINDAVAN BHANDARA — PRISMA SCHEMA
-// Database: PostgreSQL (Neon)
+// Database: PostgreSQL (Supabase)
 // ORM: Prisma v6
 // Schema covers: ALL 4 roadmap phases
 // Phase 1: Core booking, payments, admin, auth

@@ -6,7 +6,7 @@ Vercel
 
 Database
 
-Neon PostgreSQL
+Supabase PostgreSQL
 
 Storage
 

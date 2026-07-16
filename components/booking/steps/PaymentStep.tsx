@@ -47,7 +47,19 @@ type RazorpayOptions = {
   modal?: { ondismiss?: () => void; escape?: boolean };
 };
 
-type RazorpayInstance = { open: () => void };
+type RazorpayInstance = {
+  open: () => void;
+  on: (event: "payment.failed", handler: (response: RazorpayFailedResponse) => void) => void;
+};
+
+type RazorpayFailedResponse = {
+  error: {
+    code?: string;
+    description?: string;
+    reason?: string;
+    metadata?: { order_id?: string; payment_id?: string };
+  };
+};
 
 type CreateOrderResult = {
   orderId: string;
@@ -313,6 +325,18 @@ export function PaymentStep({ bookingId, form, onSuccess, onBack }: Props) {
                   onSuccess(bookingNumberRef.current);
                   return;
                 }
+                if (polled === "error") {
+                  setPayState({
+                    phase: "error",
+                    title: "Payment failed",
+                    message:
+                      "Payment failed and your booking was cancelled. Please contact support if money was deducted.",
+                    canRetry: false,
+                    showSupport: true,
+                  });
+                  submittingRef.current = false;
+                  return;
+                }
               }
 
               const errInfo = getBookingError(code, "payment");
@@ -347,6 +371,18 @@ export function PaymentStep({ bookingId, form, onSuccess, onBack }: Props) {
             if (polled === "confirmed") {
               onSuccess(bookingNumberRef.current);
             } else {
+              if (polled === "error") {
+                setPayState({
+                  phase: "error",
+                  title: "Payment failed",
+                  message:
+                    "Payment failed and your booking was cancelled. Please contact support if money was deducted.",
+                  canRetry: false,
+                  showSupport: true,
+                });
+                submittingRef.current = false;
+                return;
+              }
               const errInfo = getBookingError("NETWORK_ERROR", "payment");
               setPayState({
                 phase: "error",
@@ -361,7 +397,27 @@ export function PaymentStep({ bookingId, form, onSuccess, onBack }: Props) {
         },
       };
 
-      new window.Razorpay(options).open();
+      const rzp = new window.Razorpay(options);
+      rzp.on("payment.failed", (response) => {
+        const description =
+          response.error?.description ??
+          response.error?.reason ??
+          "Payment failed. Please try again or use a different method.";
+        trackBookingEvent("payment_failed", {
+          bookingId,
+          errorCode: response.error?.code ?? "PAYMENT_FAILED",
+          errorMessage: description,
+        });
+        setPayState({
+          phase: "error",
+          title: "Payment failed",
+          message: description,
+          canRetry: true,
+          showSupport: false,
+        });
+        submittingRef.current = false;
+      });
+      rzp.open();
     } catch {
       const errInfo = getBookingError("NETWORK_ERROR", "payment");
       setPayState({

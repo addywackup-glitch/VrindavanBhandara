@@ -15,6 +15,7 @@ import {
 } from "@/lib/repositories";
 import {
   createRazorpayOrder,
+  RazorpayApiError,
   verifyRazorpaySignature,
 } from "@/features/payments/razorpay";
 import { createAuditLog } from "@/lib/audit";
@@ -67,6 +68,9 @@ export function createPaymentOrder(
   return execute(async () => {
     const { bookingId } = validate(CreatePaymentOrderSchema, input);
     const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ?? "";
+    if (!keyId) {
+      throw new PaymentError("Payment gateway is not configured. Please contact support.");
+    }
 
     const booking = await bookingRepository.findWithPayment(bookingId);
     if (!booking) throw new NotFoundError("Booking");
@@ -90,12 +94,26 @@ export function createPaymentOrder(
       };
     }
 
-    const order = await createRazorpayOrder({
-      amount: booking.totalAmount.toNumber(),
-      currency: booking.currency,
-      receipt: booking.bookingNumber,
-      notes: { bookingId: booking.id, userId: actor.userId },
-    });
+    let order;
+    try {
+      order = await createRazorpayOrder({
+        amount: booking.totalAmount.toNumber(),
+        currency: booking.currency,
+        receipt: booking.bookingNumber,
+        notes: { bookingId: booking.id, userId: actor.userId },
+      });
+    } catch (error) {
+      if (error instanceof RazorpayApiError) {
+        if (error.statusCode === 401) {
+          throw new PaymentError("Payment gateway authentication failed. Check Razorpay keys.");
+        }
+        if (error.statusCode === 400) {
+          throw new ValidationError(error.message);
+        }
+        throw new PaymentError(error.message);
+      }
+      throw error;
+    }
 
     await paymentRepository.upsertForBooking({
       bookingId: booking.id,
@@ -327,16 +345,42 @@ async function handlePaymentFailed(
   const entity = payload.payload.payment?.entity;
   if (!entity) return;
 
-  const payment = await paymentRepository.findByOrderId(entity.order_id);
+  const payment = await paymentRepository.findByOrderIdWithBooking(entity.order_id);
   if (!payment || payment.status === "CAPTURED") return;
 
-  await paymentRepository.updateByOrderId(entity.order_id, {
-    status: "FAILED",
-    webhookVerified: true,
-    webhookReceivedAt: new Date(),
-    webhookPayload: toJsonValue(payload),
-    failureReason:
-      entity.error_description ?? entity.error_code ?? "Payment failed",
+  await runTransaction(async (tx) => {
+    // Mark the payment as failed (idempotent guard not required here; route
+    // already checks `status` above, and `paymentRepository.updateByOrderId`
+    // will overwrite with same status/metadata).
+    await paymentRepository.updateByOrderId(entity.order_id, {
+      status: "FAILED",
+      webhookVerified: true,
+      webhookReceivedAt: new Date(),
+      webhookPayload: toJsonValue(payload),
+      failureReason:
+        entity.error_description ?? entity.error_code ?? "Payment failed",
+    }, tx);
+
+    // If booking is still pending, cancel it so the UI polling loop can stop.
+    if (payment.booking.status === "PENDING") {
+      await bookingRepository.update(
+        payment.bookingId,
+        { status: "CANCELLED" },
+        tx
+      );
+
+      await notificationRepository.create(
+        {
+          userId: payment.booking.userId,
+          bookingId: payment.bookingId,
+          type: "PAYMENT_FAILED",
+          channel: "IN_APP",
+          title: "Payment failed",
+          message: `Payment failed for your booking ${payment.booking.bookingNumber}. Please try again.`,
+        },
+        tx
+      );
+    }
   });
 }
 

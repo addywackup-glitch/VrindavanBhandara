@@ -31,7 +31,7 @@ tests/
 - Prisma error normalization.
 
 ## Recommended next (DB-backed integration tests)
-Use a disposable Postgres (Docker/Testcontainers or a Neon branch) + `prisma migrate deploy`, then test services end-to-end:
+Use a disposable Postgres (Docker/Testcontainers or a Supabase preview branch) + `prisma db push` or `migrate deploy`, then test services end-to-end:
 - `createBooking`: pricing, **coupon applicability/expiry/cap**, transactional coupon usage + timeline.
 - `verifyPayment`: signature path, idempotency, CONFIRMED transition, notification dispatch (mock `features/notifications`).
 - `processWebhookEvent` / `processRefundWebhook`: captured/failed/refund, idempotency, **refund lookup by `payment_id`**.
