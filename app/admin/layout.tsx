@@ -4,6 +4,9 @@ import { prisma } from "@/lib/prisma";
 import { AdminShell } from "@/components/admin/AdminShell";
 import type { Metadata } from "next";
 
+// Auth uses cookies — never statically prerender admin routes
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: { default: "Admin Panel — Vrindavan Bhandara", template: "%s | Admin — Vrindavan Bhandara" },
   robots: { index: false, follow: false },

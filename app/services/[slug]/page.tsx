@@ -235,17 +235,11 @@ export default async function ServiceDetailPage({ params }: Params) {
           className="flex items-center gap-2 mb-8"
           style={{ fontSize: "0.8125rem", color: "var(--muted)" }}
         >
-          <Link href="/" style={{ color: "var(--muted)", transition: "color 150ms" }}
-            onMouseEnter={(e) => { e.currentTarget.style.color = "var(--fg)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = "var(--muted)"; }}
-          >
+          <Link href="/" className="breadcrumb-link" style={{ color: "var(--muted)", transition: "color 150ms" }}>
             Home
           </Link>
           <Chevron />
-          <Link href="/services" style={{ color: "var(--muted)", transition: "color 150ms" }}
-            onMouseEnter={(e) => { e.currentTarget.style.color = "var(--fg)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = "var(--muted)"; }}
-          >
+          <Link href="/services" className="breadcrumb-link" style={{ color: "var(--muted)", transition: "color 150ms" }}>
             Services
           </Link>
           <Chevron />
@@ -479,7 +473,7 @@ export default async function ServiceDetailPage({ params }: Params) {
                   <Link
                     key={s.id}
                     href={`/services/${s.slug}`}
-                    className="flex items-center gap-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand rounded-sm"
+                    className="related-seva-link flex items-center gap-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand rounded-sm"
                     style={{
                       padding: "0.875rem 0",
                       borderBottom: i < relatedServices.length - 1 ? "1px solid var(--border)" : "none",
@@ -487,8 +481,6 @@ export default async function ServiceDetailPage({ params }: Params) {
                       color: "inherit",
                       transition: "all 150ms",
                     }}
-                    onMouseEnter={(e) => { (e.currentTarget.querySelector(".related-name") as HTMLElement | null)?.style?.setProperty("color", "var(--brand)"); }}
-                    onMouseLeave={(e) => { (e.currentTarget.querySelector(".related-name") as HTMLElement | null)?.style?.setProperty("color", "var(--fg)"); }}
                   >
                     <div
                       className="flex items-center justify-center flex-shrink-0"

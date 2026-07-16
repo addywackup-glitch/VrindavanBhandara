@@ -22,7 +22,15 @@ export async function auth(): Promise<AppSession | null> {
     } = await supabase.auth.getUser();
     return getAppSessionFromSupabaseUser(user);
   } catch (error) {
-    console.error("[auth] session resolution failed", error);
+    // During `next build` static analysis, cookies() throws DYNAMIC_SERVER_USAGE.
+    // Layouts with force-dynamic handle this; don't spam logs for that case.
+    const digest =
+      error && typeof error === "object" && "digest" in error
+        ? String((error as { digest?: string }).digest)
+        : "";
+    if (digest !== "DYNAMIC_SERVER_USAGE") {
+      console.error("[auth] session resolution failed", error);
+    }
     return null;
   }
 }
