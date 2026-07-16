@@ -14,12 +14,14 @@ export function ensureDatabaseEnv(): {
   databaseUrl: string | undefined;
   directUrl: string | undefined;
 } {
+  // Prefer pooled for Prisma CLI / schema tooling; runtime client prefers direct.
   const databaseUrl =
     process.env.DATABASE_URL ||
     process.env.POSTGRES_PRISMA_URL ||
     process.env.POSTGRES_URL ||
     undefined;
 
+  // Direct / non-pooling — required for reliable writes + $transaction on Vercel
   const directUrl =
     process.env.DATABASE_URL_UNPOOLED ||
     process.env.POSTGRES_URL_NON_POOLING ||

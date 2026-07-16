@@ -38,6 +38,25 @@ export function toServiceFailure(error: unknown): ServiceResult<never> {
     if (error.code === "P2025") {
       return new NotFoundError("Record").toResult();
     }
+    // Column/table missing — schema not pushed to Supabase yet
+    if (error.code === "P2022" || error.code === "P2021") {
+      return fail(
+        "INTERNAL_ERROR",
+        "Database schema is out of date. Run `npx prisma db push` against your Supabase database."
+      );
+    }
+  }
+
+  // Prisma "column does not exist" sometimes arrives as a generic driver error
+  const message = error instanceof Error ? error.message : String(error);
+  if (
+    message.includes("does not exist") ||
+    message.includes("column") && message.toLowerCase().includes("supabaseuserid")
+  ) {
+    return fail(
+      "INTERNAL_ERROR",
+      "Database schema is out of date. Run `npx prisma db push` against your Supabase database."
+    );
   }
 
   console.error("[SERVICE_ERROR]", error);

@@ -12,7 +12,10 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 function createPrismaClient(): PrismaClient {
-  const { databaseUrl: connectionString } = ensureDatabaseEnv();
+  const { databaseUrl, directUrl } = ensureDatabaseEnv();
+  // Prefer direct (non-pooling) on Vercel/Supabase so interactive transactions
+  // like registration work. Pooled transaction-mode URLs break $transaction.
+  const connectionString = directUrl || databaseUrl;
 
   if (!connectionString) {
     // No DB configured — return a client that will gracefully fail at query time

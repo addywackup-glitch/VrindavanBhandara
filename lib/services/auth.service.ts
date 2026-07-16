@@ -6,7 +6,7 @@
 
 import { z } from "zod";
 import type { AdminRole, UserRole } from "@prisma/client";
-import { userRepository, runTransaction } from "@/lib/repositories";
+import { userRepository } from "@/lib/repositories";
 import { createAuditLog } from "@/lib/audit";
 import { execute, validate } from "@/lib/api/service";
 import { type ServiceResult } from "@/lib/api/result";
@@ -74,7 +74,16 @@ export function registerUser(
       throw new ConflictError("An account with this email already exists.");
     }
 
-    const admin = createAdminClient();
+    let admin;
+    try {
+      admin = createAdminClient();
+    } catch (err) {
+      console.error("[registerUser] Supabase admin client failed", err);
+      throw new ValidationError(
+        "Auth is not configured (missing SUPABASE_SERVICE_ROLE_KEY). Check Vercel environment variables."
+      );
+    }
+
     const { data: created, error } = await admin.auth.admin.createUser({
       email,
       password: data.password,
@@ -84,6 +93,7 @@ export function registerUser(
 
     if (error || !created.user) {
       const msg = error?.message ?? "Could not create auth account";
+      console.error("[registerUser] Supabase createUser failed", msg);
       if (msg.toLowerCase().includes("already")) {
         throw new ConflictError("An account with this email already exists.");
       }
@@ -93,19 +103,14 @@ export function registerUser(
     const supabaseUserId = created.user.id;
 
     try {
-      const user = await runTransaction(async (tx) => {
-        return userRepository.create(
-          {
-            name: data.name,
-            email,
-            phone,
-            supabaseUserId,
-            role: "CUSTOMER",
-            isActive: true,
-            emailVerified: new Date(),
-          },
-          tx
-        );
+      const user = await userRepository.create({
+        name: data.name,
+        email,
+        phone,
+        supabaseUserId,
+        role: "CUSTOMER",
+        isActive: true,
+        emailVerified: new Date(),
       });
 
       await createAuditLog({
@@ -121,6 +126,7 @@ export function registerUser(
       return { id: user.id, name: user.name, email: user.email };
     } catch (err) {
       // Roll back Auth user if Prisma profile create fails
+      console.error("[registerUser] Prisma profile create failed", err);
       await admin.auth.admin.deleteUser(supabaseUserId);
       throw err;
     }
