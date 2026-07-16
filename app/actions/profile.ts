@@ -1,14 +1,14 @@
 "use server";
 
 // =============================================================================
-// Profile Server Actions — update user name, phone, city; change password
-// Backend is frozen — only operates on the User model via Prisma directly
+// Profile Server Actions — update profile; change password via Supabase Auth
 // =============================================================================
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { z } from "zod";
-import bcrypt from "bcryptjs";
 
 const ProfileSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters").max(100),
@@ -83,25 +83,50 @@ export async function changePasswordAction(input: unknown): Promise<ProfileActio
 
     const { currentPassword, newPassword } = parsed.data;
 
-    const user = await prisma.user.findUnique({
+    const dbUser = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { passwordHash: true },
+      select: { email: true, supabaseUserId: true },
     });
 
-    if (!user?.passwordHash) {
-      return { ok: false, error: "This account uses Google sign-in. Password change is not available." };
+    if (!dbUser?.email) {
+      return { ok: false, error: "Account not found." };
     }
 
-    const valid = await bcrypt.compare(currentPassword, user.passwordHash);
-    if (!valid) {
-      return { ok: false, error: "Current password is incorrect.", field: "currentPassword" };
-    }
+    const supabase = await createClient();
 
-    const newHash = await bcrypt.hash(newPassword, 12);
-    await prisma.user.update({
-      where: { id: session.user.id },
-      data: { passwordHash: newHash },
+    // Verify current password by attempting sign-in
+    const { error: verifyError } = await supabase.auth.signInWithPassword({
+      email: dbUser.email,
+      password: currentPassword,
     });
+
+    if (verifyError) {
+      return {
+        ok: false,
+        error: "Current password is incorrect.",
+        field: "currentPassword",
+      };
+    }
+
+    const { error: updateError } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+
+    if (updateError) {
+      // Fallback via service role if session update fails
+      if (dbUser.supabaseUserId) {
+        const admin = createAdminClient();
+        const { error: adminErr } = await admin.auth.admin.updateUserById(
+          dbUser.supabaseUserId,
+          { password: newPassword }
+        );
+        if (adminErr) {
+          return { ok: false, error: adminErr.message };
+        }
+      } else {
+        return { ok: false, error: updateError.message };
+      }
+    }
 
     return { ok: true, message: "Password changed successfully." };
   } catch (error) {

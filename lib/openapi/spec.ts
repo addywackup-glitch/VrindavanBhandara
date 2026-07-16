@@ -431,8 +431,9 @@ export const openApiDocument: OpenApiDocument = {
       cookieAuth: {
         type: "apiKey",
         in: "cookie",
-        name: "next-auth.session-token",
-        description: "NextAuth session cookie (set on login).",
+        name: "sb-access-token",
+        description:
+          "Supabase Auth session cookies (sb-*-auth-token). Set on login via /api/auth/login or OAuth callback.",
       },
     },
     schemas: {

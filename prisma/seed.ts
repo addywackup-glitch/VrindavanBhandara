@@ -160,12 +160,43 @@ async function main() {
   const existingAdmin = await prisma.user.findUnique({ where: { email: adminEmail } });
 
   if (!existingAdmin) {
+    let supabaseUserId: string | undefined;
+
+    // Prefer creating the admin in Supabase Auth when keys are configured.
+    if (
+      process.env.NEXT_PUBLIC_SUPABASE_URL &&
+      (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY)
+    ) {
+      try {
+        const { createAdminClient } = await import("../lib/supabase/admin");
+        const { ensureStorageBuckets } = await import("../lib/storage/supabase");
+        const adminSb = createAdminClient();
+        const { data: created, error } = await adminSb.auth.admin.createUser({
+          email: adminEmail,
+          password: adminPassword,
+          email_confirm: true,
+          user_metadata: { name: "Super Admin", full_name: "Super Admin" },
+          app_metadata: { role: "ADMIN" },
+        });
+        if (error) {
+          console.warn("⚠️  Supabase admin auth create:", error.message);
+        } else {
+          supabaseUserId = created.user?.id;
+        }
+        await ensureStorageBuckets();
+        console.log("✅ Ensured Supabase storage buckets (proofs, gallery, blog)");
+      } catch (err) {
+        console.warn("⚠️  Supabase auth/storage seed skipped:", err);
+      }
+    }
+
     const passwordHash = await bcrypt.hash(adminPassword, 12);
     const adminUser = await prisma.user.create({
       data: {
         name: "Super Admin",
         email: adminEmail,
         passwordHash,
+        supabaseUserId: supabaseUserId ?? null,
         role: "ADMIN",
         isActive: true,
       },

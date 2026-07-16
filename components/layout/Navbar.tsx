@@ -11,7 +11,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { useSession, signOut } from "next-auth/react";
+import { useSession, signOut } from "@/lib/auth/client";
 import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [

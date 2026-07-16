@@ -9,9 +9,9 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut } from "next-auth/react";
+import { signOut } from "@/lib/auth/client";
 import { motion, AnimatePresence } from "framer-motion";
-import type { Session } from "next-auth";
+import type { Session } from "@/lib/auth";
 
 // Nav items matching design_v1/dashboard.html
 const ACCOUNT_LINKS = [

@@ -1,21 +1,17 @@
 // =============================================================================
-// VRINDAVAN BHANDARA — Auth Service
-// Source: Phase 2 §4/§8/§9 — Repository -> Service, transactions, typed errors
-//
-// Owns registration (hash + atomic create) and credential verification (used by
-// the NextAuth Credentials provider). Persistence via UserRepository only.
+// VRINDAVAN BHANDARA — Auth Service (Supabase Auth + Prisma profile)
+// Registration creates auth.users via service role, then Prisma User row.
+// Credential verification for NextAuth is removed — login uses /api/auth/login.
 // =============================================================================
 
 import { z } from "zod";
-import bcrypt from "bcryptjs";
 import type { AdminRole, UserRole } from "@prisma/client";
 import { userRepository, runTransaction } from "@/lib/repositories";
 import { createAuditLog } from "@/lib/audit";
 import { execute, validate } from "@/lib/api/service";
 import { type ServiceResult } from "@/lib/api/result";
-import { ConflictError } from "@/lib/errors";
-
-const BCRYPT_ROUNDS = 12;
+import { ConflictError, ValidationError } from "@/lib/errors";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 // =============================================================================
 // Schemas
@@ -61,7 +57,7 @@ export type AuthenticatedUser = {
 };
 
 // =============================================================================
-// Register — atomic create with hashed password
+// Register — Supabase Auth user + Prisma profile
 // =============================================================================
 
 export function registerUser(
@@ -72,60 +68,61 @@ export function registerUser(
     const data = validate(RegisterServiceSchema, input);
     const email = data.email.toLowerCase();
     const phone = data.phone ? data.phone : null;
-    const passwordHash = await bcrypt.hash(data.password, BCRYPT_ROUNDS);
 
-    const user = await runTransaction(async (tx) => {
-      const existing = await userRepository.existsByEmail(email, tx);
-      if (existing) {
+    const existing = await userRepository.existsByEmail(email);
+    if (existing) {
+      throw new ConflictError("An account with this email already exists.");
+    }
+
+    const admin = createAdminClient();
+    const { data: created, error } = await admin.auth.admin.createUser({
+      email,
+      password: data.password,
+      email_confirm: true,
+      user_metadata: { name: data.name, full_name: data.name },
+    });
+
+    if (error || !created.user) {
+      const msg = error?.message ?? "Could not create auth account";
+      if (msg.toLowerCase().includes("already")) {
         throw new ConflictError("An account with this email already exists.");
       }
-      return userRepository.create(
-        { name: data.name, email, phone, passwordHash, role: "CUSTOMER", isActive: true },
-        tx
-      );
-    });
+      throw new ValidationError(msg);
+    }
 
-    await createAuditLog({
-      userId: user.id,
-      action: "CREATE",
-      entity: "User",
-      entityId: user.id,
-      newData: { email: user.email, role: "CUSTOMER" },
-      ip: context?.ip,
-      userAgent: context?.userAgent,
-    });
+    const supabaseUserId = created.user.id;
 
-    return { id: user.id, name: user.name, email: user.email };
+    try {
+      const user = await runTransaction(async (tx) => {
+        return userRepository.create(
+          {
+            name: data.name,
+            email,
+            phone,
+            supabaseUserId,
+            role: "CUSTOMER",
+            isActive: true,
+            emailVerified: new Date(),
+          },
+          tx
+        );
+      });
+
+      await createAuditLog({
+        userId: user.id,
+        action: "CREATE",
+        entity: "User",
+        entityId: user.id,
+        newData: { email: user.email, role: "CUSTOMER", supabaseUserId },
+        ip: context?.ip,
+        userAgent: context?.userAgent,
+      });
+
+      return { id: user.id, name: user.name, email: user.email };
+    } catch (err) {
+      // Roll back Auth user if Prisma profile create fails
+      await admin.auth.admin.deleteUser(supabaseUserId);
+      throw err;
+    }
   }, "Account created successfully");
-}
-
-// =============================================================================
-// Authenticate — used by the NextAuth Credentials provider
-// Returns the user shape NextAuth expects, or null on any failure (no leaks).
-// =============================================================================
-
-export async function authenticateCredentials(
-  credentials: unknown
-): Promise<AuthenticatedUser | null> {
-  const parsed = CredentialsSchema.safeParse(credentials);
-  if (!parsed.success) return null;
-
-  const email = parsed.data.email.toLowerCase();
-  const user = await userRepository.findByEmailWithAdmin(email);
-
-  if (!user || !user.passwordHash || !user.isActive) return null;
-
-  const valid = await bcrypt.compare(parsed.data.password, user.passwordHash);
-  if (!valid) return null;
-
-  await userRepository.touchLastLogin(user.id);
-
-  return {
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    image: user.image,
-    role: user.role,
-    adminRole: user.admin?.isActive ? user.admin.role : undefined,
-  };
 }

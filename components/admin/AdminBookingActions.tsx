@@ -41,6 +41,7 @@ export function AdminBookingActions({
   const [adminNotes, setAdminNotes] = useState("");
   const [completionNotes, setCompletionNotes] = useState("");
   const [proofUrl, setProofUrl] = useState("");
+  const [proofFile, setProofFile] = useState<File | null>(null);
   const [proofType, setProofType] = useState<"PHOTO" | "VIDEO">("PHOTO");
   const [proofCaption, setProofCaption] = useState("");
   const [pendingAction, setPendingAction] = useState<TransitionAction | null>(null);
@@ -81,25 +82,54 @@ export function AdminBookingActions({
   };
 
   const handleProofUpload = async () => {
-    if (!proofUrl.trim()) {
-      setError("Please enter a valid proof URL");
-      return;
-    }
     setIsUploadingProof(true);
     setError(null);
     try {
+      let url = proofUrl.trim();
+
+      if (proofFile) {
+        const form = new FormData();
+        form.append("file", proofFile);
+        form.append("bucket", "proofs");
+        form.append("folder", bookingId);
+        const uploadRes = await fetch("/api/storage/upload", {
+          method: "POST",
+          body: form,
+        });
+        const uploadData = (await uploadRes.json()) as {
+          success?: boolean;
+          data?: { url?: string };
+          error?: string;
+        };
+        if (!uploadRes.ok || !uploadData.success || !uploadData.data?.url) {
+          setError(uploadData.error ?? "Failed to upload file to storage");
+          return;
+        }
+        url = uploadData.data.url;
+      }
+
+      if (!url) {
+        setError("Choose a file or paste a public media URL");
+        return;
+      }
+
       const res = await fetch(`/api/admin/bookings/${bookingId}/proof`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: proofUrl, type: proofType, caption: proofCaption || undefined }),
+        body: JSON.stringify({
+          url,
+          type: proofType,
+          caption: proofCaption || undefined,
+        }),
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
-        setError(data.error ?? "Failed to upload proof");
+        setError(data.error ?? "Failed to save proof");
         return;
       }
       setSuccess("Proof added successfully");
       setProofUrl("");
+      setProofFile(null);
       setProofCaption("");
       router.refresh();
     } catch {
@@ -222,14 +252,22 @@ export function AdminBookingActions({
               <option value="PHOTO">Photo</option>
               <option value="VIDEO">Video</option>
             </select>
-            <label className="adm-label" htmlFor="proof-url">CDN URL</label>
+            <label className="adm-label" htmlFor="proof-file">Upload file (Supabase Storage)</label>
+            <input
+              id="proof-file"
+              type="file"
+              className="adm-input"
+              accept="image/*,video/mp4,video/webm,application/pdf"
+              onChange={(e) => setProofFile(e.target.files?.[0] ?? null)}
+            />
+            <label className="adm-label" htmlFor="proof-url">Or paste public URL</label>
             <input
               id="proof-url"
               type="url"
               className="adm-input"
               value={proofUrl}
               onChange={(e) => setProofUrl(e.target.value)}
-              placeholder="https://cdn.example.com/proof.jpg"
+              placeholder="https://…supabase.co/storage/v1/object/public/proofs/…"
             />
             <label className="adm-label" htmlFor="proof-caption">Caption (optional)</label>
             <input
@@ -245,7 +283,7 @@ export function AdminBookingActions({
               className="adm-topbar-btn"
               style={{ width: "100%", justifyContent: "center", marginTop: "0.25rem" }}
               onClick={handleProofUpload}
-              disabled={isUploadingProof || !proofUrl.trim()}
+              disabled={isUploadingProof || (!proofUrl.trim() && !proofFile)}
               aria-busy={isUploadingProof}
             >
               {isUploadingProof ? "Uploading…" : "Add Proof"}
