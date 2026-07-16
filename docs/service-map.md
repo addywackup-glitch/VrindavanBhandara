@@ -4,7 +4,7 @@ Every business operation lives in exactly one service. Services are framework-ag
 
 | Service | File | Methods | Used by |
 | --- | --- | --- | --- |
-| Auth | `lib/services/auth.service.ts` | `registerUser`, `authenticateCredentials` | `/api/auth/register`, `lib/auth` (NextAuth), `app/actions/auth` |
+| Auth | `lib/services/auth.service.ts` | `registerUser` | `/api/auth/register`, `/api/auth/login`, Supabase Auth + Prisma profile sync |
 | Booking | `lib/services/booking.service.ts` | `createBooking`, `listBookings`, `getBooking`, `updateBookingStatus`, `canTransition`, `toBookingDto` | bookings routes, admin status route, `app/actions/bookings` |
 | Payment | `lib/services/payment.service.ts` | `createPaymentOrder`, `verifyPayment`, `processWebhookEvent` | payment routes, `app/actions/payments` |
 | Refund | `lib/services/refund.service.ts` | `processRefundWebhook` | payment webhook |

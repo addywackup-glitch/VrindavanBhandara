@@ -90,11 +90,21 @@ export function formatPhone(phone: string): string {
 }
 
 // =============================================================================
-// R2 Public URL
+// Public media URL (Supabase Storage or absolute URL passthrough)
 // =============================================================================
-export function getMediaUrl(key: string): string {
-  const base = process.env.CLOUDFLARE_R2_PUBLIC_URL ?? "";
-  return `${base}/${key}`;
+export function getMediaUrl(keyOrUrl: string): string {
+  if (keyOrUrl.startsWith("http://") || keyOrUrl.startsWith("https://")) {
+    return keyOrUrl;
+  }
+  const base =
+    process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/$/, "") ??
+    process.env.CLOUDFLARE_R2_PUBLIC_URL ??
+    "";
+  if (!base) return keyOrUrl;
+  if (base.includes("supabase.co")) {
+    return `${base}/storage/v1/object/public/proofs/${keyOrUrl.replace(/^\//, "")}`;
+  }
+  return `${base}/${keyOrUrl.replace(/^\//, "")}`;
 }
 
 // =============================================================================

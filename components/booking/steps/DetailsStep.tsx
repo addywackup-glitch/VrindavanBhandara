@@ -9,7 +9,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth/client";
 import type { BookingFormData } from "@/types";
 
 const DetailsSchema = z.object({

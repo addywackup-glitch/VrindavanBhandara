@@ -1,37 +1,33 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { updateSession } from "@/lib/supabase/middleware";
 import { authRateLimit } from "@/lib/rate-limit";
+import { hasSupabaseConfig } from "@/lib/supabase/env";
 
-// Routes that require authentication
 const PROTECTED_CUSTOMER_ROUTES = ["/dashboard", "/bookings"];
 const PROTECTED_ADMIN_ROUTES = ["/admin"];
-
-// Routes with strict rate limiting
 const AUTH_ROUTES = ["/api/auth/", "/login", "/register"];
 
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
   const host = request.headers.get("host") ?? "";
-  const ip = request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? "unknown";
+  const ip =
+    request.headers.get("x-forwarded-for") ??
+    request.headers.get("x-real-ip") ??
+    "unknown";
 
-  // =========================================================================
-  // Domain Redirect: vrindavanbhandara.in → vrindavanbhandara.com (301)
-  // =========================================================================
   const IN_DOMAINS = ["vrindavanbhandara.in", "www.vrindavanbhandara.in"];
   if (IN_DOMAINS.includes(host)) {
     const redirectUrl = `https://vrindavanbhandara.com${pathname}${search}`;
     return NextResponse.redirect(redirectUrl, { status: 301 });
   }
 
-
-  // =========================================================================
-  // Rate limiting for auth routes
-  // =========================================================================
   if (AUTH_ROUTES.some((r) => pathname.startsWith(r))) {
     const rl = await authRateLimit(ip);
     if (!rl.success) {
       return new NextResponse(
-        JSON.stringify({ error: "Too many attempts. Please try again in 15 minutes." }),
+        JSON.stringify({
+          error: "Too many attempts. Please try again in 15 minutes.",
+        }),
         {
           status: 429,
           headers: {
@@ -43,46 +39,56 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  // =========================================================================
-  // Auth check for protected customer routes
-  // =========================================================================
-  const isProtectedCustomer = PROTECTED_CUSTOMER_ROUTES.some((r) => pathname.startsWith(r));
-  const isProtectedAdmin = PROTECTED_ADMIN_ROUTES.some((r) => pathname.startsWith(r));
+  // Refresh Supabase session cookies (required for SSR auth).
+  // Do NOT use Prisma here — proxy runs on the Edge runtime.
+  let response = NextResponse.next({ request });
+  let isAuthenticated = false;
+  let isAdminClaim = false;
 
-  // Legacy /profile → dashboard profile
+  if (hasSupabaseConfig()) {
+    try {
+      const sessionResult = await updateSession(request);
+      response = sessionResult.response;
+      isAuthenticated = Boolean(sessionResult.user);
+      // Role claim synced into app_metadata by auth sync (optional).
+      const meta = sessionResult.user?.app_metadata as
+        | { role?: string }
+        | undefined;
+      isAdminClaim = meta?.role === "ADMIN";
+    } catch (error) {
+      console.error("[proxy] supabase session refresh failed", error);
+    }
+  }
+
   if (pathname === "/profile" || pathname.startsWith("/profile/")) {
     return NextResponse.redirect(new URL("/dashboard/profile", request.url));
   }
 
-  // Redirect authenticated users away from auth pages
+  const isProtectedCustomer = PROTECTED_CUSTOMER_ROUTES.some((r) =>
+    pathname.startsWith(r)
+  );
+  const isProtectedAdmin = PROTECTED_ADMIN_ROUTES.some((r) =>
+    pathname.startsWith(r)
+  );
+
   if (pathname === "/login" || pathname === "/register") {
-    const session = await auth();
-    if (session?.user?.id) {
-      const dest = session.user.role === "ADMIN" ? "/admin" : "/dashboard";
+    if (isAuthenticated) {
+      const dest = isAdminClaim ? "/admin" : "/dashboard";
       return NextResponse.redirect(new URL(dest, request.url));
     }
   }
 
   if (isProtectedCustomer || isProtectedAdmin) {
-    const session = await auth();
-
-    if (!session?.user?.id) {
+    if (!isAuthenticated) {
       const loginUrl = new URL("/login", request.url);
       loginUrl.searchParams.set("callbackUrl", pathname);
       return NextResponse.redirect(loginUrl);
     }
-
-    // Admin route protection
-    if (isProtectedAdmin && session.user.role !== "ADMIN") {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
-    }
+    // Fine-grained ADMIN check remains in app/admin/layout.tsx (Prisma RBAC).
+    // Edge only enforces "must be logged in" for /admin.
   }
 
-  // =========================================================================
-  // Security headers are set in next.config.ts
-  // =========================================================================
-
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {

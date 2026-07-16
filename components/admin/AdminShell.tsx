@@ -3,9 +3,9 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { signOut } from "next-auth/react";
+import { signOut } from "@/lib/auth/client";
 import { motion, AnimatePresence } from "framer-motion";
-import type { Session } from "next-auth";
+import type { Session } from "@/lib/auth";
 import { ADMIN_NAV, getAdminPageMeta } from "@/components/admin/admin-nav";
 
 function BrandMark() {
