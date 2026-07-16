@@ -25,7 +25,10 @@ The integration injects `POSTGRES_*` and `SUPABASE_*` vars. This app auto-maps:
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` / `SUPABASE_ANON_KEY` | Anon key |
 | `SUPABASE_SERVICE_ROLE_KEY` | Service role |
 
-No manual remapping needed after connecting. Still set Auth redirect URLs and run `db push` + seed once.
+`prisma generate` during `npm install` no longer requires these vars (uses a placeholder).  
+Runtime still needs the real Postgres URLs — confirm they appear under Vercel → Settings → Environment Variables for **Preview** and **Production**, then redeploy.
+
+No manual remapping of names needed after connecting. Still set Auth redirect URLs and run `db push` + seed once.
 
 ---
 

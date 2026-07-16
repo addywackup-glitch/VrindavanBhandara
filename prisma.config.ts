@@ -2,19 +2,18 @@ import "dotenv/config";
 import { defineConfig } from "@prisma/config";
 import { ensureDatabaseEnv } from "./lib/env/database";
 
-// Map Vercel Supabase POSTGRES_* → DATABASE_* before Prisma reads env.
+// Map Vercel Supabase POSTGRES_* → DATABASE_* when present.
 const { databaseUrl } = ensureDatabaseEnv();
 
-if (!databaseUrl) {
-  throw new Error(
-    "DATABASE_URL is not set. Define DATABASE_URL, or connect Supabase on Vercel (POSTGRES_PRISMA_URL / POSTGRES_URL)."
-  );
-}
+// `prisma generate` (postinstall) does not need a live DB — only a syntactically
+// valid URL. Runtime / migrate / db push still require real credentials.
+const PLACEHOLDER =
+  "postgresql://postgres:postgres@127.0.0.1:5432/prisma_generate_placeholder";
 
 export default defineConfig({
   schema: "prisma/schema.prisma",
   datasource: {
-    url: databaseUrl,
+    url: databaseUrl ?? PLACEHOLDER,
   },
   migrations: {
     seed: "npx tsx prisma/seed.ts",
