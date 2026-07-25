@@ -3,7 +3,7 @@
 // =============================================================================
 // Login Page — pixel-matches design_v1/login.html
 // Two-column: brand panel (left, desktop only) + form panel (right)
-// Uses real NextAuth credentials + Google OAuth
+// Uses Supabase Auth via /api/auth/login + Google OAuth
 // =============================================================================
 
 import { Suspense, useState, useRef, useEffect } from "react";
@@ -151,7 +151,26 @@ function LoginForm() {
         return;
       }
 
-      router.push(callbackUrl);
+      // Route admins to /admin (or an explicit /admin callback); customers keep callbackUrl
+      let role: string | undefined;
+      try {
+        const sess = await fetch("/api/auth/session", {
+          credentials: "include",
+          cache: "no-store",
+        });
+        if (sess.ok) {
+          const json = (await sess.json()) as { user?: { role?: string } };
+          role = json.user?.role;
+        }
+      } catch {
+        /* fall through */
+      }
+
+      if (role === "ADMIN") {
+        router.push(callbackUrl.startsWith("/admin") ? callbackUrl : "/admin");
+      } else {
+        router.push(callbackUrl);
+      }
       router.refresh();
     } catch {
       setAuthError(getAuthError("NETWORK_ERROR", "login").message);

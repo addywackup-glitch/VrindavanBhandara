@@ -379,6 +379,16 @@ export default async function BookingDetailPage({ params }: Params) {
                 </div>
               </div>
 
+              {booking.status !== "PENDING" && booking.status !== "CANCELLED" && (
+                <a
+                  href={`/api/bookings/${booking.id}/invoice`}
+                  className="db-btn-view"
+                  style={{ display: "inline-flex", marginTop: "1rem", width: "100%", justifyContent: "center" }}
+                >
+                  Download Invoice (PDF)
+                </a>
+              )}
+
               {booking.payment && (
                 <div style={{ marginTop: "1rem", paddingTop: "1rem", borderTop: "1px solid var(--border)" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.8125rem", marginBottom: "0.5rem" }}>

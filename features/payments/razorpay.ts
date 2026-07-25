@@ -186,11 +186,24 @@ export async function initiateRefund(params: {
   amount?: number; // partial refund in paise — omit for full refund
   notes?: Record<string, string>;
 }) {
-  const refund = await getRazorpay().payments.refund(params.paymentId, {
-    amount: params.amount,
-    notes: params.notes,
-  });
-  return refund;
+  if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+    throw new RazorpayApiError("Razorpay credentials are not configured.", 401);
+  }
+
+  try {
+    const refund = await getRazorpay().payments.refund(params.paymentId, {
+      amount: params.amount,
+      notes: params.notes,
+    });
+    return refund;
+  } catch (error) {
+    if (error instanceof RazorpayApiError) throw error;
+    const parsed = parseRazorpayError(error);
+    throw new RazorpayApiError(
+      parsed.message.replace("order creation", "refund") || "Razorpay refund failed.",
+      parsed.statusCode
+    );
+  }
 }
 
 export default getRazorpay;

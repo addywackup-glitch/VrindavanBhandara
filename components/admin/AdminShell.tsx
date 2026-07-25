@@ -7,6 +7,8 @@ import { signOut } from "@/lib/auth/client";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Session } from "@/lib/auth";
 import { ADMIN_NAV, getAdminPageMeta } from "@/components/admin/admin-nav";
+import { hasPermission } from "@/lib/rbac";
+import type { AdminRole } from "@prisma/client";
 
 function BrandMark() {
   return (
@@ -67,6 +69,15 @@ export function AdminShell({
     .join("")
     .toUpperCase() ?? "AD";
 
+  const navGroups = ADMIN_NAV.map((group) => ({
+    ...group,
+    items: group.items.filter((item) => {
+      if (!item.permission) return true;
+      if (!session.user.adminRole) return false;
+      return hasPermission(session.user.adminRole as AdminRole, item.permission);
+    }),
+  })).filter((group) => group.items.length > 0);
+
   return (
     <div className="adm-shell">
       <AnimatePresence>
@@ -105,7 +116,7 @@ export function AdminShell({
         </div>
 
         <nav className="adm-sidebar-nav">
-          {ADMIN_NAV.map((group) => (
+          {navGroups.map((group) => (
             <div key={group.label}>
               <div className="adm-nav-section">{group.label}</div>
               {group.items.map((item) => {

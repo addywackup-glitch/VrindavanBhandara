@@ -19,7 +19,7 @@ Server Action        ─┤→  Service  →  Repository  →  Prisma  →  Post
 | Domain primitives | `lib/errors`, `lib/api/result` | Typed errors + result envelope | — |
 
 ### Hard rules
-- **Prisma is only imported inside `lib/repositories/`** (plus `lib/auth.ts` for the NextAuth adapter, which structurally requires the client).
+- **Prisma is only imported inside `lib/repositories/`** (plus a few infra modules such as `lib/auth/sync-user.ts` and seed scripts).
 - **No business logic in routes or Server Actions.** They are adapters.
 - **No `any`.** `tsconfig` has `strict` + `noImplicitAny`.
 - Every service method returns `ServiceResult<T>` (`{ ok: true, data } | { ok: false, code, error, issues? }`).

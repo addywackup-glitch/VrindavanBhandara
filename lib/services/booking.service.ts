@@ -11,7 +11,6 @@ import type {
   Booking,
   BookingStatus,
   ProofTimelineEventType,
-  ServiceType,
 } from "@prisma/client";
 import { Prisma } from "@prisma/client";
 import {
@@ -42,6 +41,7 @@ import {
   sendWhatsAppSevaInProgress,
   sendWhatsAppSevaCompleted,
 } from "@/features/notifications/whatsapp";
+import { evaluateCoupon } from "@/lib/services/coupon.service";
 import type { PaginatedResponse } from "@/types";
 
 export type { BookingListItem, BookingDetail } from "@/lib/repositories";
@@ -64,7 +64,7 @@ const ALL_STATUSES: readonly BookingStatus[] = [
 const VALID_TRANSITIONS: Record<BookingStatus, BookingStatus[]> = {
   PENDING: ["CONFIRMED", "CANCELLED"],
   CONFIRMED: ["IN_PROGRESS", "CANCELLED", "REFUNDED"],
-  IN_PROGRESS: ["COMPLETED", "CANCELLED"],
+  IN_PROGRESS: ["COMPLETED", "CANCELLED", "REFUNDED"],
   COMPLETED: [],
   CANCELLED: [],
   REFUNDED: [],
@@ -177,7 +177,15 @@ export function createBooking(
       );
 
       if (couponId) {
-        await couponRepository.incrementUsage(couponId, tx);
+        const coupon = await couponRepository.findById(couponId, tx);
+        const ok = await couponRepository.tryIncrementUsage(
+          couponId,
+          coupon?.maxUses ?? null,
+          tx
+        );
+        if (!ok) {
+          throw new ValidationError("This coupon has reached its usage limit.");
+        }
         await couponRepository.recordUsage(
           { couponId, userId: actor.userId, bookingId: created.id },
           tx
@@ -211,48 +219,6 @@ export function createBooking(
 
     return booking;
   }, "Booking created successfully");
-}
-
-/** Validate + price a coupon. Throws ValidationError when not applicable. */
-async function evaluateCoupon(
-  code: string | undefined,
-  baseAmount: number,
-  serviceType: ServiceType,
-  packageId: string
-): Promise<{ discountAmount: number; couponId: string | null }> {
-  if (!code) return { discountAmount: 0, couponId: null };
-
-  const coupon = await couponRepository.findByCode(code);
-  const now = new Date();
-  const usable =
-    coupon &&
-    coupon.isActive &&
-    (!coupon.expiresAt || coupon.expiresAt > now) &&
-    (coupon.maxUses === null || coupon.usedCount < coupon.maxUses) &&
-    (!coupon.minOrderValue || baseAmount >= coupon.minOrderValue.toNumber()) &&
-    (coupon.applicableServices.length === 0 ||
-      coupon.applicableServices.includes(serviceType)) &&
-    (coupon.applicablePackages.length === 0 ||
-      coupon.applicablePackages.includes(packageId));
-
-  if (!coupon || !usable) {
-    throw new ValidationError(
-      "This coupon is invalid, expired, or not applicable to the selected package."
-    );
-  }
-
-  let discountAmount: number;
-  if (coupon.discountType === "PERCENTAGE") {
-    discountAmount = (baseAmount * coupon.discountValue.toNumber()) / 100;
-    if (coupon.maxDiscount) {
-      discountAmount = Math.min(discountAmount, coupon.maxDiscount.toNumber());
-    }
-  } else {
-    discountAmount = coupon.discountValue.toNumber();
-  }
-  discountAmount = Math.min(discountAmount, baseAmount);
-
-  return { discountAmount, couponId: coupon.id };
 }
 
 // =============================================================================
@@ -320,6 +286,18 @@ export function updateBookingStatus(
   input: unknown,
   ctx?: Ctx
 ): Promise<ServiceResult<Booking>> {
+  const statusPeek =
+    typeof input === "object" &&
+    input !== null &&
+    "status" in input &&
+    (input as { status?: unknown }).status;
+
+  if (statusPeek === "REFUNDED") {
+    return import("@/lib/services/refund.service").then(({ processAdminRefund }) =>
+      processAdminRefund(actor, id, input, ctx)
+    );
+  }
+
   return execute(async () => {
     if (!isAdmin(actor)) {
       throw new AuthorizationError("Only administrators can update booking status.");

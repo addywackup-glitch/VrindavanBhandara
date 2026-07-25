@@ -251,6 +251,13 @@ export const ApplyCouponSchema = z.object({
 
 export type ApplyCouponInput = z.infer<typeof ApplyCouponSchema>;
 
+export const PreviewCouponSchema = z.object({
+  code: z.string().min(3).max(50).transform((v) => v.trim().toUpperCase()),
+  packageId: z.string().cuid("Invalid package"),
+});
+
+export type PreviewCouponInput = z.infer<typeof PreviewCouponSchema>;
+
 // =============================================================================
 // Proof Timeline Schema
 // =============================================================================
@@ -333,3 +340,121 @@ export function parseServicePageSections(
   const result = ServicePageSectionsSchema.safeParse(value);
   return result.success ? result.data : null;
 }
+
+// =============================================================================
+// Service Category Schemas (Admin)
+// =============================================================================
+
+export const ServiceTypeEnum = z.enum([
+  "BHANDARA",
+  "BRAHMIN_BHOJ",
+  "GAU_SEVA",
+  "SADHU_BHOJAN",
+  "FESTIVAL_SEVA",
+  "ANNADAN_SEVA",
+  "VIDHWA_SEVA",
+]);
+
+const optionalUrlOrPath = z
+  .string()
+  .max(500)
+  .optional()
+  .or(z.literal(""))
+  .transform((v) => (v === "" || v === undefined ? undefined : v));
+
+const optionalShortText = (max: number) =>
+  z
+    .string()
+    .max(max)
+    .optional()
+    .or(z.literal(""))
+    .transform((v) => (v === "" || v === undefined ? undefined : v));
+
+export const CreateServiceSchema = z.object({
+  type: ServiceTypeEnum,
+  name: z.string().min(2).max(100),
+  slug: z.string().min(2).max(100).regex(/^[a-z0-9-]+$/),
+  description: z.string().min(10).max(5000),
+  shortDesc: z.string().min(5).max(300),
+  icon: optionalShortText(40),
+  image: optionalUrlOrPath,
+  isActive: z.boolean().default(true),
+  sortOrder: z.number().int().min(0).max(999).default(0),
+  metaTitle: optionalShortText(70),
+  metaDesc: optionalShortText(160),
+  pageSections: ServicePageSectionsSchema.nullable().optional(),
+});
+
+export type CreateServiceInput = z.infer<typeof CreateServiceSchema>;
+
+export const UpdateServiceSchema = CreateServiceSchema.partial().extend({
+  type: ServiceTypeEnum.optional(),
+});
+
+export type UpdateServiceInput = z.infer<typeof UpdateServiceSchema>;
+
+// =============================================================================
+// FAQ Schemas (Admin)
+// =============================================================================
+
+export const CreateFaqSchema = z.object({
+  question: z.string().min(5).max(300),
+  answer: z.string().min(10).max(5000),
+  category: z.string().min(1).max(80).default("General"),
+  serviceType: ServiceTypeEnum.nullable().optional(),
+  sortOrder: z.number().int().min(0).max(999).default(0),
+  isActive: z.boolean().default(true),
+  location: z.enum(["VRINDAVAN", "MATHURA", "BOTH"]).nullable().optional(),
+});
+
+export type CreateFaqInput = z.infer<typeof CreateFaqSchema>;
+
+export const UpdateFaqSchema = CreateFaqSchema.partial();
+
+export type UpdateFaqInput = z.infer<typeof UpdateFaqSchema>;
+
+// =============================================================================
+// Coupon Admin Schemas
+// =============================================================================
+
+const CouponFieldsSchema = z.object({
+  code: z
+    .string()
+    .min(3)
+    .max(40)
+    .transform((v) => v.trim().toUpperCase())
+    .refine((v) => /^[A-Z0-9_-]+$/.test(v), "Code may only contain A–Z, 0–9, _ and -"),
+  description: z.string().max(300).nullable().optional(),
+  discountType: z.enum(["PERCENTAGE", "FLAT"]),
+  discountValue: z.number().positive().max(100000),
+  minOrderValue: z.number().nonnegative().nullable().optional(),
+  maxDiscount: z.number().positive().nullable().optional(),
+  maxUses: z.number().int().positive().nullable().optional(),
+  isActive: z.boolean().default(true),
+  expiresAt: z.coerce.date().nullable().optional(),
+  applicableServices: z.array(ServiceTypeEnum).default([]),
+  applicablePackages: z.array(z.string().cuid()).default([]),
+});
+
+export const CreateCouponSchema = CouponFieldsSchema.refine(
+  (d) => d.discountType !== "PERCENTAGE" || d.discountValue <= 100,
+  {
+    message: "Percentage discount cannot exceed 100",
+    path: ["discountValue"],
+  }
+);
+
+export type CreateCouponInput = z.infer<typeof CreateCouponSchema>;
+
+export const UpdateCouponSchema = CouponFieldsSchema.partial().refine(
+  (d) =>
+    d.discountType !== "PERCENTAGE" ||
+    d.discountValue === undefined ||
+    d.discountValue <= 100,
+  {
+    message: "Percentage discount cannot exceed 100",
+    path: ["discountValue"],
+  }
+);
+
+export type UpdateCouponInput = z.infer<typeof UpdateCouponSchema>;

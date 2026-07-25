@@ -73,6 +73,43 @@ export const faqRepository = {
       },
     });
   },
+
+  listAdmin(
+    args: {
+      where?: Prisma.FAQWhereInput;
+      orderBy?: Prisma.FAQOrderByWithRelationInput | Prisma.FAQOrderByWithRelationInput[];
+      skip?: number;
+      take?: number;
+    },
+    db: DbClient = prisma
+  ) {
+    return db.fAQ.findMany({
+      where: args.where,
+      orderBy: args.orderBy ?? [{ sortOrder: "asc" }, { createdAt: "desc" }],
+      skip: args.skip,
+      take: args.take,
+    });
+  },
+
+  count(where: Prisma.FAQWhereInput = {}, db: DbClient = prisma) {
+    return db.fAQ.count({ where });
+  },
+
+  findById(id: string, db: DbClient = prisma) {
+    return db.fAQ.findUnique({ where: { id } });
+  },
+
+  create(data: Prisma.FAQUncheckedCreateInput, db: DbClient = prisma) {
+    return db.fAQ.create({ data });
+  },
+
+  update(id: string, data: Prisma.FAQUncheckedUpdateInput, db: DbClient = prisma) {
+    return db.fAQ.update({ where: { id }, data });
+  },
+
+  delete(id: string, db: DbClient = prisma) {
+    return db.fAQ.delete({ where: { id } });
+  },
 };
 
 export const sevaStatRepository = {

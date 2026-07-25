@@ -11,6 +11,15 @@ This app uses **one Supabase project** for:
 Prisma still owns app tables (`users`, `bookings`, …).  
 `users.supabaseUserId` links each profile to `auth.users.id`.
 
+**RLS:** App data is accessed only via Prisma (privileged role), not PostgREST.  
+Enable RLS on public tables (deny-by-default for `anon` / `authenticated`) with:
+
+```bash
+npx prisma db execute --file prisma/sql/enable-rls.sql --schema prisma/schema.prisma
+```
+
+Do **not** use `FORCE ROW LEVEL SECURITY` — that would break Prisma.
+
 ---
 
 ## Vercel “Connect Supabase”
@@ -54,10 +63,11 @@ Newer dashboard names also work:
 ## 2. Database connection (Settings → Database)
 
 ```env
-DATABASE_URL=<Session pooler URI, port 6543, ?pgbouncer=true>
+DATABASE_URL=<Transaction pooler URI, port 6543, ?pgbouncer=true>
 DATABASE_URL_UNPOOLED=<Direct URI, port 5432>
 ```
 
+At **build** time the app prefers `DATABASE_URL` (pooled) with a 1-connection pool so SSG does not hit Supabase `EMAXCONNSESSION`. At **runtime** it prefers `DATABASE_URL_UNPOOLED` so interactive transactions keep working.
 Push schema + seed:
 
 ```bash

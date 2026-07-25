@@ -62,6 +62,7 @@ export type BookingWithDetails = Booking & {
   payment: Payment | null;
   mediaProofs: MediaProof[];
   proofTimeline: ProofTimelineEvent[];
+  coupon?: { code: string } | null;
 };
 
 export type BookingWithPackage = Booking & {
@@ -338,5 +339,6 @@ export type BookingFormData = {
   intention: string;       // prayer intention
   // Misc
   couponCode: string;
+  discountAmount?: number;
   dedicatedTo: string;    // computed: sankalpNames.join(", ")
 };

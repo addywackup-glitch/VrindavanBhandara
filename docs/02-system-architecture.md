@@ -20,7 +20,7 @@ Prisma ORM
 
 Storage
 
-Cloudflare R2
+Supabase Storage
 
 Payments
 

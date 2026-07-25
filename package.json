@@ -34,6 +34,7 @@
     "framer-motion": "^12.40.0",
     "lucide-react": "^1.21.0",
     "next": "16.2.9",
+    "pdf-lib": "^1.17.1",
     "pg": "^8.22.0",
     "posthog-js": "^1.392.0",
     "prisma": "^6.19.3",

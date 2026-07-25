@@ -2,7 +2,7 @@
 
 // =============================================================================
 // Step 6 — Review your booking
-// Bordered table-style review with all booking details + protection notice
+// Bordered table-style review with all booking details + coupon + protection notice
 // =============================================================================
 
 import { useState } from "react";
@@ -11,6 +11,7 @@ import type { BookingFormData } from "@/types";
 
 type Props = {
   form: BookingFormData;
+  onChange: (patch: Partial<BookingFormData>) => void;
   onProceed: () => void;
   onBack: () => void;
   isLoading: boolean;
@@ -29,8 +30,11 @@ function formatDate(iso: string) {
   });
 }
 
-export function ReviewStep({ form, onProceed, onBack, isLoading }: Props) {
+export function ReviewStep({ form, onChange, onProceed, onBack, isLoading }: Props) {
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [couponInput, setCouponInput] = useState(form.couponCode ?? "");
+  const [couponBusy, setCouponBusy] = useState(false);
+  const [couponError, setCouponError] = useState("");
 
   const sevaDate = form.sevaDate ? formatDate(form.sevaDate) : "—";
   const fullName = [form.userFirstName, form.userLastName].filter(Boolean).join(" ") || "—";
@@ -38,8 +42,52 @@ export function ReviewStep({ form, onProceed, onBack, isLoading }: Props) {
   const locationLine = form.sevaLocation || "Vrindavan";
   const sankalpNames =
     form.sankalpNames.filter(Boolean).join(", ") || form.dedicatedTo || "—";
-  const tax = Math.round(form.packagePrice * 0);  // platform fee = 0
-  const total = form.packagePrice + tax;
+  const tax = 0;
+  const discount = form.discountAmount ?? 0;
+  const total = Math.max(0, form.packagePrice - discount + tax);
+
+  async function applyCoupon() {
+    const code = couponInput.trim().toUpperCase();
+    if (!code) {
+      onChange({ couponCode: "", discountAmount: 0 });
+      setCouponError("");
+      return;
+    }
+    if (!form.packageId) {
+      setCouponError("Select a package first.");
+      return;
+    }
+    setCouponBusy(true);
+    setCouponError("");
+    try {
+      const res = await fetch("/api/coupons/preview", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, packageId: form.packageId }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        setCouponError(data.error ?? "Invalid coupon");
+        onChange({ couponCode: "", discountAmount: 0 });
+        return;
+      }
+      onChange({
+        couponCode: data.data.code,
+        discountAmount: data.data.discountAmount,
+      });
+      setCouponInput(data.data.code);
+    } catch {
+      setCouponError("Could not validate coupon. Try again.");
+    } finally {
+      setCouponBusy(false);
+    }
+  }
+
+  function clearCoupon() {
+    setCouponInput("");
+    setCouponError("");
+    onChange({ couponCode: "", discountAmount: 0 });
+  }
 
   return (
     <div>
@@ -47,27 +95,22 @@ export function ReviewStep({ form, onProceed, onBack, isLoading }: Props) {
       <div className="step-sub">Please confirm all details before proceeding to payment.</div>
 
       <div className="review-section" role="table" aria-label="Booking summary">
-        {/* Service */}
         <div className="review-row" role="row">
           <span className="review-row-label" role="cell">Service</span>
           <span className="review-row-value" role="cell">{form.serviceName || "—"}</span>
         </div>
-        {/* Package */}
         <div className="review-row" role="row">
           <span className="review-row-label" role="cell">Package</span>
           <span className="review-row-value" role="cell">{form.packageName || "—"}</span>
         </div>
-        {/* Date */}
         <div className="review-row" role="row">
           <span className="review-row-label" role="cell">Date</span>
           <span className="review-row-value" role="cell">{sevaDate}</span>
         </div>
-        {/* Location */}
         <div className="review-row" role="row">
           <span className="review-row-label" role="cell">Location</span>
           <span className="review-row-value" role="cell">{locationLine}</span>
         </div>
-        {/* Booking for */}
         <div className="review-row" role="row">
           <span className="review-row-label" role="cell">Booking for</span>
           <span className="review-row-value" role="cell">
@@ -82,7 +125,6 @@ export function ReviewStep({ form, onProceed, onBack, isLoading }: Props) {
             )}
           </span>
         </div>
-        {/* Sankalp names */}
         {sankalpNames !== "—" && (
           <div className="review-row" role="row">
             <span className="review-row-label" role="cell">Sankalp names</span>
@@ -94,21 +136,18 @@ export function ReviewStep({ form, onProceed, onBack, isLoading }: Props) {
             </span>
           </div>
         )}
-        {/* Gotra */}
         {form.gotra && (
           <div className="review-row" role="row">
             <span className="review-row-label" role="cell">Gotra</span>
             <span className="review-row-value" role="cell">{form.gotra}</span>
           </div>
         )}
-        {/* Occasion */}
         {form.occasion && (
           <div className="review-row" role="row">
             <span className="review-row-label" role="cell">Occasion</span>
             <span className="review-row-value" role="cell">{form.occasion}</span>
           </div>
         )}
-        {/* Special instructions */}
         {form.specialInstructions && (
           <div className="review-row" role="row">
             <span className="review-row-label" role="cell">Special Instructions</span>
@@ -117,27 +156,20 @@ export function ReviewStep({ form, onProceed, onBack, isLoading }: Props) {
             </span>
           </div>
         )}
-        {/* Pricing */}
         <div className="review-row" role="row">
           <span className="review-row-label" role="cell">Package amount</span>
           <span className="review-row-value" role="cell">{formatINR(form.packagePrice)}</span>
         </div>
-        <div className="review-row" role="row">
-          <span className="review-row-label" role="cell">Platform fee</span>
-          <span className="review-row-value" role="cell">{formatINR(tax)}</span>
-        </div>
-        {/* Coupon */}
-        {form.couponCode && (
+        {discount > 0 && (
           <div className="review-row" role="row">
             <span className="review-row-label" role="cell" style={{ color: "var(--success)" }}>
-              Coupon: {form.couponCode}
+              Discount{form.couponCode ? ` (${form.couponCode})` : ""}
             </span>
             <span className="review-row-value" role="cell" style={{ color: "var(--success)" }}>
-              Applied ✓
+              −{formatINR(discount)}
             </span>
           </div>
         )}
-        {/* Total */}
         <div className="review-row review-total" role="row">
           <span className="review-row-label" role="cell" style={{ fontWeight: 600, color: "var(--fg)" }}>
             Total Amount
@@ -146,7 +178,42 @@ export function ReviewStep({ form, onProceed, onBack, isLoading }: Props) {
         </div>
       </div>
 
-      {/* Protection notice */}
+      <div style={{ marginBottom: "1.5rem" }}>
+        <label className="step-label" htmlFor="coupon-code" style={{ display: "block", marginBottom: "0.5rem", fontWeight: 600 }}>
+          Coupon code
+        </label>
+        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+          <input
+            id="coupon-code"
+            className="form-input"
+            style={{ flex: "1 1 160px" }}
+            value={couponInput}
+            onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+            placeholder="e.g. DIWALI10"
+            disabled={couponBusy || isLoading}
+            autoComplete="off"
+          />
+          <button type="button" className="btn-next" style={{ width: "auto", padding: "0.625rem 1rem" }} onClick={applyCoupon} disabled={couponBusy || isLoading}>
+            {couponBusy ? "Checking…" : "Apply"}
+          </button>
+          {(form.couponCode || couponInput) && (
+            <button type="button" className="btn-back" style={{ width: "auto" }} onClick={clearCoupon} disabled={couponBusy || isLoading}>
+              Clear
+            </button>
+          )}
+        </div>
+        {couponError && (
+          <p role="alert" style={{ color: "var(--danger, #b91c1c)", fontSize: "0.8125rem", marginTop: "0.5rem" }}>
+            {couponError}
+          </p>
+        )}
+        {form.couponCode && discount > 0 && !couponError && (
+          <p role="status" style={{ color: "var(--success)", fontSize: "0.8125rem", marginTop: "0.5rem" }}>
+            Coupon applied — you save {formatINR(discount)}.
+          </p>
+        )}
+      </div>
+
       <div
         style={{
           padding: "1rem 1.25rem",
@@ -163,7 +230,6 @@ export function ReviewStep({ form, onProceed, onBack, isLoading }: Props) {
         the Seva date.
       </div>
 
-      {/* Terms checkbox */}
       <label
         style={{
           display: "flex",
@@ -185,12 +251,7 @@ export function ReviewStep({ form, onProceed, onBack, isLoading }: Props) {
         />
         <span>
           I confirm that all the above details are correct and agree to the{" "}
-          <a
-            href="/terms"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ color: "var(--brand)", textDecoration: "underline" }}
-          >
+          <a href="/terms" target="_blank" rel="noopener noreferrer" style={{ color: "var(--brand)", textDecoration: "underline" }}>
             booking terms
           </a>
           .
@@ -217,18 +278,6 @@ export function ReviewStep({ form, onProceed, onBack, isLoading }: Props) {
             role="status"
             aria-live="polite"
           >
-            <span
-              style={{
-                display: "inline-block",
-                width: 16,
-                height: 16,
-                border: "2px solid var(--brand)",
-                borderTopColor: "transparent",
-                borderRadius: "50%",
-                animation: "spin 0.7s linear infinite",
-              }}
-              aria-hidden="true"
-            />
             Creating your booking…
           </motion.div>
         )}
@@ -236,9 +285,6 @@ export function ReviewStep({ form, onProceed, onBack, isLoading }: Props) {
 
       <div className="step-nav">
         <button className="btn-back" onClick={onBack} disabled={isLoading} type="button">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M19 12H5M12 19l-7-7 7-7" />
-          </svg>
           Back
         </button>
         <button
@@ -248,16 +294,7 @@ export function ReviewStep({ form, onProceed, onBack, isLoading }: Props) {
           aria-disabled={!termsAccepted || isLoading}
           type="button"
         >
-          {isLoading ? (
-            "Creating booking…"
-          ) : (
-            <>
-              Proceed to Payment
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
-            </>
-          )}
+          {isLoading ? "Creating booking…" : "Proceed to Payment"}
         </button>
       </div>
     </div>

@@ -27,6 +27,7 @@ export const bookingNotifyInclude = {
   payment: true,
   mediaProofs: true,
   proofTimeline: true,
+  coupon: { select: { code: true } },
 } satisfies Prisma.BookingInclude;
 
 export const bookingAdminListInclude = {

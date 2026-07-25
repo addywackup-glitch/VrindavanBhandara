@@ -215,7 +215,9 @@ export function AdminBookingActions({
             <div className="adm-detail-card-body">
               <p style={{ fontSize: "0.9375rem", color: "var(--fg)", marginBottom: "1rem", lineHeight: 1.6 }}>
                 {pendingAction.variant === "danger"
-                  ? `Are you sure you want to ${pendingAction.label.toLowerCase()}? This action follows backend transition rules and may notify the customer.`
+                  ? pendingAction.status === "REFUNDED"
+                    ? "This will initiate a full refund via Razorpay, update the payment record, and notify the customer. Continue?"
+                    : `Are you sure you want to ${pendingAction.label.toLowerCase()}? This action follows backend transition rules and may notify the customer.`
                   : `Proceed with "${pendingAction.label}"?`}
               </p>
               <div style={{ display: "flex", gap: "0.625rem", justifyContent: "flex-end" }}>
