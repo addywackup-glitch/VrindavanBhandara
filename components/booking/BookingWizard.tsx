@@ -68,6 +68,7 @@ const INITIAL_FORM: BookingFormData = {
   sankalpNames: [""],
   intention: "",
   couponCode: "",
+  discountAmount: 0,
   dedicatedTo: "",
 };
 
@@ -664,6 +665,7 @@ export function BookingWizard() {
               {step === 6 && (
                 <ReviewStep
                   form={form}
+                  onChange={updateForm}
                   onProceed={handleProceedToPayment}
                   onBack={goPrev}
                   isLoading={isCreating}

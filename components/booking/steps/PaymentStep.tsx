@@ -499,6 +499,16 @@ export function PaymentStep({ bookingId, form, onSuccess, onBack }: Props) {
           <span style={{ fontSize: "0.9rem", color: "var(--muted)" }}>Seva amount</span>
           <span style={{ fontSize: "0.9rem", fontWeight: 500 }}>{formatINR(form.packagePrice)}</span>
         </div>
+        {(form.discountAmount ?? 0) > 0 && (
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: "0.9rem", color: "var(--success)" }}>
+              Discount{form.couponCode ? ` (${form.couponCode})` : ""}
+            </span>
+            <span style={{ fontSize: "0.9rem", fontWeight: 500, color: "var(--success)" }}>
+              −{formatINR(form.discountAmount ?? 0)}
+            </span>
+          </div>
+        )}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <span style={{ fontSize: "0.9rem", color: "var(--muted)" }}>Platform fee</span>
           <span style={{ fontSize: "0.9rem", fontWeight: 500 }}>₹0</span>
@@ -522,7 +532,7 @@ export function PaymentStep({ bookingId, form, onSuccess, onBack }: Props) {
               letterSpacing: "-0.02em",
             }}
           >
-            {formatINR(form.packagePrice)}
+            {formatINR(Math.max(0, form.packagePrice - (form.discountAmount ?? 0)))}
           </span>
         </div>
       </div>
@@ -690,7 +700,7 @@ export function PaymentStep({ bookingId, form, onSuccess, onBack }: Props) {
             retryAfterText(rateLimitCountdown ?? 0)
           ) : (
             <>
-              Pay {formatINR(form.packagePrice)} Securely
+              Pay {formatINR(Math.max(0, form.packagePrice - (form.discountAmount ?? 0)))} Securely
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
               </svg>

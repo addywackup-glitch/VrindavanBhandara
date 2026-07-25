@@ -1,20 +1,93 @@
 // =============================================================================
 // VRINDAVAN BHANDARA — Email Notification Service
 // Source: 02-system-architecture.md — Resend for transactional email
+//
+// Soft-skips (like WhatsApp) when RESEND_API_KEY is missing or a placeholder,
+// so payment/booking flows never fail on email misconfiguration.
+//
+// Until you verify a custom domain in Resend, use:
+//   RESEND_FROM_EMAIL=onboarding@resend.dev
+// Resend only delivers to your account email with that sender.
+// After domain verify, set RESEND_FROM_EMAIL to seva@yourdomain.com
 // =============================================================================
 
 import { Resend } from "resend";
 import type { BookingWithDetails } from "@/types";
 import { formatDate, formatCurrency } from "@/lib/utils";
 
-// Lazy singleton — initialized on first use at runtime, not at build time
 let _resend: Resend | null = null;
-function getResend(): Resend {
+
+function isResendConfigured(): boolean {
+  const key = process.env.RESEND_API_KEY?.trim() ?? "";
+  if (!key) return false;
+  if (key.includes("dummy") || key.includes("replace") || key.includes("XXXX")) {
+    return false;
+  }
+  return key.startsWith("re_");
+}
+
+function getResend(): Resend | null {
+  if (!isResendConfigured()) return null;
   if (!_resend) _resend = new Resend(process.env.RESEND_API_KEY);
   return _resend;
 }
+
 const FROM = () =>
-  `${process.env.RESEND_FROM_NAME ?? "Vrindavan Bhandara"} <${process.env.RESEND_FROM_EMAIL ?? "seva@vrindavanbhandara.com"}>`;
+  `${process.env.RESEND_FROM_NAME ?? "Vrindavan Bhandara"} <${
+    process.env.RESEND_FROM_EMAIL ?? "onboarding@resend.dev"
+  }>`;
+
+function siteUrl(): string {
+  return (
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    process.env.NEXT_PUBLIC_APP_URL ??
+    "https://vrindavan-bhandara.vercel.app"
+  );
+}
+
+function bookingDashboardUrl(bookingId: string): string {
+  return `${siteUrl()}/dashboard/bookings/${bookingId}`;
+}
+
+async function sendEmail(params: {
+  to: string;
+  subject: string;
+  html: string;
+  label: string;
+  attachments?: Array<{ filename: string; content: Buffer }>;
+}): Promise<void> {
+  const client = getResend();
+  if (!client) {
+    console.warn(
+      `[Email] Skipped "${params.label}" to ${params.to} (RESEND_API_KEY not configured)`
+    );
+    return;
+  }
+
+  try {
+    const { error } = await client.emails.send({
+      from: FROM(),
+      to: params.to,
+      subject: params.subject,
+      html: params.html,
+      ...(params.attachments?.length
+        ? {
+            attachments: params.attachments.map((a) => ({
+              filename: a.filename,
+              content: a.content,
+            })),
+          }
+        : {}),
+    });
+    if (error) {
+      console.error(`[Email] Resend error for "${params.label}":`, error);
+      return;
+    }
+  } catch (err) {
+    // Never fail the booking/payment path because email delivery failed.
+    console.error(`[Email] Failed to send "${params.label}":`, err);
+  }
+}
 
 // =============================================================================
 // Email: Booking Confirmation
@@ -25,10 +98,10 @@ export async function sendBookingConfirmationEmail(
 ): Promise<void> {
   const { user, package: pkg, bookingNumber, sevaDate, totalAmount } = booking;
 
-  await getResend().emails.send({
-    from: FROM(),
+  await sendEmail({
+    label: "booking_confirmation",
     to: user.email,
-    subject: `🙏 Booking Confirmed — ${pkg.serviceCategory.name} | ${bookingNumber}`,
+    subject: `Booking Confirmed — ${pkg.serviceCategory.name} | ${bookingNumber}`,
     html: buildBookingConfirmationHtml({
       name: user.name,
       bookingNumber,
@@ -36,7 +109,7 @@ export async function sendBookingConfirmationEmail(
       packageName: pkg.name,
       sevaDate: formatDate(sevaDate),
       amount: formatCurrency(totalAmount),
-      dashboardUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/bookings/${booking.id}`,
+      dashboardUrl: bookingDashboardUrl(booking.id),
     }),
   });
 }
@@ -50,16 +123,60 @@ export async function sendPaymentReceivedEmail(
 ): Promise<void> {
   const { user, bookingNumber, totalAmount } = booking;
 
-  await getResend().emails.send({
-    from: FROM(),
+  let attachments: Array<{ filename: string; content: Buffer }> | undefined;
+  try {
+    const { buildBookingInvoicePdf } = await import("@/lib/invoices/booking-invoice");
+    const pdf = await buildBookingInvoicePdf({
+      bookingNumber: booking.bookingNumber,
+      sevaDate: booking.sevaDate,
+      sevaLocation: booking.sevaLocation,
+      guestCount: booking.guestCount,
+      dedicatedTo: booking.dedicatedTo,
+      gotra: booking.gotra,
+      occasion: booking.occasion,
+      baseAmount: booking.baseAmount,
+      discountAmount: booking.discountAmount,
+      taxAmount: booking.taxAmount,
+      totalAmount: booking.totalAmount,
+      status: booking.status,
+      user: {
+        name: booking.user.name,
+        email: booking.user.email,
+        phone: booking.user.phone,
+      },
+      package: {
+        name: booking.package.name,
+        serviceCategory: { name: booking.package.serviceCategory.name },
+      },
+      payment: booking.payment
+        ? {
+            status: booking.payment.status,
+            razorpayPaymentId: booking.payment.razorpayPaymentId,
+          }
+        : null,
+      coupon: booking.coupon ? { code: booking.coupon.code } : null,
+    });
+    attachments = [
+      {
+        filename: `invoice-${booking.bookingNumber}.pdf`,
+        content: Buffer.from(pdf),
+      },
+    ];
+  } catch (err) {
+    console.warn("[Email] Invoice PDF attachment skipped:", err);
+  }
+
+  await sendEmail({
+    label: "payment_received",
     to: user.email,
-    subject: `✅ Payment Received — ₹${formatCurrency(totalAmount)} | ${bookingNumber}`,
+    subject: `Payment Received — ${formatCurrency(totalAmount)} | ${bookingNumber}`,
     html: buildPaymentReceivedHtml({
       name: user.name,
       bookingNumber,
       amount: formatCurrency(totalAmount),
-      dashboardUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/bookings/${booking.id}`,
+      dashboardUrl: bookingDashboardUrl(booking.id),
     }),
+    attachments,
   });
 }
 
@@ -72,15 +189,15 @@ export async function sendSevaCompletedEmail(
 ): Promise<void> {
   const { user, bookingNumber, package: pkg } = booking;
 
-  await getResend().emails.send({
-    from: FROM(),
+  await sendEmail({
+    label: "seva_completed",
     to: user.email,
-    subject: `🌸 Seva Completed — ${pkg.serviceCategory.name} | ${bookingNumber}`,
+    subject: `Seva Completed — ${pkg.serviceCategory.name} | ${bookingNumber}`,
     html: buildSevaCompletedHtml({
       name: user.name,
       bookingNumber,
       serviceName: pkg.serviceCategory.name,
-      dashboardUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/bookings/${booking.id}`,
+      dashboardUrl: bookingDashboardUrl(booking.id),
     }),
   });
 }
@@ -105,7 +222,7 @@ function emailWrapper(content: string): string {
           <!-- Header -->
           <tr>
             <td style="background:linear-gradient(135deg,#D4AF37,#FF7722);padding:32px;text-align:center;">
-              <h1 style="color:#fff;margin:0;font-size:24px;font-family:Georgia,serif;letter-spacing:1px;">🪔 Vrindavan Bhandara</h1>
+              <h1 style="color:#fff;margin:0;font-size:24px;font-family:Georgia,serif;letter-spacing:1px;">Vrindavan Bhandara</h1>
               <p style="color:rgba(255,255,255,0.9);margin:8px 0 0;font-size:14px;">Spiritual Seva. Transparent Proof.</p>
             </td>
           </tr>
@@ -121,8 +238,8 @@ function emailWrapper(content: string): string {
               <p style="color:#888;font-size:12px;margin:0;">Vrindavan Bhandara | vrindavanbhandara.com</p>
               <p style="color:#888;font-size:12px;margin:4px 0 0;">Serving devotees worldwide with transparent seva</p>
               <p style="color:#888;font-size:11px;margin:12px 0 0;">
-                <a href="${process.env.NEXT_PUBLIC_SITE_URL}/privacy-policy" style="color:#D4AF37;text-decoration:none;">Privacy Policy</a> · 
-                <a href="${process.env.NEXT_PUBLIC_SITE_URL}/contact" style="color:#D4AF37;text-decoration:none;">Contact</a>
+                <a href="${siteUrl()}/privacy-policy" style="color:#D4AF37;text-decoration:none;">Privacy Policy</a> · 
+                <a href="${siteUrl()}/contact" style="color:#D4AF37;text-decoration:none;">Contact</a>
               </p>
             </td>
           </tr>
@@ -144,7 +261,7 @@ function buildBookingConfirmationHtml(params: {
   dashboardUrl: string;
 }): string {
   return emailWrapper(`
-    <h2 style="color:#1A1A2E;font-family:Georgia,serif;margin:0 0 8px;">🙏 Jai Shri Krishna, ${params.name}!</h2>
+    <h2 style="color:#1A1A2E;font-family:Georgia,serif;margin:0 0 8px;">Jai Shri Krishna, ${params.name}!</h2>
     <p style="color:#555;margin:0 0 24px;line-height:1.6;">Your booking has been confirmed. Our team will ensure your seva is performed with full devotion.</p>
     
     <div style="background:#FFF8DC;border:1px solid #D4AF37;border-radius:12px;padding:24px;margin:0 0 24px;">
@@ -170,7 +287,7 @@ function buildPaymentReceivedHtml(params: {
   dashboardUrl: string;
 }): string {
   return emailWrapper(`
-    <h2 style="color:#1A1A2E;font-family:Georgia,serif;margin:0 0 8px;">✅ Payment Received!</h2>
+    <h2 style="color:#1A1A2E;font-family:Georgia,serif;margin:0 0 8px;">Payment Received!</h2>
     <p style="color:#555;margin:0 0 24px;line-height:1.6;">Thank you, ${params.name}. Your payment of <strong>${params.amount}</strong> for booking <strong>${params.bookingNumber}</strong> has been received and confirmed.</p>
     <a href="${params.dashboardUrl}" style="display:inline-block;background:linear-gradient(135deg,#D4AF37,#FF7722);color:#fff;text-decoration:none;padding:14px 28px;border-radius:8px;font-weight:600;font-size:15px;">View Booking →</a>
   `);
@@ -183,7 +300,7 @@ function buildSevaCompletedHtml(params: {
   dashboardUrl: string;
 }): string {
   return emailWrapper(`
-    <h2 style="color:#1A1A2E;font-family:Georgia,serif;margin:0 0 8px;">🌸 Your Seva is Complete!</h2>
+    <h2 style="color:#1A1A2E;font-family:Georgia,serif;margin:0 0 8px;">Your Seva is Complete!</h2>
     <p style="color:#555;margin:0 0 24px;line-height:1.6;">Jai Shri Krishna, ${params.name}! Your <strong>${params.serviceName}</strong> (Booking: ${params.bookingNumber}) has been completed with full devotion.</p>
     <p style="color:#555;margin:0 0 24px;line-height:1.6;">Please visit your dashboard to view proof photos and videos from your seva.</p>
     <a href="${params.dashboardUrl}" style="display:inline-block;background:linear-gradient(135deg,#D4AF37,#FF7722);color:#fff;text-decoration:none;padding:14px 28px;border-radius:8px;font-weight:600;font-size:15px;">View Proof →</a>
@@ -203,10 +320,10 @@ export async function sendRefundConfirmationEmail(params: {
   timeline?: string;
 }): Promise<void> {
   const timeline = params.timeline ?? "5-7 business days";
-  await getResend().emails.send({
-    from: FROM(),
+  await sendEmail({
+    label: "refund_confirmation",
     to: params.email,
-    subject: `💰 Refund Processed — ${params.bookingNumber}`,
+    subject: `Refund Processed — ${params.bookingNumber}`,
     html: emailWrapper(`
       <h2 style="color:#8B1E1E;font-family:Georgia,serif;margin:0 0 8px;">Refund Processed</h2>
       <p style="color:#555;margin:0 0 16px;line-height:1.6;">Dear ${params.name},</p>

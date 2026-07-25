@@ -4,7 +4,7 @@ import type { BookingStatus } from "@prisma/client";
 export const BOOKING_STATUS_TRANSITIONS: Record<BookingStatus, BookingStatus[]> = {
   PENDING: ["CONFIRMED", "CANCELLED"],
   CONFIRMED: ["IN_PROGRESS", "CANCELLED", "REFUNDED"],
-  IN_PROGRESS: ["COMPLETED", "CANCELLED"],
+  IN_PROGRESS: ["COMPLETED", "CANCELLED", "REFUNDED"],
   COMPLETED: [],
   CANCELLED: [],
   REFUNDED: [],

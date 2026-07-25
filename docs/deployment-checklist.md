@@ -17,9 +17,9 @@
 - [ ] `DATABASE_URL` (Supabase pooler, port 6543) + `DATABASE_URL_UNPOOLED` (direct, port 5432)
 - [ ] `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
 - [ ] `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`, `NEXT_PUBLIC_RAZORPAY_KEY_ID`
-- [ ] `RESEND_API_KEY` (+ from address)
-- [ ] Cloudflare R2 keys (media)
-- [ ] WhatsApp Cloud API tokens (optional; dev-logs without them)
+- [ ] `RESEND_API_KEY` (+ `RESEND_FROM_EMAIL` / `RESEND_FROM_NAME`; use `onboarding@resend.dev` until domain verified)
+- [ ] Supabase Storage buckets (proofs / gallery / blog — see docs/supabase-setup.md)
+- [ ] WhatsApp Cloud API tokens (optional; soft-skips without them)
 - [ ] `UPSTASH_REDIS_REST_URL` / `_TOKEN` (production rate limiting)
 
 ## 2. Database (Supabase)

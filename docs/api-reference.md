@@ -25,7 +25,10 @@ See `docs/error-codes.md` for `code` → HTTP status mapping.
 | Method | Path | Auth | Body |
 | --- | --- | --- | --- |
 | POST | `/api/auth/register` | public | `RegisterRequest` |
-| (login) | NextAuth `/api/auth/[...nextauth]` | public | credentials/OAuth |
+| POST | `/api/auth/login` | public | email/password (Supabase Auth) |
+| POST | `/api/auth/logout` | user | sign out |
+| GET | `/api/auth/session` | public | current session for `useSession` |
+| GET | `/auth/callback` | public | OAuth PKCE callback |
 
 ### Bookings
 | Method | Path | Auth | Notes |
@@ -33,7 +36,13 @@ See `docs/error-codes.md` for `code` → HTTP status mapping.
 | GET | `/api/bookings` | user | own bookings; admins see all; `?status&page&pageSize` |
 | POST | `/api/bookings` | user | `CreateBookingRequest` → PENDING booking |
 | GET | `/api/bookings/{id}` | owner/admin | full detail |
+| GET | `/api/bookings/{id}/invoice` | owner/admin | PDF invoice download |
 | PUT | `/api/bookings/{id}` | admin | `UpdateBookingStatusRequest` |
+
+### Coupons
+| Method | Path | Auth | Notes |
+| --- | --- | --- | --- |
+| POST | `/api/coupons/preview` | user | validate code + preview discount |
 
 ### Payments
 | Method | Path | Auth | Notes |
@@ -55,10 +64,18 @@ See `docs/error-codes.md` for `code` → HTTP status mapping.
 | Method | Path | Permission |
 | --- | --- | --- |
 | GET | `/api/admin/bookings` | `bookings:read` |
-| PATCH | `/api/admin/bookings/{id}/status` | `bookings:write` |
+| PATCH | `/api/admin/bookings/{id}/status` | `bookings:write` (or `payments:refund` when status=REFUNDED) |
 | GET/POST | `/api/admin/bookings/{id}/proof` | `bookings:read` / `proofs:upload` |
 | GET/POST | `/api/admin/packages` | `packages:read` / `packages:write` |
 | GET/PATCH/DELETE | `/api/admin/packages/{id}` | `packages:read/write/delete` |
+| GET/POST | `/api/admin/services` | `services:read` / `services:write` |
+| GET/PATCH/DELETE | `/api/admin/services/{id}` | `services:read/write/delete` |
+| GET/POST | `/api/admin/faqs` | `faqs:write` |
+| PATCH/DELETE | `/api/admin/faqs/{id}` | `faqs:write` |
+| GET/POST | `/api/admin/coupons` | `coupons:read` / `coupons:write` |
+| PATCH/DELETE | `/api/admin/coupons/{id}` | `coupons:write` |
+| GET/POST | `/api/admin/admins` | `admins:manage` |
+| PATCH | `/api/admin/admins/{id}` | `admins:manage` |
 | GET/POST | `/api/admin/blog` | `blogs:read` / `blogs:write` |
 | GET/PATCH/DELETE | `/api/admin/blog/{id}` | `blogs:read/write/delete` |
 | GET/POST | `/api/admin/gallery` | `gallery:write` |

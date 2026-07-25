@@ -10,7 +10,7 @@ Supabase PostgreSQL
 
 Storage
 
-Cloudflare R2
+Supabase Storage
 
 Domain
 

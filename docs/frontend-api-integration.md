@@ -72,7 +72,7 @@ Every REST endpoint returns a discriminated union:
 
 ### Authentication mechanism
 
-- **Session:** NextAuth v5 JWT stored in cookie `next-auth.session-token` (or `__Secure-next-auth.session-token` in production HTTPS).
+- **Session:** Supabase Auth cookies via `@supabase/ssr`; client `useSession` reads `GET /api/auth/session`.
 - **REST:** Send cookies automatically with `fetch(..., { credentials: "include" })` on same origin.
 - **Server Components / Actions:** Session resolved server-side via `auth()` — no manual token handling.
 
@@ -847,7 +847,7 @@ vrindavanbhandara/
 | --- | --- | --- |
 | **1** | Backend, architecture, DB, tests, OpenAPI, docs | ✅ Complete |
 | **2** | Premium UI, design system, Open Design, a11y, responsive | 🚧 Next |
-| **3** | Razorpay, R2, Resend, WhatsApp, analytics integrations (prod wiring) | 🚧 Planned |
+| **3** | Razorpay, Resend, WhatsApp, analytics integrations (prod wiring) | 🚧 In progress |
 | **4** | Security audit, load testing, SEO, perf, Vercel, CI/CD, monitoring | 🚧 Planned |
 
 ---

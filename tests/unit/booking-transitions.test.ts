@@ -16,8 +16,10 @@ describe("booking status lifecycle (canTransition)", () => {
     expect(canTransition("CONFIRMED", "CANCELLED")).toBe(true);
     expect(canTransition("CONFIRMED", "REFUNDED")).toBe(true);
   });
-  it("allows IN_PROGRESS -> COMPLETED", () => {
+  it("allows IN_PROGRESS -> COMPLETED / CANCELLED / REFUNDED", () => {
     expect(canTransition("IN_PROGRESS", "COMPLETED")).toBe(true);
+    expect(canTransition("IN_PROGRESS", "CANCELLED")).toBe(true);
+    expect(canTransition("IN_PROGRESS", "REFUNDED")).toBe(true);
   });
   it("treats same-status as a no-op (idempotent)", () => {
     expect(canTransition("COMPLETED", "COMPLETED")).toBe(true);

@@ -15,6 +15,12 @@ export type Permission =
   | "packages:read"
   | "packages:write"
   | "packages:delete"
+  | "services:read"
+  | "services:write"
+  | "services:delete"
+  | "faqs:write"
+  | "coupons:read"
+  | "coupons:write"
   | "payments:read"
   | "payments:refund"
   | "blogs:read"
@@ -39,6 +45,12 @@ const ROLE_PERMISSIONS: Record<AdminRole, Permission[]> = {
     "packages:read",
     "packages:write",
     "packages:delete",
+    "services:read",
+    "services:write",
+    "services:delete",
+    "faqs:write",
+    "coupons:read",
+    "coupons:write",
     "payments:read",
     "payments:refund",
     "blogs:read",
@@ -59,13 +71,22 @@ const ROLE_PERMISSIONS: Record<AdminRole, Permission[]> = {
     "users:read",
     "packages:read",
     "packages:write",
+    "services:read",
+    "services:write",
+    "faqs:write",
+    "coupons:read",
+    "coupons:write",
     "payments:read",
+    "payments:refund",
     "proofs:upload",
     "campaigns:write",
     "gallery:write",
     "analytics:read",
   ],
   CONTENT_ADMIN: [
+    "services:read",
+    "services:write",
+    "faqs:write",
     "blogs:read",
     "blogs:write",
     "blogs:delete",
@@ -77,6 +98,7 @@ const ROLE_PERMISSIONS: Record<AdminRole, Permission[]> = {
     "bookings:read",
     "users:read",
     "payments:read",
+    "services:read",
   ],
 };
 
@@ -85,6 +107,14 @@ export function hasPermission(
   permission: Permission
 ): boolean {
   return ROLE_PERMISSIONS[adminRole]?.includes(permission) ?? false;
+}
+
+export function getPermissions(adminRole: AdminRole): Permission[] {
+  return ROLE_PERMISSIONS[adminRole] ?? [];
+}
+
+export function getRolePermissionMatrix(): Record<AdminRole, Permission[]> {
+  return ROLE_PERMISSIONS;
 }
 
 // =============================================================================

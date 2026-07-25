@@ -2,7 +2,7 @@
 // PackageRepository — pure Prisma access for packages & service categories
 // =============================================================================
 
-import { Prisma } from "@prisma/client";
+import { Prisma, type ServiceType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import type { DbClient } from "./types";
 
@@ -137,6 +137,63 @@ export type ServicePageData = Prisma.ServiceCategoryGetPayload<{ include: typeof
 export const serviceCategoryRepository = {
   listAll(db: DbClient = prisma) {
     return db.serviceCategory.findMany({ orderBy: { sortOrder: "asc" } });
+  },
+
+  listAdmin(
+    args: {
+      where?: Prisma.ServiceCategoryWhereInput;
+      orderBy?: Prisma.ServiceCategoryOrderByWithRelationInput | Prisma.ServiceCategoryOrderByWithRelationInput[];
+      skip?: number;
+      take?: number;
+    },
+    db: DbClient = prisma
+  ) {
+    return db.serviceCategory.findMany({
+      where: args.where,
+      orderBy: args.orderBy ?? { sortOrder: "asc" },
+      skip: args.skip,
+      take: args.take,
+      include: { _count: { select: { packages: true } } },
+    });
+  },
+
+  count(where: Prisma.ServiceCategoryWhereInput = {}, db: DbClient = prisma) {
+    return db.serviceCategory.count({ where });
+  },
+
+  findById(id: string, db: DbClient = prisma) {
+    return db.serviceCategory.findUnique({
+      where: { id },
+      include: { _count: { select: { packages: true } } },
+    });
+  },
+
+  findBySlug(slug: string, db: DbClient = prisma) {
+    return db.serviceCategory.findUnique({ where: { slug } });
+  },
+
+  findByType(type: ServiceType, db: DbClient = prisma) {
+    return db.serviceCategory.findUnique({ where: { type } });
+  },
+
+  listUsedTypes(db: DbClient = prisma) {
+    return db.serviceCategory.findMany({ select: { type: true } });
+  },
+
+  create(data: Prisma.ServiceCategoryCreateInput, db: DbClient = prisma) {
+    return db.serviceCategory.create({ data });
+  },
+
+  update(id: string, data: Prisma.ServiceCategoryUpdateInput, db: DbClient = prisma) {
+    return db.serviceCategory.update({ where: { id }, data });
+  },
+
+  setActive(id: string, isActive: boolean, db: DbClient = prisma) {
+    return db.serviceCategory.update({ where: { id }, data: { isActive } });
+  },
+
+  delete(id: string, db: DbClient = prisma) {
+    return db.serviceCategory.delete({ where: { id } });
   },
 
   listActivePublic(db: DbClient = prisma) {
