@@ -49,9 +49,10 @@ export async function GET(_request: NextRequest, { params }: Params) {
         { status: statusForCode(err.code) }
       );
     }
+    const message = err instanceof Error ? err.message : "Failed to generate invoice";
     console.error("[invoice]", err);
     return NextResponse.json(
-      { success: false, error: "Failed to generate invoice", code: "INTERNAL_ERROR" },
+      { success: false, error: message, code: "INTERNAL_ERROR" },
       { status: 500 }
     );
   }

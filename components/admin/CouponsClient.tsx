@@ -16,6 +16,8 @@ type Coupon = {
   usedCount: number;
   isActive: boolean;
   expiresAt: string | Date | null;
+  applicableServices?: string[];
+  applicablePackages?: string[];
 };
 
 type FormState = {
@@ -89,7 +91,7 @@ export function CouponsClient({ coupons }: Props) {
     setSaving(true);
     setError("");
     try {
-      const payload = {
+      const payload: Record<string, unknown> = {
         code: form.code.trim().toUpperCase(),
         description: form.description.trim() || null,
         discountType: form.discountType,
@@ -98,14 +100,24 @@ export function CouponsClient({ coupons }: Props) {
         maxDiscount: form.maxDiscount ? Number(form.maxDiscount) : null,
         maxUses: form.maxUses ? Number(form.maxUses) : null,
         isActive: form.isActive,
-        expiresAt: form.expiresAt ? new Date(form.expiresAt).toISOString() : null,
-        applicableServices: [],
-        applicablePackages: [],
+        expiresAt: form.expiresAt
+          ? new Date(`${form.expiresAt}T23:59:59`).toISOString()
+          : null,
       };
+
+      // Only set scope arrays on create; never wipe existing restrictions on edit.
+      if (!editingId) {
+        payload.applicableServices = [];
+        payload.applicablePackages = [];
+      }
 
       const url = editingId ? `/api/admin/coupons/${editingId}` : "/api/admin/coupons";
       const method = editingId ? "PATCH" : "POST";
-      const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
       const data = await res.json();
       if (!res.ok || !data.success) {
         setError(data.error ?? "Failed to save coupon");

@@ -210,6 +210,15 @@ export default async function AdminBookingDetailPage({ params }: Params) {
                   )}
                 </div>
               )}
+              {booking.status !== "PENDING" && booking.status !== "CANCELLED" && (
+                <a
+                  href={`/api/bookings/${booking.id}/invoice`}
+                  className="adm-topbar-btn"
+                  style={{ display: "inline-flex", marginTop: "1rem", width: "100%", justifyContent: "center" }}
+                >
+                  Download Invoice (PDF)
+                </a>
+              )}
             </div>
           </div>
         </div>
