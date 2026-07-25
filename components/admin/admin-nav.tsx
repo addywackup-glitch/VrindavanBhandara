@@ -1,5 +1,5 @@
 import type React from "react";
-import type { Permission } from "@/lib/rbac";
+import type { Permission } from "@/lib/permissions";
 
 // Admin navigation config
 export type AdminNavItem = {

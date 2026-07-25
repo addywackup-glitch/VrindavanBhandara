@@ -3,21 +3,22 @@
 // Source: 02-system-architecture.md — Supabase PostgreSQL
 //
 // Connection strategy:
-// - Build (SSG): prefer pooled DATABASE_URL + pg.Pool max=1 so we don't hit
-//   Supabase session-mode EMAXCONNSESSION (pool_size ~15) while prerendering.
+// - Build (SSG): prefer pooled DATABASE_URL so we don't hit Supabase
+//   session-mode EMAXCONNSESSION while prerendering.
 // - Runtime: prefer DATABASE_URL_UNPOOLED (direct) so interactive $transaction
 //   (bookings, payments, registration) keeps working.
-// - Always cache client + pool on globalThis (including production).
+// - Cap connections via `connection_limit=1` on the URL (do NOT import `pg`
+//   Pool at module top-level — Turbopack then tries to bundle Node builtins).
+// - Always cache the client on globalThis (including production).
 // =============================================================================
 
-import { Pool } from "pg";
+import "server-only";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { ensureDatabaseEnv } from "@/lib/env/database";
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
-  pgPool: Pool | undefined;
 };
 
 function isProductionBuild(): boolean {
@@ -29,44 +30,36 @@ function pickConnectionString(
   directUrl: string | undefined
 ): string | undefined {
   if (isProductionBuild()) {
-    // Pooled URL spreads load; fall back to direct if only one is set.
     return databaseUrl || directUrl;
   }
-  // Runtime: direct first so $transaction works reliably on Supabase.
   return directUrl || databaseUrl;
 }
 
-function createPool(connectionString: string): Pool {
-  return new Pool({
-    connectionString,
-    // Default pg.Pool max is 10 — too high for Supabase session limits when
-    // Next prerenders many pages or many serverless isolates warm up.
-    max: 1,
-    idleTimeoutMillis: 20_000,
-    connectionTimeoutMillis: 15_000,
-    allowExitOnIdle: true,
-  });
+/** Ensure each isolate opens at most one DB connection (Supabase pool caps). */
+function withConnectionLimit(connectionString: string): string {
+  try {
+    const url = new URL(connectionString);
+    if (!url.searchParams.has("connection_limit")) {
+      url.searchParams.set("connection_limit", "1");
+    }
+    return url.toString();
+  } catch {
+    const sep = connectionString.includes("?") ? "&" : "?";
+    return connectionString.includes("connection_limit=")
+      ? connectionString
+      : `${connectionString}${sep}connection_limit=1`;
+  }
 }
 
 function createPrismaClient(): PrismaClient {
   const { databaseUrl, directUrl } = ensureDatabaseEnv();
-  const connectionString = pickConnectionString(databaseUrl, directUrl);
-
-  if (!connectionString) {
-    const adapter = new PrismaPg({
-      connectionString: "postgresql://localhost/placeholder",
-    });
-    return new PrismaClient({
-      adapter,
-      log: ["error"],
-    });
-  }
-
-  const pool = globalForPrisma.pgPool ?? createPool(connectionString);
-  globalForPrisma.pgPool = pool;
+  const raw = pickConnectionString(databaseUrl, directUrl);
+  const connectionString = raw
+    ? withConnectionLimit(raw)
+    : "postgresql://localhost/placeholder?connection_limit=1";
 
   return new PrismaClient({
-    adapter: new PrismaPg(pool),
+    adapter: new PrismaPg({ connectionString }),
     log:
       process.env.NODE_ENV === "development"
         ? ["query", "error", "warn"]
