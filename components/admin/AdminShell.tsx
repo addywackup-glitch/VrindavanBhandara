@@ -7,7 +7,7 @@ import { signOut } from "@/lib/auth/client";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Session } from "@/lib/auth";
 import { ADMIN_NAV, getAdminPageMeta } from "@/components/admin/admin-nav";
-import { hasPermission } from "@/lib/rbac";
+import { hasPermission } from "@/lib/permissions";
 import type { AdminRole } from "@prisma/client";
 
 function BrandMark() {

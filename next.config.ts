@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Keep Node-only DB drivers out of the Turbopack client/edge graph.
+  serverExternalPackages: ["pg", "@prisma/adapter-pg", "@prisma/client"],
+
   // =============================================================================
   // Security Headers
   // Source: 09-security-standards.md — CSP, HSTS mandatory
