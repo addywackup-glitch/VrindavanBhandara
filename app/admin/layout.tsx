@@ -35,6 +35,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     redirect("/dashboard");
   }
 
+  // ADMIN without an active Admin-role row gets a hollow nav — send them away.
+  if (!session.user.adminRole) {
+    redirect("/dashboard");
+  }
+
   const { pendingBookings } = await getNavCounts();
 
   return (

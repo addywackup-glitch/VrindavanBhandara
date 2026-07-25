@@ -51,14 +51,27 @@ export function ServicesClient({ services, availableTypes }: Props) {
     const msg =
       packageCount > 0
         ? `"${name}" has ${packageCount} package(s). It will be deactivated instead of deleted. Proceed?`
-        : `Delete service "${name}"? This cannot be undone.`;
+        : `Remove service "${name}"? If delete is not permitted, it will be deactivated.`;
     if (!confirm(msg)) return;
 
     setLoadingId(id + "delete");
     try {
+      // Prefer deactivate when packages exist — avoids hard-delete FK issues.
+      if (packageCount > 0) {
+        await patchService(id, { isActive: false });
+        return;
+      }
+
       const res = await fetch(`/api/admin/services/${id}`, { method: "DELETE" });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? data.message ?? "Delete failed");
+      if (!res.ok) {
+        // OPERATIONS_ADMIN has write but not delete — fall back to deactivate.
+        if (res.status === 403) {
+          await patchService(id, { isActive: false });
+          return;
+        }
+        throw new Error(data.error ?? data.message ?? "Delete failed");
+      }
       alert(data.data?.message ?? data.message ?? "Done");
       startTransition(() => router.refresh());
     } catch (e) {

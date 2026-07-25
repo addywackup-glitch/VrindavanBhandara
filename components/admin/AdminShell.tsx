@@ -179,30 +179,36 @@ export function AdminShell({
           </div>
 
           <div className="adm-topbar-right">
-            <form className="adm-search-wrap" onSubmit={handleSearch} role="search">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
-              </svg>
-              <input
-                className="adm-search-input"
-                type="search"
-                placeholder="Search bookings, customers…"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                aria-label="Search admin panel"
-              />
-            </form>
+            {hasPermission(session.user.adminRole as AdminRole, "bookings:read") && (
+              <form className="adm-search-wrap" onSubmit={handleSearch} role="search">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
+                </svg>
+                <input
+                  className="adm-search-input"
+                  type="search"
+                  placeholder="Search bookings, customers…"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  aria-label="Search admin panel"
+                />
+              </form>
+            )}
 
-            <Link href="/admin/bookings?status=PENDING" className="adm-notif-btn" aria-label="Pending bookings">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" />
-              </svg>
-            </Link>
+            {hasPermission(session.user.adminRole as AdminRole, "bookings:read") && (
+              <Link href="/admin/bookings?status=PENDING" className="adm-notif-btn" aria-label="Pending bookings">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" />
+                </svg>
+              </Link>
+            )}
 
-            <Link href="/admin/bookings" className="adm-topbar-btn">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
-              New Booking
-            </Link>
+            {hasPermission(session.user.adminRole as AdminRole, "bookings:write") && (
+              <Link href="/admin/bookings" className="adm-topbar-btn">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+                Bookings
+              </Link>
+            )}
 
             <div ref={profileRef} style={{ position: "relative" }}>
               <button
@@ -237,9 +243,12 @@ export function AdminShell({
                     <Link href="/" className="adm-profile-menu-item" role="menuitem" target="_blank" onClick={() => setProfileOpen(false)}>
                       View Site
                     </Link>
-                    <Link href="/admin/settings" className="adm-profile-menu-item" role="menuitem" onClick={() => setProfileOpen(false)}>
-                      Settings
-                    </Link>
+                    {session.user.adminRole &&
+                      hasPermission(session.user.adminRole as AdminRole, "config:write") && (
+                      <Link href="/admin/settings" className="adm-profile-menu-item" role="menuitem" onClick={() => setProfileOpen(false)}>
+                        Settings
+                      </Link>
+                    )}
                     <button
                       type="button"
                       className="adm-profile-menu-item danger"

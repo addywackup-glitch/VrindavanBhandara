@@ -1,9 +1,10 @@
 // =============================================================================
 // Booking invoice PDF (pdf-lib — serverless-friendly)
+// Helvetica/WinAnsi cannot encode ₹ and many Unicode glyphs — keep text ASCII.
 // =============================================================================
 
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
 
 export type InvoiceBooking = {
   bookingNumber: string;
@@ -34,6 +35,22 @@ function n(v: { toNumber(): number } | number): number {
   return typeof v === "number" ? v : v.toNumber();
 }
 
+/** pdf-lib StandardFonts only support WinAnsi — strip/replace unsafe glyphs. */
+function pdfSafe(text: string): string {
+  return text
+    .replace(/\u20B9/g, "Rs.") // ₹
+    .replace(/[\u2013\u2014\u2212]/g, "-") // en/em/minus
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201C\u201D]/g, '"')
+    .replace(/\u2026/g, "...")
+    .replace(/[^\x09\x0A\x0D\x20-\x7E]/g, "?");
+}
+
+function formatINR(amount: number): string {
+  const rounded = Math.round(amount);
+  return `Rs. ${rounded.toLocaleString("en-IN")}`;
+}
+
 export async function buildBookingInvoicePdf(
   booking: InvoiceBooking
 ): Promise<Uint8Array> {
@@ -48,8 +65,16 @@ export async function buildBookingInvoicePdf(
   let y = 800;
   const left = 50;
 
-  const draw = (text: string, opts: { x?: number; size?: number; f?: typeof font; color?: ReturnType<typeof rgb> } = {}) => {
-    page.drawText(text, {
+  const draw = (
+    text: string,
+    opts: {
+      x?: number;
+      size?: number;
+      f?: typeof font;
+      color?: ReturnType<typeof rgb>;
+    } = {}
+  ) => {
+    page.drawText(pdfSafe(text), {
       x: opts.x ?? left,
       y,
       size: opts.size ?? 11,
@@ -110,20 +135,20 @@ export async function buildBookingInvoicePdf(
 
   draw("Amounts", { f: bold, size: 12, color: brand });
   y -= 18;
-  draw(`Base: ${formatCurrency(n(booking.baseAmount))}`);
+  draw(`Base: ${formatINR(n(booking.baseAmount))}`);
   y -= 16;
   if (n(booking.discountAmount) > 0) {
     const code = booking.coupon?.code ? ` (${booking.coupon.code})` : "";
-    draw(`Discount${code}: −${formatCurrency(n(booking.discountAmount))}`, {
+    draw(`Discount${code}: -${formatINR(n(booking.discountAmount))}`, {
       color: rgb(0.15, 0.45, 0.25),
     });
     y -= 16;
   }
   if (n(booking.taxAmount) > 0) {
-    draw(`Tax: ${formatCurrency(n(booking.taxAmount))}`);
+    draw(`Tax: ${formatINR(n(booking.taxAmount))}`);
     y -= 16;
   }
-  draw(`Total: ${formatCurrency(n(booking.totalAmount))}`, { f: bold, size: 13 });
+  draw(`Total: ${formatINR(n(booking.totalAmount))}`, { f: bold, size: 13 });
   y -= 28;
 
   if (booking.payment) {
@@ -132,7 +157,10 @@ export async function buildBookingInvoicePdf(
     draw(`Status: ${booking.payment.status}`);
     y -= 16;
     if (booking.payment.razorpayPaymentId) {
-      draw(`Payment ID: ${booking.payment.razorpayPaymentId}`, { size: 10, color: muted });
+      draw(`Payment ID: ${booking.payment.razorpayPaymentId}`, {
+        size: 10,
+        color: muted,
+      });
       y -= 16;
     }
   }
