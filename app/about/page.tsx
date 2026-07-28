@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getAboutPageContent, getPublicSiteConfig } from "@/lib/site-config";
+import { getAboutPageContent, getPublicSiteConfig } from "@/lib/site-config.server";
 
 export async function generateMetadata(): Promise<Metadata> {
   const [about, site] = await Promise.all([getAboutPageContent(), getPublicSiteConfig()]);

@@ -8,7 +8,7 @@ import {
 import "./globals.css";
 import { SiteChrome } from "@/components/layout/SiteChrome";
 import { Providers } from "./providers";
-import { getPublicSiteConfig } from "@/lib/site-config";
+import { getPublicSiteConfig } from "@/lib/site-config.server";
 
 // =============================================================================
 // Fonts — Design System: Sacred Precision
