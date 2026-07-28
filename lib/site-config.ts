@@ -1,10 +1,6 @@
 // =============================================================================
-// Public site config — SiteConfig key-value → typed branding / About content
+// Site config — client-safe types, defaults, helpers (no Prisma / Node deps)
 // =============================================================================
-
-import { cache } from "react";
-import { unstable_cache } from "next/cache";
-import { prisma } from "@/lib/prisma";
 
 export const SITE_CONFIG_CACHE_TAG = "site-config";
 
@@ -112,35 +108,39 @@ export const DEFAULT_ABOUT_PAGE: AboutPageContent = {
   ctaHref: "/book",
 };
 
-function pick(map: Record<string, string>, key: string, fallback: string): string {
+export function pickSetting(map: Record<string, string>, key: string, fallback: string): string {
   const v = map[key]?.trim();
   return v || fallback;
 }
 
-function mapToPublicConfig(map: Record<string, string>): PublicSiteConfig {
+export function mapToPublicConfig(map: Record<string, string>): PublicSiteConfig {
   return {
-    siteName: pick(map, "site.name", DEFAULT_SITE_CONFIG.siteName),
-    tagline: pick(map, "site.tagline", DEFAULT_SITE_CONFIG.tagline),
-    logoUrl: pick(map, "brand.logoUrl", DEFAULT_SITE_CONFIG.logoUrl),
-    faviconUrl: pick(map, "brand.faviconUrl", DEFAULT_SITE_CONFIG.faviconUrl),
-    supportPhone: pick(map, "business.phone", DEFAULT_SITE_CONFIG.supportPhone),
-    supportEmail: pick(map, "business.email", DEFAULT_SITE_CONFIG.supportEmail),
-    address: pick(map, "business.address", DEFAULT_SITE_CONFIG.address),
+    siteName: pickSetting(map, "site.name", DEFAULT_SITE_CONFIG.siteName),
+    tagline: pickSetting(map, "site.tagline", DEFAULT_SITE_CONFIG.tagline),
+    logoUrl: pickSetting(map, "brand.logoUrl", DEFAULT_SITE_CONFIG.logoUrl),
+    faviconUrl: pickSetting(map, "brand.faviconUrl", DEFAULT_SITE_CONFIG.faviconUrl),
+    supportPhone: pickSetting(map, "business.phone", DEFAULT_SITE_CONFIG.supportPhone),
+    supportEmail: pickSetting(map, "business.email", DEFAULT_SITE_CONFIG.supportEmail),
+    address: pickSetting(map, "business.address", DEFAULT_SITE_CONFIG.address),
     social: {
-      instagram: pick(map, "social.instagram", DEFAULT_SITE_CONFIG.social.instagram),
-      facebook: pick(map, "social.facebook", DEFAULT_SITE_CONFIG.social.facebook),
-      youtube: pick(map, "social.youtube", DEFAULT_SITE_CONFIG.social.youtube),
-      twitter: pick(map, "social.twitter", DEFAULT_SITE_CONFIG.social.twitter),
+      instagram: pickSetting(map, "social.instagram", DEFAULT_SITE_CONFIG.social.instagram),
+      facebook: pickSetting(map, "social.facebook", DEFAULT_SITE_CONFIG.social.facebook),
+      youtube: pickSetting(map, "social.youtube", DEFAULT_SITE_CONFIG.social.youtube),
+      twitter: pickSetting(map, "social.twitter", DEFAULT_SITE_CONFIG.social.twitter),
     },
     seo: {
-      defaultTitle: pick(map, "seo.defaultTitle", DEFAULT_SITE_CONFIG.seo.defaultTitle),
-      defaultDescription: pick(map, "seo.defaultDescription", DEFAULT_SITE_CONFIG.seo.defaultDescription),
-      ogImage: pick(map, "seo.ogImage", DEFAULT_SITE_CONFIG.seo.ogImage),
+      defaultTitle: pickSetting(map, "seo.defaultTitle", DEFAULT_SITE_CONFIG.seo.defaultTitle),
+      defaultDescription: pickSetting(
+        map,
+        "seo.defaultDescription",
+        DEFAULT_SITE_CONFIG.seo.defaultDescription
+      ),
+      ogImage: pickSetting(map, "seo.ogImage", DEFAULT_SITE_CONFIG.seo.ogImage),
     },
   };
 }
 
-function parseAboutPage(raw: string | undefined): AboutPageContent {
+export function parseAboutPage(raw: string | undefined): AboutPageContent {
   if (!raw?.trim()) return DEFAULT_ABOUT_PAGE;
   try {
     const parsed = JSON.parse(raw) as Partial<AboutPageContent>;
@@ -177,30 +177,6 @@ function parseAboutPage(raw: string | undefined): AboutPageContent {
     return DEFAULT_ABOUT_PAGE;
   }
 }
-
-async function loadSiteConfigMap(): Promise<Record<string, string>> {
-  const rows = await prisma.siteConfig.findMany({
-    select: { key: true, value: true },
-  });
-  return Object.fromEntries(rows.map((r) => [r.key, r.value]));
-}
-
-const getCachedConfigMap = unstable_cache(loadSiteConfigMap, ["public-site-config-map"], {
-  tags: [SITE_CONFIG_CACHE_TAG],
-  revalidate: 60,
-});
-
-/** Request-deduped public branding config (navbar, footer, etc.). */
-export const getPublicSiteConfig = cache(async (): Promise<PublicSiteConfig> => {
-  const map = await getCachedConfigMap();
-  return mapToPublicConfig(map);
-});
-
-/** Request-deduped About page content from `about.page` JSON setting. */
-export const getAboutPageContent = cache(async (): Promise<AboutPageContent> => {
-  const map = await getCachedConfigMap();
-  return parseAboutPage(map["about.page"]);
-});
 
 /** Digits-only WhatsApp / tel target from a display phone string. */
 export function phoneDigits(phone: string, fallback = "919999999999"): string {

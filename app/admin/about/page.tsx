@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { AboutEditorClient } from "@/components/admin/AboutEditorClient";
-import { getAboutPageContent } from "@/lib/site-config";
+import { getAboutPageContent } from "@/lib/site-config.server";
 
 export const metadata: Metadata = { title: "About page" };
 
