@@ -3,14 +3,16 @@
 // =============================================================================
 
 import { z } from "zod";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { settingsRepository } from "@/lib/repositories";
 import { execute, validate } from "@/lib/api/service";
 import { createAuditLog } from "@/lib/audit";
 import type { Actor } from "@/lib/services/actor";
+import { SITE_CONFIG_CACHE_TAG } from "@/lib/site-config";
 
 export const UpsertSettingSchema = z.object({
   key: z.string().min(1).max(200),
-  value: z.string().max(10000),
+  value: z.string().max(50000),
   type: z.enum(["string", "number", "boolean", "json"]).default("string"),
   label: z.string().max(200).optional(),
   group: z.string().max(100).optional(),
@@ -18,6 +20,12 @@ export const UpsertSettingSchema = z.object({
 
 export function listSettings() {
   return execute(async () => settingsRepository.listAll());
+}
+
+function bustPublicSiteConfigCache() {
+  revalidateTag(SITE_CONFIG_CACHE_TAG, { expire: 0 });
+  revalidatePath("/", "layout");
+  revalidatePath("/about");
 }
 
 export function upsertSetting(actor: Actor, input: unknown) {
@@ -35,7 +43,13 @@ export function upsertSetting(actor: Actor, input: unknown) {
         group: data.group ?? "general",
         updatedBy: actor.userId,
       },
-      update: { value: data.value, type: data.type, updatedBy: actor.userId },
+      update: {
+        value: data.value,
+        type: data.type,
+        ...(data.label ? { label: data.label } : {}),
+        ...(data.group ? { group: data.group } : {}),
+        updatedBy: actor.userId,
+      },
     });
 
     await createAuditLog({
@@ -46,6 +60,8 @@ export function upsertSetting(actor: Actor, input: unknown) {
       oldData: existing ? { value: existing.value } : undefined,
       newData: { value: data.value },
     });
+
+    bustPublicSiteConfigCache();
 
     return setting;
   }, "Setting saved");

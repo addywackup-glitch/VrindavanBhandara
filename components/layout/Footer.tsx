@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import type { PublicSiteConfig } from "@/lib/site-config";
+import { DEFAULT_SITE_CONFIG, phoneDigits } from "@/lib/site-config";
 
 // =============================================================================
 // Footer — design spec: dark brand bg, 4-column grid, bottom bar
@@ -36,7 +38,6 @@ const LEGAL = [
   { label: "Refund Policy",    href: "/refund-policy" },
 ];
 
-// Brand mark — same as navbar
 function FooterBrandMark() {
   return (
     <svg
@@ -83,9 +84,22 @@ function FooterColTitle({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function Footer() {
+export function Footer({ siteConfig }: { siteConfig: PublicSiteConfig }) {
   const year = new Date().getFullYear();
-  const phone = process.env.NEXT_PUBLIC_WHATSAPP_BUSINESS_NUMBER ?? "919999999999";
+  const siteName = siteConfig.siteName || DEFAULT_SITE_CONFIG.siteName;
+  const tagline = siteConfig.tagline || DEFAULT_SITE_CONFIG.tagline;
+  const phone = siteConfig.supportPhone || DEFAULT_SITE_CONFIG.supportPhone;
+  const email = siteConfig.supportEmail || DEFAULT_SITE_CONFIG.supportEmail;
+  const wa = phoneDigits(
+    phone,
+    process.env.NEXT_PUBLIC_WHATSAPP_BUSINESS_NUMBER ?? "919999999999"
+  );
+  const social = [
+    { href: siteConfig.social.facebook, label: "Facebook", icon: <FacebookIcon /> },
+    { href: siteConfig.social.instagram, label: "Instagram", icon: <InstagramIcon /> },
+    { href: siteConfig.social.youtube, label: "YouTube", icon: <YoutubeIcon /> },
+    { href: siteConfig.social.twitter, label: "X (Twitter)", icon: <XIcon /> },
+  ].filter((s) => Boolean(s.href));
 
   return (
     <footer
@@ -93,7 +107,6 @@ export function Footer() {
       style={{ background: "oklch(18% 0.06 148)" }}
       aria-label="Site footer"
     >
-      {/* Top accent line */}
       <div
         aria-hidden="true"
         className="h-px"
@@ -102,7 +115,6 @@ export function Footer() {
         }}
       />
 
-      {/* Subtle dot-grid texture */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 opacity-[0.04]"
@@ -113,27 +125,36 @@ export function Footer() {
       />
 
       <div className="container relative" style={{ paddingTop: "4rem", paddingBottom: "3rem" }}>
-        {/* ── Main grid ──────────────────────────────────────────────── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12">
-
-          {/* Brand column */}
           <div className="sm:col-span-2 lg:col-span-1">
             <Link
               href="/"
               className="inline-flex items-center gap-2.5 mb-5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-fg rounded-lg"
-              aria-label="Vrindavan Bhandara — Home"
+              aria-label={`${siteName} — Home`}
             >
               <div
-                className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden"
                 style={{ background: "oklch(42% 0.14 148)", color: "var(--brand-fg)" }}
               >
-                <FooterBrandMark />
+                {siteConfig.logoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={siteConfig.logoUrl}
+                    alt=""
+                    width={40}
+                    height={40}
+                    style={{ width: 40, height: 40, objectFit: "contain" }}
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <FooterBrandMark />
+                )}
               </div>
               <span
                 className="font-display font-semibold text-xl leading-none"
                 style={{ color: "var(--brand-fg)", letterSpacing: "-0.01em" }}
               >
-                Vrindavan Bhandara
+                {siteName}
               </span>
             </Link>
 
@@ -141,14 +162,12 @@ export function Footer() {
               className="text-sm leading-relaxed mb-6 max-w-xs"
               style={{ color: "oklch(98% 0.004 148 / 0.50)" }}
             >
-              India&apos;s most trusted platform for sacred Seva booking in Vrindavan
-              and Mathura. Established 2012.
+              {tagline}
             </p>
 
-            {/* Contact */}
             <address className="not-italic flex flex-col gap-3 mb-6 text-sm">
               <a
-                href={`https://wa.me/${phone}`}
+                href={`https://wa.me/${wa}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2.5 transition-colors duration-150"
@@ -157,38 +176,31 @@ export function Footer() {
                 onMouseLeave={(e) => { e.currentTarget.style.color = "oklch(98% 0.004 148 / 0.50)"; }}
               >
                 <PhoneIcon />
-                +91 98765 43210
+                {phone}
               </a>
               <a
-                href="mailto:seva@vrindavanbhandara.com"
+                href={`mailto:${email}`}
                 className="flex items-center gap-2.5 transition-colors duration-150"
                 style={{ color: "oklch(98% 0.004 148 / 0.50)" }}
                 onMouseEnter={(e) => { e.currentTarget.style.color = "oklch(98% 0.004 148 / 0.9)"; }}
                 onMouseLeave={(e) => { e.currentTarget.style.color = "oklch(98% 0.004 148 / 0.50)"; }}
               >
                 <MailIcon />
-                seva@vrindavanbhandara.com
+                {email}
               </a>
             </address>
 
-            {/* Social links */}
-            <div className="flex items-center gap-2" aria-label="Social media links">
-              <SocialLink href="https://facebook.com/VrindavanBhandara" label="Facebook">
-                <FacebookIcon />
-              </SocialLink>
-              <SocialLink href="https://instagram.com/VrindavanBhandara" label="Instagram">
-                <InstagramIcon />
-              </SocialLink>
-              <SocialLink href="https://youtube.com/@VrindavanBhandara" label="YouTube">
-                <YoutubeIcon />
-              </SocialLink>
-              <SocialLink href="https://twitter.com/VrindavanBhand" label="X (Twitter)">
-                <XIcon />
-              </SocialLink>
-            </div>
+            {social.length > 0 && (
+              <div className="flex items-center gap-2" aria-label="Social media links">
+                {social.map(({ href, label, icon }) => (
+                  <SocialLink key={label} href={href} label={label}>
+                    {icon}
+                  </SocialLink>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Services */}
           <div>
             <FooterColTitle>Services</FooterColTitle>
             <ul className="flex flex-col gap-3.5" role="list">
@@ -198,7 +210,6 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Company */}
           <div>
             <FooterColTitle>Company</FooterColTitle>
             <ul className="flex flex-col gap-3.5" role="list">
@@ -208,7 +219,6 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Account */}
           <div>
             <FooterColTitle>Account</FooterColTitle>
             <ul className="flex flex-col gap-3.5" role="list">
@@ -219,7 +229,6 @@ export function Footer() {
           </div>
         </div>
 
-        {/* ── Bottom bar ─────────────────────────────────────────────── */}
         <div
           className="mt-14 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 flex-wrap"
           style={{ borderTop: "1px solid oklch(42% 0.14 148 / 0.3)" }}
@@ -228,7 +237,7 @@ export function Footer() {
             className="text-xs text-center sm:text-left"
             style={{ color: "oklch(98% 0.004 148 / 0.35)" }}
           >
-            © {year} Vrindavan Bhandara. All rights reserved. Made with 🙏 in India.
+            © {year} {siteName}. All rights reserved. Made with 🙏 in India.
           </p>
           <nav aria-label="Legal links" className="flex items-center gap-5">
             {LEGAL.map(({ label, href }) => (
@@ -249,10 +258,6 @@ export function Footer() {
     </footer>
   );
 }
-
-// =============================================================================
-// Icon helpers
-// =============================================================================
 
 function SocialLink({ href, label, children }: { href: string; label: string; children: React.ReactNode }) {
   return (

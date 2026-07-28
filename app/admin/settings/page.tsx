@@ -78,7 +78,7 @@ export default async function SettingsPage() {
         <div>
           <div className="adm-section-title">Settings</div>
           <p style={{ fontSize: "0.875rem", color: "var(--muted)", marginTop: "0.25rem" }}>
-            Site configuration. Changes take effect immediately.
+            Logo, site name, tagline, social links, and business contact appear on the public site.
           </p>
         </div>
       </div>
@@ -110,6 +110,7 @@ export default async function SettingsPage() {
                       settingKey={setting.key}
                       label={setting.label}
                       type={setting.type}
+                      group={setting.group}
                       placeholder={setting.placeholder}
                       initialValue={savedMap[setting.key] ?? ""}
                     />

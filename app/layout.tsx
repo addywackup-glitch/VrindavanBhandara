@@ -8,6 +8,7 @@ import {
 import "./globals.css";
 import { SiteChrome } from "@/components/layout/SiteChrome";
 import { Providers } from "./providers";
+import { getPublicSiteConfig } from "@/lib/site-config";
 
 // =============================================================================
 // Fonts — Design System: Sacred Precision
@@ -181,9 +182,11 @@ const websiteSchema = {
 // Root Layout
 // =============================================================================
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const siteConfig = await getPublicSiteConfig();
+
   return (
     <html
       lang="en"
@@ -201,7 +204,7 @@ export default function RootLayout({
       </head>
       <body>
         <Providers>
-          <SiteChrome>{children}</SiteChrome>
+          <SiteChrome siteConfig={siteConfig}>{children}</SiteChrome>
         </Providers>
       </body>
     </html>
