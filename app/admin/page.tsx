@@ -122,7 +122,28 @@ export default async function AdminDashboardPage() {
   const session = await auth();
   if (!session?.user?.id || session.user.role !== "ADMIN") redirect("/login");
 
-  const { stats, recentBookings, recentPayments, topServices } = await getDashboardData();
+  let stats: Awaited<ReturnType<typeof getDashboardData>>["stats"];
+  let recentBookings: Awaited<ReturnType<typeof getDashboardData>>["recentBookings"];
+  let recentPayments: Awaited<ReturnType<typeof getDashboardData>>["recentPayments"];
+  let topServices: Awaited<ReturnType<typeof getDashboardData>>["topServices"];
+
+  try {
+    ({ stats, recentBookings, recentPayments, topServices } = await getDashboardData());
+  } catch (err) {
+    console.error("[admin/dashboard] failed to load metrics", err);
+    stats = {
+      todayBookings: 0,
+      pendingBookings: 0,
+      completedToday: 0,
+      refundCount: 0,
+      monthRevenue: 0,
+      revenueGrowth: null,
+      upcomingSevas: 0,
+    };
+    recentBookings = [];
+    recentPayments = [];
+    topServices = [];
+  }
 
   const statCards = [
     {
