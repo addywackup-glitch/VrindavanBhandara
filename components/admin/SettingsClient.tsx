@@ -7,17 +7,19 @@ type Props = {
   settingKey: string;
   label: string;
   type: "string" | "boolean" | "number";
+  group?: string;
   placeholder?: string;
   initialValue: string;
 };
 
-export function SettingsClient({ settingKey, label, type, placeholder, initialValue }: Props) {
+export function SettingsClient({ settingKey, label, type, group, placeholder, initialValue }: Props) {
   const [value, setValue] = useState(initialValue);
+  const [baseline, setBaseline] = useState(initialValue);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  const isDirty = value !== initialValue;
+  const isDirty = value !== baseline;
 
   async function save() {
     setSaving(true);
@@ -26,12 +28,13 @@ export function SettingsClient({ settingKey, label, type, placeholder, initialVa
       const res = await fetch("/api/admin/settings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ key: settingKey, value, type }),
+        body: JSON.stringify({ key: settingKey, value, type, group, label }),
       });
       if (!res.ok) {
         const d = await res.json();
         throw new Error(d.error ?? "Failed");
       }
+      setBaseline(value);
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (e) {

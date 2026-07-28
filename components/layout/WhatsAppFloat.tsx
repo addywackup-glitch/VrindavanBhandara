@@ -1,13 +1,16 @@
+import { phoneDigits } from "@/lib/site-config";
+
 // WhatsApp floating action button — fixed bottom-right, visible on all pages
-export function WhatsAppFloat() {
-  const phone = process.env.NEXT_PUBLIC_WHATSAPP_BUSINESS_NUMBER ?? "919999999999";
+export function WhatsAppFloat({ phone }: { phone?: string }) {
+  const wa =
+    phoneDigits(phone ?? "", process.env.NEXT_PUBLIC_WHATSAPP_BUSINESS_NUMBER ?? "919999999999");
   const message = encodeURIComponent(
     "Namaste, I would like to enquire about booking a Seva."
   );
 
   return (
     <a
-      href={`https://wa.me/${phone}?text=${message}`}
+      href={`https://wa.me/${wa}?text=${message}`}
       target="_blank"
       rel="noopener noreferrer"
       className="whatsapp-float"

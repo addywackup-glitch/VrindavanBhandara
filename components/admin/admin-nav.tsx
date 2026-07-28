@@ -126,6 +126,17 @@ export const ADMIN_NAV: AdminNavGroup[] = [
         ),
       },
       {
+        href: "/admin/about",
+        label: "About page",
+        permission: "config:write",
+        icon: icon(
+          <>
+            <path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
+          </>
+        ),
+      },
+      {
         href: "/admin/blog",
         label: "Blog",
         permission: "blogs:read",
@@ -230,6 +241,8 @@ export function getAdminPageMeta(pathname: string): {
     return { title: "Testimonials", breadcrumb: "/ Content / Testimonials" };
   if (pathname === "/admin/faqs")
     return { title: "FAQs", breadcrumb: "/ Content / FAQs" };
+  if (pathname === "/admin/about")
+    return { title: "About page", breadcrumb: "/ Content / About" };
   if (pathname === "/admin/proofs")
     return { title: "Proof Uploads", breadcrumb: "/ Operations / Proofs" };
   if (pathname === "/admin/messages")

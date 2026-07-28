@@ -13,6 +13,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSession, signOut } from "@/lib/auth/client";
 import { cn } from "@/lib/utils";
+import type { PublicSiteConfig } from "@/lib/site-config";
+import { DEFAULT_SITE_CONFIG } from "@/lib/site-config";
 
 const NAV_LINKS = [
   { label: "Home",     href: "/" },
@@ -43,6 +45,38 @@ function BrandMark({ size = 18 }: { size?: number }) {
       <path d="M12 3C8 3 5 6 5 9c0 2 1.5 3.5 3.5 4M12 3c4 0 7 3 7 6 0 2-1.5 3.5-3.5 4M12 3v14" />
       <path d="M8.5 13C6 14 4 16 4 18h16c0-2-2-4-4.5-5" />
     </svg>
+  );
+}
+
+function BrandLogo({
+  logoUrl,
+  size = 32,
+}: {
+  logoUrl?: string;
+  size?: number;
+}) {
+  if (logoUrl) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={logoUrl}
+        alt=""
+        width={size}
+        height={size}
+        style={{ width: size, height: size, objectFit: "contain", borderRadius: 8 }}
+        aria-hidden="true"
+      />
+    );
+  }
+
+  return (
+    <div
+      className="rounded-lg flex items-center justify-center flex-shrink-0 text-brand-fg transition-transform duration-200 hover:scale-105"
+      style={{ width: size, height: size, background: "var(--brand)" }}
+      aria-hidden="true"
+    >
+      <BrandMark size={Math.round(size * 0.56)} />
+    </div>
   );
 }
 
@@ -314,11 +348,12 @@ function NavbarSkeleton() {
 // ── Main Navbar (inner) ───────────────────────────────────────────────────────
 // All hooks live here so rules-of-hooks is satisfied.
 
-function NavbarInner() {
+function NavbarInner({ siteConfig }: { siteConfig: PublicSiteConfig }) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
   const { data: session, status } = useSession();
+  const siteName = siteConfig.siteName || DEFAULT_SITE_CONFIG.siteName;
 
   const onScroll = useCallback(() => {
     setScrolled(window.scrollY > 20);
@@ -365,20 +400,14 @@ function NavbarInner() {
           <Link
             href="/"
             className="flex items-center gap-2.5 flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand rounded-lg"
-            aria-label="Vrindavan Bhandara — Home"
+            aria-label={`${siteName} — Home`}
           >
-            <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-brand-fg transition-transform duration-200 hover:scale-105"
-              style={{ background: "var(--brand)" }}
-              aria-hidden="true"
-            >
-              <BrandMark size={18} />
-            </div>
+            <BrandLogo logoUrl={siteConfig.logoUrl} size={32} />
             <span
               className="font-display font-semibold text-lg leading-none tracking-tight"
               style={{ color: "var(--fg)", letterSpacing: "-0.01em" }}
             >
-              Vrindavan Bhandara
+              {siteName}
             </span>
           </Link>
 
@@ -611,10 +640,10 @@ function NavbarInner() {
 // Thin wrapper: reads pathname to hide on auth routes, then renders NavbarInner.
 // The inner component owns all hooks so rules-of-hooks is satisfied.
 
-export function Navbar() {
+export function Navbar({ siteConfig }: { siteConfig: PublicSiteConfig }) {
   const pathname = usePathname();
   if (AUTH_ROUTES.includes(pathname)) return null;
-  return <NavbarInner />;
+  return <NavbarInner siteConfig={siteConfig} />;
 }
 
 // ── Mobile bottom navigation ──────────────────────────────────────────────────
